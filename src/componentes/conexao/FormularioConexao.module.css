@@ -1,0 +1,110 @@
+.formulario {
+  container: formulario / inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-5);
+}
+
+.campos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+}
+
+.tipoBanco {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+}
+
+.rotuloTipo {
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+}
+
+.valorTipo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-1) var(--espaco-2);
+  max-width: none;
+  min-height: var(--altura-controle);
+  padding: var(--espaco-2) var(--espaco-3);
+  border: 1px dashed var(--borda-forte);
+  border-radius: var(--raio-md);
+  background-color: var(--superficie-suave);
+}
+
+.iconeTipo {
+  flex-shrink: 0;
+  color: var(--destaque);
+}
+
+.nomeTipo {
+  color: var(--texto);
+  font-size: var(--fonte-controle);
+  font-weight: var(--peso-medio);
+}
+
+.notaTipo {
+  margin-left: auto;
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+}
+
+.linhaServidor {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 7.5rem;
+  align-items: start;
+  gap: var(--espaco-3);
+}
+
+.linhaAcesso {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: var(--espaco-3);
+}
+
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-2);
+  padding-top: var(--espaco-1);
+}
+
+.conectar {
+  min-width: 9.5rem;
+}
+
+.secundaria {
+  margin-left: auto;
+}
+
+@container formulario (max-width: 460px) {
+  .linhaAcesso {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--espaco-4);
+  }
+
+  .linhaServidor {
+    grid-template-columns: minmax(0, 1fr) 6rem;
+  }
+
+  .acoes {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .secundaria {
+    margin-left: 0;
+  }
+
+  .notaTipo {
+    margin-left: 0;
+    flex-basis: 100%;
+    padding-left: calc(16px + var(--espaco-2));
+  }
+}

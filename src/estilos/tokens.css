@@ -1,0 +1,99 @@
+:root {
+  --fonte-interface: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --fonte-numeros: 'Geist Mono Variable', ui-monospace, 'SF Mono', 'Cascadia Mono', Consolas, monospace;
+
+  --tamanho-xs: 0.75rem;
+  --tamanho-sm: 0.8125rem;
+  --tamanho-base: 0.9375rem;
+  --tamanho-md: 1.0625rem;
+  --tamanho-lg: 1.25rem;
+  --tamanho-xl: 1.5rem;
+  --tamanho-2xl: 1.875rem;
+  --tamanho-destaque: 2.5rem;
+
+  --peso-regular: 400;
+  --peso-medio: 500;
+  --peso-forte: 600;
+
+  --altura-linha-justa: 1.15;
+  --altura-linha-compacta: 1.35;
+  --altura-linha-normal: 1.55;
+
+  --letras-titulo: -0.02em;
+  --letras-numeros: -0.01em;
+
+  --espaco-1: 0.25rem;
+  --espaco-2: 0.5rem;
+  --espaco-3: 0.75rem;
+  --espaco-4: 1rem;
+  --espaco-5: 1.25rem;
+  --espaco-6: 1.5rem;
+  --espaco-8: 2rem;
+  --espaco-10: 2.5rem;
+  --espaco-12: 3rem;
+  --espaco-16: 4rem;
+
+  --raio-xs: 4px;
+  --raio-sm: 6px;
+  --raio-md: 10px;
+  --raio-lg: 14px;
+  --raio-xl: 20px;
+  --raio-pilula: 999px;
+
+  --borda-fina: 1px;
+  --borda-grossa: 2px;
+
+  --largura-menu: 256px;
+  --largura-menu-recolhido: 72px;
+  --altura-cabecalho: 64px;
+  --largura-conteudo: 1320px;
+  --respiro-conteudo: var(--espaco-8);
+  --respiro-topo-conteudo: var(--espaco-6);
+  --altura-titulo-pagina: calc(var(--tamanho-2xl) * var(--altura-linha-justa));
+
+  --altura-controle: 38px;
+  --altura-controle-sm: 32px;
+  --altura-controle-lg: 48px;
+  --fonte-controle: var(--tamanho-base);
+  --alvo-toque: 36px;
+  --altura-item-menu: 38px;
+
+  --curva-saida: cubic-bezier(0.22, 1, 0.36, 1);
+  --curva-entrada: cubic-bezier(0.55, 0, 1, 0.45);
+  --curva-mola: cubic-bezier(0.34, 1.36, 0.54, 1);
+  --curva-tema: cubic-bezier(0.45, 0, 0.25, 1);
+  --duracao-rapida: 120ms;
+  --duracao-base: 200ms;
+  --duracao-lenta: 360ms;
+  --duracao-expressiva: 520ms;
+  --duracao-tema: 600ms;
+  --passo-cascata: 30ms;
+  --limite-cascata: 10;
+  --passo-cascata-pagina: 70ms;
+  --animacao-surgir: orynt-surgir;
+  --animacao-revelar: orynt-revelar;
+  --animacao-emergir: orynt-emergir;
+
+  --camada-cabecalho: 30;
+  --camada-menu: 40;
+  --camada-sobreposicao: 50;
+  --camada-modal: 60;
+  --camada-flutuante: 65;
+  --camada-notificacao: 70;
+}
+
+@media (pointer: coarse) {
+  :root {
+    --altura-controle: 44px;
+    --altura-controle-sm: 40px;
+    --fonte-controle: 1rem;
+    --alvo-toque: 44px;
+    --altura-item-menu: 44px;
+  }
+}
+
+@media (max-width: 767px) {
+  :root {
+    --respiro-conteudo: var(--espaco-5);
+  }
+}

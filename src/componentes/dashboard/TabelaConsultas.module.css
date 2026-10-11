@@ -1,0 +1,224 @@
+.conteiner {
+  container: consultas / inline-size;
+}
+
+.ordenacaoCompacta {
+  display: none;
+  padding: 0 var(--espaco-4) var(--espaco-4);
+}
+
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--tamanho-sm);
+}
+
+.tabela th {
+  padding: var(--espaco-2) var(--espaco-3);
+  border-bottom: 1px solid var(--borda);
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.tabela td {
+  padding: var(--espaco-3);
+  border-bottom: 1px solid var(--borda);
+  vertical-align: middle;
+}
+
+.tabela tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.tabela th:first-child,
+.tabela td:first-child {
+  padding-left: var(--espaco-6);
+}
+
+.tabela th:last-child,
+.tabela td:last-child {
+  padding-right: var(--espaco-6);
+}
+
+.tabela th.colunaNumerica {
+  padding-block: var(--espaco-1);
+  text-align: right;
+}
+
+.colunaDesempenho {
+  width: 8rem;
+}
+
+.ordenar {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-1);
+  min-height: 28px;
+  margin-right: calc(var(--espaco-2) * -1);
+  padding-inline: var(--espaco-2);
+  border-radius: var(--raio-sm);
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+  transition:
+    background-color var(--duracao-rapida) var(--curva-saida),
+    color var(--duracao-rapida) var(--curva-saida);
+}
+
+.ordenar:focus-visible {
+  outline: none;
+  box-shadow: var(--anel-foco);
+}
+
+.ordenarAtivo {
+  color: var(--texto);
+}
+
+.celulaConsulta {
+  width: 46%;
+  max-width: 0;
+}
+
+.sql {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.palavraChave {
+  color: var(--destaque);
+}
+
+.celulaNumerica {
+  color: var(--texto);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.participacao {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  min-width: 5.5rem;
+}
+
+.trilho {
+  width: 100%;
+  height: 4px;
+  overflow: hidden;
+  border-radius: var(--raio-pilula);
+  background-color: var(--neutro-suave);
+}
+
+.preenchimento {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background-color: var(--grafico-1);
+}
+
+@media (hover: hover) {
+  .ordenar:hover {
+    background-color: var(--superficie-suave);
+    color: var(--texto);
+  }
+
+  .tabela tbody tr:hover td {
+    background-color: color-mix(in srgb, var(--superficie-suave) 60%, transparent);
+  }
+}
+
+@container consultas (max-width: 780px) {
+  .ordenacaoCompacta {
+    display: flex;
+  }
+
+  .tabela,
+  .tabela tbody {
+    display: block;
+  }
+
+  .tabela thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .tabela tbody tr {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--espaco-3) var(--espaco-4);
+    padding: var(--espaco-4);
+    border-top: 1px solid var(--borda);
+  }
+
+  .tabela td,
+  .tabela td:first-child,
+  .tabela td:last-child {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 0;
+    border-bottom: none;
+    text-align: left;
+  }
+
+  .tabela td[data-rotulo]::before {
+    content: attr(data-rotulo);
+    color: var(--texto-terciario);
+    font-family: var(--fonte-interface);
+    font-size: var(--tamanho-xs);
+    letter-spacing: 0;
+  }
+
+  .tabela td.celulaConsulta {
+    grid-column: 1 / -1;
+    width: auto;
+    max-width: none;
+  }
+
+  .tabela td.celulaDesempenho {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--espaco-2);
+  }
+
+  .sql {
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+  }
+
+  .participacao {
+    align-items: flex-start;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .tabela tbody tr:hover td {
+    background-color: transparent;
+  }
+}
+
+@container consultas (max-width: 420px) {
+  .tabela tbody tr {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tabela td:nth-child(4) {
+    grid-column: 1 / -1;
+  }
+}

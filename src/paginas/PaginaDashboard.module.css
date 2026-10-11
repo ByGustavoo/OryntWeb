@@ -1,0 +1,38 @@
+.blocos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-5);
+}
+
+.regiao {
+  transition: opacity var(--duracao-base) var(--curva-saida);
+}
+
+.atualizando {
+  opacity: 0.55;
+  transition-delay: var(--duracao-rapida);
+}
+
+.cabecalhoTabela {
+  padding: var(--espaco-5) var(--espaco-6) 0;
+}
+
+.esqueletoTabela {
+  padding: 0 var(--espaco-6) var(--espaco-5);
+}
+
+@media (max-width: 767px) {
+  .cabecalhoTabela {
+    padding: var(--espaco-4) var(--espaco-4) 0;
+  }
+
+  .esqueletoTabela {
+    padding: 0 var(--espaco-4) var(--espaco-4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .atualizando {
+    opacity: 1;
+  }
+}

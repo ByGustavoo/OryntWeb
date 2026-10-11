@@ -1,0 +1,25 @@
+.flutuante {
+  position: fixed;
+  z-index: var(--camada-flutuante);
+  max-width: calc(100vw - var(--espaco-4));
+  background-color: var(--superficie-elevada);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-lg);
+  box-shadow: var(--sombra-flutuante);
+  animation: abrir var(--duracao-base) var(--curva-saida);
+}
+
+.deCima {
+  transform-origin: top left;
+}
+
+.deBaixo {
+  transform-origin: bottom left;
+}
+
+@keyframes abrir {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}

@@ -1,0 +1,107 @@
+.botao {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espaco-2);
+  flex-shrink: 0;
+  border: 1px solid transparent;
+  border-radius: var(--raio-md);
+  font-weight: var(--peso-medio);
+  white-space: nowrap;
+  user-select: none;
+  transition:
+    background-color var(--duracao-rapida) var(--curva-saida),
+    border-color var(--duracao-rapida) var(--curva-saida),
+    color var(--duracao-rapida) var(--curva-saida),
+    box-shadow var(--duracao-base) var(--curva-saida),
+    transform var(--duracao-rapida) var(--curva-saida);
+}
+
+.botao svg {
+  flex-shrink: 0;
+}
+
+.botao:focus-visible {
+  outline: none;
+  box-shadow: var(--anel-foco);
+}
+
+.botao:active:not(:disabled):not(.carregando) {
+  transform: scale(0.97);
+}
+
+.botao:disabled:not(.carregando) {
+  opacity: 0.45;
+}
+
+.carregando {
+  cursor: progress;
+}
+
+.md {
+  height: var(--altura-controle);
+  padding-inline: var(--espaco-4);
+  font-size: var(--tamanho-sm);
+}
+
+.sm {
+  height: var(--altura-controle-sm);
+  padding-inline: var(--espaco-3);
+  font-size: var(--tamanho-sm);
+  border-radius: var(--raio-sm);
+}
+
+.lg {
+  height: var(--altura-controle-lg);
+  padding-inline: var(--espaco-6);
+  font-size: var(--tamanho-base);
+  gap: var(--espaco-2);
+}
+
+.larguraTotal {
+  width: 100%;
+}
+
+.primario {
+  background-color: var(--acao);
+  color: var(--acao-contraste);
+  box-shadow: var(--sombra-cartao);
+}
+
+.secundario {
+  background-color: var(--superficie);
+  border-color: var(--borda-forte);
+  color: var(--texto);
+}
+
+.terciario {
+  background-color: transparent;
+  color: var(--texto-secundario);
+}
+
+.perigo {
+  background-color: var(--erro);
+  color: var(--erro-contraste);
+}
+
+@media (hover: hover) {
+  .primario:hover:not(:disabled):not(.carregando) {
+    background-color: var(--acao-forte);
+    box-shadow: var(--sombra-destaque);
+  }
+
+  .secundario:hover:not(:disabled):not(.carregando) {
+    border-color: var(--borda-controle);
+    background-color: var(--superficie-suave);
+  }
+
+  .terciario:hover:not(:disabled):not(.carregando) {
+    background-color: var(--superficie-suave);
+    color: var(--texto);
+  }
+
+  .perigo:hover:not(:disabled):not(.carregando) {
+    filter: brightness(1.08);
+  }
+}

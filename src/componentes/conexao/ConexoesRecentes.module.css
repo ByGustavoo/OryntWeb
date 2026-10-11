@@ -1,0 +1,112 @@
+.secao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+}
+
+.titulo {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+  letter-spacing: 0;
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-md);
+  background-color: var(--superficie);
+  overflow: hidden;
+}
+
+.item {
+  display: flex;
+  align-items: stretch;
+}
+
+.item + .item {
+  border-top: 1px solid var(--borda);
+}
+
+.escolher {
+  display: grid;
+  flex: 1;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'nome quando'
+    'endereco endereco';
+  gap: 2px var(--espaco-3);
+  min-width: 0;
+  padding: var(--espaco-3) var(--espaco-2) var(--espaco-3) var(--espaco-4);
+  text-align: left;
+  transition: background-color var(--duracao-rapida) var(--curva-saida);
+}
+
+.nome {
+  grid-area: nome;
+  overflow: hidden;
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quando {
+  grid-area: quando;
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  white-space: nowrap;
+}
+
+.endereco {
+  grid-area: endereco;
+  overflow: hidden;
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.remover {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 44px;
+  color: var(--texto-terciario);
+  transition:
+    background-color var(--duracao-rapida) var(--curva-saida),
+    color var(--duracao-rapida) var(--curva-saida);
+}
+
+.escolher:focus-visible,
+.remover:focus-visible {
+  outline: 2px solid var(--destaque);
+  outline-offset: -2px;
+  border-radius: var(--raio-sm);
+}
+
+.escolher:disabled,
+.remover:disabled {
+  opacity: 0.5;
+}
+
+.nota {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+}
+
+@media (hover: hover) {
+  .escolher:hover:not(:disabled) {
+    background-color: var(--superficie-suave);
+  }
+
+  .remover:hover:not(:disabled) {
+    background-color: var(--superficie-suave);
+    color: var(--texto);
+  }
+}

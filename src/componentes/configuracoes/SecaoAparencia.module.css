@@ -1,0 +1,245 @@
+.secao {
+  container: aparencia / inline-size;
+}
+
+.grupo {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--espaco-4);
+}
+
+.opcao {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+  padding: var(--espaco-2);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-lg);
+  background-color: var(--superficie);
+  cursor: pointer;
+  transition:
+    border-color var(--duracao-rapida) var(--curva-saida),
+    box-shadow var(--duracao-base) var(--curva-saida);
+}
+
+.opcao:has(.entrada:focus-visible) {
+  box-shadow: var(--anel-foco);
+}
+
+.selecionada {
+  border-color: var(--destaque);
+  box-shadow: 0 0 0 1px var(--destaque);
+}
+
+.selecionada:has(.entrada:focus-visible) {
+  box-shadow:
+    0 0 0 1px var(--destaque),
+    var(--anel-foco);
+}
+
+.entrada {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.previa {
+  display: block;
+  overflow: hidden;
+  border-radius: var(--raio-md);
+  aspect-ratio: 16 / 10;
+}
+
+.previaDividida {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.metadeEscura {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(62% 0, 100% 0, 100% 100%, 38% 100%);
+}
+
+.miniaturaClara {
+  --mini-fundo: #f7f8fa;
+  --mini-superficie: #ffffff;
+  --mini-borda: #e4e7ec;
+  --mini-linha: #d3d8e0;
+  --mini-texto: #9aa2af;
+  --mini-destaque: #1d5bd8;
+  --mini-destaque-suave: #e6eefe;
+}
+
+.miniaturaEscura {
+  --mini-fundo: #0a0a0a;
+  --mini-superficie: #111111;
+  --mini-borda: #1f1f1f;
+  --mini-linha: #2e2e2e;
+  --mini-texto: #5c5c5c;
+  --mini-destaque: #5b9cff;
+  --mini-destaque-suave: #0f1d36;
+}
+
+.miniatura {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  background-color: var(--mini-fundo);
+  border: 1px solid var(--mini-borda);
+  border-radius: var(--raio-md);
+}
+
+.miniMenu {
+  display: flex;
+  flex: 0 0 26%;
+  flex-direction: column;
+  gap: 6%;
+  padding: 7% 5%;
+  border-right: 1px solid var(--mini-borda);
+}
+
+.miniMarca {
+  width: 34%;
+  aspect-ratio: 1;
+  margin-bottom: 8%;
+  border-radius: 3px;
+  background-color: var(--mini-destaque);
+}
+
+.miniItem,
+.miniItemAtivo {
+  height: 7%;
+  min-height: 4px;
+  border-radius: 2px;
+  background-color: var(--mini-linha);
+}
+
+.miniItemAtivo {
+  background-color: var(--mini-destaque-suave);
+  box-shadow: inset 2px 0 0 var(--mini-destaque);
+}
+
+.miniConteudo {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 7%;
+  padding: 7%;
+}
+
+.miniTitulo {
+  width: 42%;
+  height: 7%;
+  min-height: 4px;
+  border-radius: 2px;
+  background-color: var(--mini-texto);
+}
+
+.miniCartoes {
+  display: grid;
+  flex: 1;
+  grid-template-columns: 1fr 1fr;
+  gap: 7%;
+}
+
+.miniCartao {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16%;
+  padding: 0 10%;
+  border: 1px solid var(--mini-borda);
+  border-radius: 3px;
+  background-color: var(--mini-superficie);
+}
+
+.miniCartaoLargo {
+  flex: 0.8;
+  gap: 18%;
+}
+
+.miniNumero {
+  width: 44%;
+  height: 16%;
+  min-height: 3px;
+  border-radius: 2px;
+  background-color: var(--mini-destaque);
+}
+
+.miniLinha,
+.miniLinhaCurta {
+  width: 78%;
+  height: 10%;
+  min-height: 3px;
+  border-radius: 2px;
+  background-color: var(--mini-linha);
+}
+
+.miniLinhaCurta {
+  width: 48%;
+}
+
+.textos {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 2px var(--espaco-2);
+  padding: 0 var(--espaco-2) var(--espaco-2);
+}
+
+.marcador {
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--borda-controle);
+  border-radius: 50%;
+  transition:
+    border-color var(--duracao-rapida) var(--curva-saida),
+    border-width var(--duracao-rapida) var(--curva-saida);
+}
+
+.selecionada .marcador {
+  border-width: 5px;
+  border-color: var(--destaque);
+}
+
+.rotulo {
+  font-size: var(--tamanho-base);
+  font-weight: var(--peso-forte);
+}
+
+.descricao {
+  grid-column: 2;
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-sm);
+  line-height: var(--altura-linha-compacta);
+}
+
+@media (hover: hover) {
+  .opcao:not(.selecionada):hover {
+    border-color: var(--borda-forte);
+  }
+}
+
+@container aparencia (max-width: 560px) {
+  .grupo {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--espaco-3);
+  }
+
+  .opcao {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .previa {
+    flex: 0 0 38%;
+  }
+
+  .textos {
+    padding: 0 var(--espaco-2) 0 0;
+  }
+}

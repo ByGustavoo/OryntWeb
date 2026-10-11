@@ -1,0 +1,234 @@
+@import './tokens.css';
+@import './temas.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  background-color: var(--fundo);
+}
+
+body {
+  min-height: 100dvh;
+  background-color: var(--fundo);
+  color: var(--texto);
+  font-family: var(--fonte-interface);
+  font-size: var(--tamanho-base);
+  line-height: var(--altura-linha-normal);
+  font-feature-settings: 'ss01' 1;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background-color var(--duracao-base) var(--curva-saida);
+}
+
+#raiz {
+  min-height: 100dvh;
+  isolation: isolate;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-weight: var(--peso-forte);
+  line-height: var(--altura-linha-justa);
+  letter-spacing: var(--letras-titulo);
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: var(--tamanho-xl);
+}
+
+h2 {
+  font-size: var(--tamanho-lg);
+}
+
+h3 {
+  font-size: var(--tamanho-md);
+}
+
+p {
+  max-width: 72ch;
+  text-wrap: pretty;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+
+fieldset {
+  min-width: 0;
+  padding: 0;
+  border: none;
+}
+
+legend {
+  padding: 0;
+}
+
+[id] {
+  scroll-margin-top: calc(var(--altura-cabecalho) + var(--espaco-4));
+}
+
+:focus-visible {
+  outline: 2px solid var(--destaque);
+  outline-offset: 2px;
+  border-radius: var(--raio-xs);
+}
+
+::selection {
+  background: var(--destaque-suave);
+  color: var(--texto);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--borda-forte) transparent;
+}
+
+.numeros {
+  font-family: var(--fonte-numeros);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--letras-numeros);
+}
+
+.visualmente-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.link-pular {
+  position: fixed;
+  top: var(--espaco-3);
+  left: var(--espaco-3);
+  z-index: var(--camada-notificacao);
+  padding: var(--espaco-3) var(--espaco-4);
+  background-color: var(--superficie-elevada);
+  border: 1px solid var(--destaque);
+  border-radius: var(--raio-md);
+  box-shadow: var(--sombra-sobreposicao);
+  font-weight: var(--peso-medio);
+  transform: translateY(calc(-100% - var(--espaco-4)));
+  transition: transform var(--duracao-base) var(--curva-saida);
+}
+
+.link-pular:focus-visible {
+  transform: translateY(0);
+}
+
+@keyframes orynt-surgir {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes orynt-emergir {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translateY(-14px);
+  }
+}
+
+@keyframes orynt-revelar {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+.item-em-cascata {
+  animation: orynt-surgir var(--duracao-lenta) var(--curva-saida) backwards;
+  animation-delay: calc(min(var(--indice, 0), var(--limite-cascata)) * var(--passo-cascata));
+}
+
+.revelar {
+  animation: orynt-revelar var(--duracao-lenta) var(--curva-saida) backwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.trocando-tema,
+.trocando-tema *:not([data-transicao-propria]),
+.trocando-tema *::before,
+.trocando-tema *::after {
+  transition:
+    background-color var(--duracao-tema) var(--curva-tema),
+    border-color var(--duracao-tema) var(--curva-tema),
+    color var(--duracao-tema) var(--curva-tema),
+    fill var(--duracao-tema) var(--curva-tema),
+    stroke var(--duracao-tema) var(--curva-tema),
+    box-shadow var(--duracao-tema) var(--curva-tema) !important;
+}
+
+.cruzando-tema::view-transition-group(*),
+.cruzando-tema::view-transition-old(*),
+.cruzando-tema::view-transition-new(*) {
+  animation-duration: var(--duracao-tema);
+  animation-timing-function: var(--curva-tema);
+}
+
+.codigo {
+  font-family: var(--fonte-numeros);
+  font-variant-ligatures: none;
+  letter-spacing: 0;
+}

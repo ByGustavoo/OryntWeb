@@ -1,0 +1,27 @@
+.tela {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espaco-4);
+  min-height: 100dvh;
+  padding: var(--espaco-6);
+}
+
+.tela > * {
+  animation: aparecerDepois var(--duracao-lenta) var(--curva-saida) 600ms backwards;
+}
+
+.texto {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+}
+
+@keyframes aparecerDepois {
+  from {
+    opacity: 0;
+  }
+}

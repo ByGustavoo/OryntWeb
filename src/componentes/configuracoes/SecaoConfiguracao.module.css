@@ -1,0 +1,7 @@
+.secao {
+  scroll-margin-top: calc(var(--altura-cabecalho) + var(--espaco-6));
+}
+
+.ancora:focus {
+  outline: none;
+}

@@ -1,0 +1,88 @@
+.painel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background-color: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-lg);
+  box-shadow: var(--sombra-cartao);
+}
+
+.suave {
+  background-color: var(--superficie-suave);
+  box-shadow: none;
+}
+
+.destaque {
+  background-color: var(--destaque-suave);
+  border-color: color-mix(in srgb, var(--destaque) 22%, transparent);
+  box-shadow: none;
+}
+
+.espacamento-nenhum {
+  padding: 0;
+}
+
+.espacamento-sm {
+  padding: var(--espaco-4);
+}
+
+.espacamento-md {
+  padding: var(--espaco-5) var(--espaco-6);
+}
+
+.interativo {
+  transition:
+    border-color var(--duracao-rapida) var(--curva-saida),
+    box-shadow var(--duracao-base) var(--curva-saida),
+    transform var(--duracao-base) var(--curva-saida);
+}
+
+.interativo:focus-within {
+  border-color: var(--destaque);
+}
+
+@media (hover: hover) {
+  .interativo:hover {
+    border-color: var(--borda-forte);
+    box-shadow: var(--sombra-flutuante);
+    transform: translateY(-1px);
+  }
+}
+
+.cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espaco-2) var(--espaco-4);
+  margin-bottom: var(--espaco-4);
+}
+
+.textosCabecalho {
+  display: flex;
+  flex: 1 1 14rem;
+  flex-direction: column;
+  gap: var(--espaco-1);
+  min-width: 0;
+}
+
+.titulo {
+  font-size: var(--tamanho-md);
+  letter-spacing: -0.01em;
+}
+
+.descricao {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-sm);
+}
+
+.acao {
+  flex-shrink: 0;
+}
+
+@media (max-width: 767px) {
+  .espacamento-md {
+    padding: var(--espaco-4);
+  }
+}

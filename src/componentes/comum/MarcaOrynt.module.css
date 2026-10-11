@@ -1,0 +1,67 @@
+.marca {
+  flex-shrink: 0;
+}
+
+.luz {
+  stop-color: var(--marca-luz);
+}
+
+.tom100 {
+  stop-color: var(--marca-100);
+}
+
+.tom200 {
+  stop-color: var(--marca-200);
+}
+
+.tom300 {
+  stop-color: var(--marca-300);
+}
+
+.tom400 {
+  stop-color: var(--marca-400);
+}
+
+.tom500 {
+  stop-color: var(--marca-500);
+}
+
+.tom600 {
+  stop-color: var(--marca-600);
+}
+
+.tom700 {
+  stop-color: var(--marca-700);
+}
+
+.tom800 {
+  stop-color: var(--marca-800);
+}
+
+.tom900 {
+  stop-color: var(--marca-900);
+}
+
+.tom950 {
+  stop-color: var(--marca-950);
+}
+
+.destacado {
+  transition: transform var(--duracao-lenta) var(--curva-mola);
+}
+
+.animada .destacado {
+  animation: destacar var(--duracao-tema) var(--curva-mola) 420ms backwards;
+}
+
+@keyframes destacar {
+  from {
+    transform: translateX(-48px);
+  }
+}
+
+@media (hover: hover) {
+  a:hover .destacado {
+    transform: translateX(-48px);
+  }
+}

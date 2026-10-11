@@ -1,0 +1,66 @@
+.selo {
+  --selo-texto: var(--texto-secundario);
+  --selo-fundo: var(--neutro-suave);
+
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+  height: 1.375rem;
+  padding-inline: var(--espaco-2);
+  border-radius: var(--raio-sm);
+  background-color: var(--selo-fundo);
+  color: var(--selo-texto);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+  line-height: 1;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.selo svg {
+  flex-shrink: 0;
+}
+
+.texto {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ponto {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+
+.tachado .texto {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+.destaque {
+  --selo-texto: var(--destaque);
+  --selo-fundo: var(--destaque-suave);
+}
+
+.sucesso {
+  --selo-texto: var(--sucesso);
+  --selo-fundo: var(--sucesso-suave);
+}
+
+.aviso {
+  --selo-texto: var(--aviso);
+  --selo-fundo: var(--aviso-suave);
+}
+
+.erro {
+  --selo-texto: var(--erro);
+  --selo-fundo: var(--erro-suave);
+}
+
+.info {
+  --selo-texto: var(--info);
+  --selo-fundo: var(--info-suave);
+}

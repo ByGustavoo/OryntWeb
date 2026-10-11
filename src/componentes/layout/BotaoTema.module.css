@@ -1,0 +1,64 @@
+.botao {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--alvo-toque);
+  height: var(--alvo-toque);
+  border-radius: var(--raio-md);
+  color: var(--texto-secundario);
+  overflow: hidden;
+  transition:
+    background-color var(--duracao-rapida) var(--curva-saida),
+    color var(--duracao-rapida) var(--curva-saida),
+    transform var(--duracao-rapida) var(--curva-saida);
+}
+
+.botao:focus-visible {
+  outline: none;
+  box-shadow: var(--anel-foco);
+}
+
+.botao:active {
+  transform: scale(0.92);
+}
+
+.palco {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+}
+
+.icone {
+  position: absolute;
+  inset: 0;
+  transition:
+    transform var(--duracao-expressiva) var(--curva-mola),
+    opacity var(--duracao-base) var(--curva-saida);
+}
+
+.sol.oculto {
+  opacity: 0;
+  transform: translateY(14px) rotate(90deg) scale(0.4);
+}
+
+.lua.oculto {
+  opacity: 0;
+  transform: translateY(-14px) rotate(-90deg) scale(0.4);
+}
+
+@media (hover: hover) {
+  .botao:hover {
+    background-color: var(--superficie-suave);
+    color: var(--texto);
+  }
+
+  .botao:hover .sol:not(.oculto) {
+    transform: rotate(45deg);
+  }
+
+  .botao:hover .lua:not(.oculto) {
+    transform: rotate(-18deg);
+  }
+}

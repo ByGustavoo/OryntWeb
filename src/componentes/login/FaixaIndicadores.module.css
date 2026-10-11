@@ -1,0 +1,95 @@
+.faixa {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding: var(--espaco-3) var(--espaco-5) var(--espaco-4);
+}
+
+.indicador {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-1);
+  min-width: 0;
+  padding-inline: var(--espaco-5);
+  border-left: 1px solid var(--identidade-borda);
+}
+
+.indicador:first-child {
+  padding-left: 0;
+  border-left: none;
+}
+
+.indicador:last-child {
+  padding-right: 0;
+}
+
+.rotulo {
+  overflow: hidden;
+  color: var(--identidade-texto-secundario);
+  font-size: var(--tamanho-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leitura {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--espaco-3);
+  min-height: 1.75rem;
+}
+
+.valor {
+  color: var(--identidade-texto);
+  font-family: var(--fonte-numeros);
+  font-size: var(--tamanho-lg);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--peso-forte);
+  letter-spacing: var(--letras-numeros);
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.complemento {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-regular);
+}
+
+.barras {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 1.5rem;
+}
+
+.barras span {
+  width: 4px;
+  height: 100%;
+  border-radius: 2px 2px 0 0;
+  background-color: color-mix(in srgb, var(--identidade-texto-secundario) 38%, transparent);
+  transform: scaleY(var(--altura));
+  transform-origin: bottom;
+  transition: transform var(--duracao-expressiva) var(--curva-saida);
+}
+
+.barras span:last-child {
+  background-color: var(--grafico-1);
+}
+
+.trilho {
+  height: 3px;
+  margin-top: var(--espaco-1);
+  overflow: hidden;
+  border-radius: var(--raio-pilula);
+  background-color: var(--identidade-borda);
+}
+
+.trilho span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background-color: var(--grafico-1);
+  transform: scaleX(var(--ocupacao));
+  transform-origin: left;
+  transition: transform var(--duracao-expressiva) var(--curva-saida);
+}

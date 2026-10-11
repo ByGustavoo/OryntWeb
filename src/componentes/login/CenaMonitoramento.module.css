@@ -1,0 +1,88 @@
+.cena {
+  --recuo-rota: 28px;
+  --largura-rota: 60px;
+  --respiro-rota: var(--espaco-5);
+  --entrada-indicadores: calc(var(--entrada-inicio, 0ms) + var(--entrada-passo, 70ms) * 4);
+  --entrada-grafico: calc(var(--entrada-inicio, 0ms) + var(--entrada-passo, 70ms) * 5);
+  --entrada-registro: calc(var(--entrada-inicio, 0ms) + var(--entrada-passo, 70ms) * 5 + 50ms);
+  --entrada-origem: calc(var(--entrada-inicio, 0ms) + var(--entrada-passo, 70ms) * 7);
+  --entrada-rota: calc(var(--entrada-inicio, 0ms) + var(--entrada-passo, 70ms) * 7 + 280ms);
+
+  container: cena / inline-size;
+  display: grid;
+  grid-template-columns: var(--largura-rota) minmax(0, 1fr);
+  row-gap: var(--respiro-rota);
+  width: 100%;
+}
+
+.topo {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--espaco-4);
+}
+
+.grafico {
+  animation: chegar var(--entrada-duracao) var(--curva-saida) var(--entrada-grafico) backwards;
+}
+
+.cena[data-fase='PICO'] .grafico {
+  border-color: color-mix(in srgb, var(--erro-grafico) 54%, var(--identidade-borda));
+  box-shadow:
+    var(--sombra-flutuante),
+    0 0 0 4px color-mix(in srgb, var(--erro-grafico) 13%, transparent);
+}
+
+.registro {
+  display: none;
+  animation: chegar var(--entrada-duracao) var(--curva-saida) var(--entrada-registro) backwards;
+}
+
+.rota {
+  grid-column: 1;
+}
+
+.origem {
+  grid-column: 2;
+  animation: chegar var(--entrada-duracao) var(--curva-saida) var(--entrada-origem) backwards;
+}
+
+.cena[data-fase='RASTREANDO'] .origem {
+  border-color: color-mix(in srgb, var(--identidade-destaque) 64%, var(--identidade-borda));
+}
+
+.cena[data-fase='ORIGEM'] .origem {
+  border-color: color-mix(in srgb, var(--identidade-destaque) 72%, var(--identidade-borda));
+  box-shadow:
+    var(--sombra-flutuante),
+    0 0 0 4px var(--identidade-brilho);
+}
+
+.indicadores {
+  grid-column: 1 / -1;
+  animation: chegar var(--entrada-duracao) var(--curva-saida) var(--entrada-indicadores) backwards;
+}
+
+@container cena (min-width: 40rem) {
+  .topo {
+    grid-template-columns: minmax(0, 1fr) 17rem;
+  }
+
+  .registro {
+    display: flex;
+  }
+}
+
+@media (min-width: 960px) and (max-height: 899px) {
+  .indicadores {
+    display: none;
+  }
+}
+
+@keyframes chegar {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+    transform: translateY(-16px) scale(0.98);
+  }
+}

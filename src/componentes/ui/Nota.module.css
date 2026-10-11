@@ -1,0 +1,50 @@
+.nota {
+  --nota-cor: var(--texto-secundario);
+  --nota-fundo: var(--superficie-suave);
+
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espaco-2);
+  padding: var(--espaco-3);
+  border-radius: var(--raio-md);
+  background-color: var(--nota-fundo);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  line-height: var(--altura-linha-compacta);
+}
+
+.info {
+  --nota-cor: var(--info);
+  --nota-fundo: var(--info-suave);
+}
+
+.aviso {
+  --nota-cor: var(--aviso);
+  --nota-fundo: var(--aviso-suave);
+}
+
+.sucesso {
+  --nota-cor: var(--sucesso);
+  --nota-fundo: var(--sucesso-suave);
+}
+
+.erro {
+  --nota-cor: var(--erro);
+  --nota-fundo: var(--erro-suave);
+}
+
+.icone {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--nota-cor);
+}
+
+.texto {
+  max-width: none;
+  min-width: 0;
+}
+
+.titulo {
+  color: var(--texto);
+  font-weight: var(--peso-forte);
+}

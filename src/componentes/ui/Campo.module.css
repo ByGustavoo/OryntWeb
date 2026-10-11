@@ -1,0 +1,238 @@
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+  min-width: 0;
+}
+
+.rotulo {
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+  color: var(--texto);
+}
+
+.obrigatorio {
+  margin-left: 2px;
+  color: var(--erro);
+}
+
+.controle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  height: var(--altura-controle);
+  padding-inline: var(--espaco-3);
+  background-color: var(--superficie);
+  border: 1px solid var(--borda-controle);
+  border-radius: var(--raio-md);
+  color: var(--texto);
+  transition:
+    border-color var(--duracao-rapida) var(--curva-saida),
+    box-shadow var(--duracao-rapida) var(--curva-saida),
+    background-color var(--duracao-rapida) var(--curva-saida);
+}
+
+.controle:focus-within {
+  border-color: var(--destaque);
+  box-shadow: var(--anel-foco);
+}
+
+.controleErro,
+.controleErro:focus-within {
+  border-color: var(--erro);
+}
+
+.controleErro:focus-within {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--erro) 25%, transparent);
+}
+
+.controleSucesso {
+  border-color: var(--sucesso);
+}
+
+.controle:has(.entrada:disabled) {
+  background-color: var(--superficie-suave);
+  border-color: var(--borda-forte);
+  color: var(--texto-desabilitado);
+  cursor: not-allowed;
+}
+
+.controle:has(input:read-only, textarea:read-only) {
+  background-color: var(--superficie-suave);
+}
+
+.controleMultilinha {
+  height: auto;
+  align-items: stretch;
+  padding-block: var(--espaco-2);
+}
+
+.entrada {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  background: none;
+  border: none;
+  font-size: var(--fonte-controle);
+}
+
+.entrada:focus {
+  outline: none;
+}
+
+.entrada:disabled {
+  cursor: not-allowed;
+}
+
+.entrada::placeholder {
+  color: var(--texto-terciario);
+  opacity: 1;
+}
+
+.entrada::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+.entrada[type='search']::-webkit-search-cancel-button {
+  display: none;
+}
+
+.areaTexto {
+  height: auto;
+  min-height: 5.5em;
+  padding: 0;
+  resize: vertical;
+  line-height: var(--altura-linha-normal);
+  font-family: inherit;
+}
+
+.selecao {
+  appearance: none;
+  padding-right: var(--espaco-6);
+  cursor: pointer;
+}
+
+.seta {
+  position: absolute;
+  right: var(--espaco-3);
+  color: var(--texto-terciario);
+  pointer-events: none;
+}
+
+.icone {
+  flex-shrink: 0;
+  color: var(--texto-terciario);
+}
+
+.acaoCampo {
+  margin-right: calc(var(--espaco-2) * -1);
+}
+
+.mensagem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espaco-1);
+  font-size: var(--tamanho-xs);
+  line-height: var(--altura-linha-compacta);
+  color: var(--texto-terciario);
+}
+
+.mensagem svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.mensagemErro {
+  color: var(--erro);
+}
+
+.mensagemSucesso {
+  color: var(--sucesso);
+}
+
+.mensagemAviso {
+  color: var(--aviso);
+  animation: surgirMensagem var(--duracao-base) var(--curva-saida);
+}
+
+@keyframes surgirMensagem {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+}
+
+@media (hover: hover) {
+  .controle:hover:not(:focus-within):not(:has(.entrada:disabled)) {
+    border-color: var(--texto-terciario);
+  }
+
+  .controleErro:hover:not(:focus-within) {
+    border-color: var(--erro);
+  }
+}
+
+.gatilho {
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
+.gatilho:focus-visible {
+  outline: none;
+}
+
+.gatilhoAberto {
+  border-color: var(--destaque);
+  box-shadow: var(--anel-foco);
+}
+
+.gatilho:disabled {
+  background-color: var(--superficie-suave);
+  border-color: var(--borda-forte);
+  color: var(--texto-desabilitado);
+  cursor: not-allowed;
+}
+
+.gatilho:disabled .icone {
+  color: var(--texto-desabilitado);
+}
+
+.valorGatilho {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--espaco-2);
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--fonte-controle);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.textoGatilho {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.textoVazio {
+  color: var(--texto-terciario);
+}
+
+.gatilho:disabled .textoVazio {
+  color: var(--texto-desabilitado);
+}
+
+.setaGatilho {
+  flex-shrink: 0;
+  margin-right: calc(var(--espaco-1) * -1);
+  color: var(--texto-terciario);
+  transition: transform var(--duracao-base) var(--curva-saida);
+}
+
+.gatilhoAberto .setaGatilho {
+  transform: rotate(180deg);
+}

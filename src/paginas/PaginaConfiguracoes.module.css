@@ -1,0 +1,9 @@
+.pagina {
+  max-width: 52rem;
+}
+
+.secoes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-6);
+}

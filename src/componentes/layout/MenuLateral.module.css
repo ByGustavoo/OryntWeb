@@ -1,0 +1,290 @@
+.menu {
+  grid-area: menu;
+  position: sticky;
+  top: 0;
+  z-index: var(--camada-menu);
+  display: flex;
+  flex-direction: column;
+  width: var(--largura-menu);
+  height: 100dvh;
+  padding: 0 var(--espaco-3) var(--espaco-3);
+  background-color: var(--superficie);
+  border-right: 1px solid var(--borda);
+  overflow: hidden;
+  transition: width var(--duracao-base) var(--curva-saida);
+}
+
+.recolhido {
+  width: var(--largura-menu-recolhido);
+}
+
+.marca {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  flex-shrink: 0;
+  height: var(--altura-cabecalho);
+  padding-inline: var(--espaco-2);
+}
+
+.linkMarca {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  min-width: 0;
+  padding: var(--espaco-1);
+  margin-left: calc(var(--espaco-1) * -1);
+  border-radius: var(--raio-md);
+}
+
+.simbolo {
+  display: grid;
+  flex-shrink: 0;
+}
+
+.textosMarca {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  white-space: nowrap;
+  transition: opacity var(--duracao-rapida) var(--curva-saida);
+}
+
+.nome {
+  font-size: var(--tamanho-lg);
+  text-box: trim-both cap alphabetic;
+  line-height: 1.2;
+}
+
+.recolhido .textosMarca,
+.recolhido .rotuloItem {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.fecharGaveta {
+  display: none;
+  place-items: center;
+  width: var(--alvo-toque);
+  height: var(--alvo-toque);
+  margin-left: auto;
+  border-radius: var(--raio-md);
+  color: var(--texto-secundario);
+}
+
+.navegacao {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--espaco-5);
+  padding-block: var(--espaco-3) var(--espaco-4);
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.secao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-1);
+}
+
+.tituloSecao {
+  padding-inline: var(--espaco-3);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+  color: var(--texto-terciario);
+  white-space: nowrap;
+}
+
+.divisor {
+  display: block;
+  height: 1px;
+  margin: calc(var(--espaco-1) + 2px) var(--espaco-3);
+  background-color: var(--borda);
+}
+
+.itens {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.item {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  min-height: var(--altura-item-menu);
+  padding-inline: calc((var(--largura-menu-recolhido) - var(--espaco-3) * 2 - 18px) / 2);
+  border-radius: var(--raio-md);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+  white-space: nowrap;
+  transition: color var(--duracao-rapida) var(--curva-saida);
+}
+
+.item::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background-color: var(--superficie-suave);
+  opacity: 0;
+  transform: scale(0.96);
+  transition:
+    opacity var(--duracao-rapida) var(--curva-saida),
+    transform var(--duracao-base) var(--curva-mola),
+    background-color var(--duracao-rapida) var(--curva-saida);
+}
+
+.item:focus-visible {
+  outline: none;
+  box-shadow: var(--anel-foco);
+}
+
+.item:focus-visible::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.itemAtivo {
+  color: var(--destaque);
+}
+
+.itemAtivo::before {
+  background-color: var(--destaque-suave);
+  opacity: 1;
+  transform: scale(1);
+}
+
+.iconeItem {
+  flex-shrink: 0;
+  transition: transform var(--duracao-base) var(--curva-mola);
+}
+
+.rotuloItem {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition:
+    opacity var(--duracao-rapida) var(--curva-saida),
+    transform var(--duracao-base) var(--curva-mola);
+}
+
+
+.rodape {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: var(--espaco-3);
+  border-top: 1px solid var(--borda);
+}
+
+.recolher {
+  display: grid;
+  place-items: center;
+  align-self: flex-start;
+  width: var(--alvo-toque);
+  height: var(--alvo-toque);
+  margin-left: calc((var(--largura-menu-recolhido) - var(--espaco-3) * 2 - var(--alvo-toque)) / 2);
+  border-radius: var(--raio-md);
+  color: var(--texto-terciario);
+  transition:
+    color var(--duracao-rapida) var(--curva-saida),
+    background-color var(--duracao-rapida) var(--curva-saida);
+}
+
+.recolher:focus-visible,
+.fecharGaveta:focus-visible,
+.linkMarca:focus-visible {
+  outline: none;
+  box-shadow: var(--anel-foco);
+}
+
+.veu {
+  display: none;
+}
+
+@media (min-width: 1100px) {
+  .menu {
+    border-right: none;
+  }
+
+  .navegacao {
+    padding-top: calc(var(--respiro-topo-conteudo) + var(--borda-fina) + (var(--altura-titulo-pagina) - var(--altura-item-menu)) / 2);
+  }
+}
+
+@media (hover: hover) {
+  .item:hover {
+    color: var(--texto);
+  }
+
+  .itemAtivo:hover {
+    color: var(--destaque);
+  }
+
+  .item:hover::before {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .item:not(.itemAtivo):hover .iconeItem,
+  .item:not(.itemAtivo):hover .rotuloItem {
+    transform: translateX(2px);
+  }
+
+  .recolher:hover,
+  .fecharGaveta:hover {
+    background-color: var(--superficie-suave);
+    color: var(--texto);
+  }
+}
+
+@media (max-width: 1099px) {
+  .menu {
+    position: fixed;
+    inset-block: 0;
+    left: 0;
+    width: min(var(--largura-menu), 86vw);
+    padding-bottom: calc(var(--espaco-3) + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition:
+      transform var(--duracao-lenta) var(--curva-saida),
+      visibility 0s linear var(--duracao-lenta);
+  }
+
+  .abertoEmGaveta {
+    transform: translateX(0);
+    visibility: visible;
+    box-shadow: var(--sombra-sobreposicao);
+    transition:
+      transform var(--duracao-lenta) var(--curva-saida),
+      visibility 0s;
+  }
+
+  .fecharGaveta {
+    display: grid;
+  }
+
+  .veu {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: calc(var(--camada-menu) - 1);
+    background-color: var(--veu);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--duracao-lenta) var(--curva-saida);
+  }
+
+  .veuVisivel {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}

@@ -1,0 +1,22 @@
+.indicador {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.indicador svg {
+  animation: girar 0.8s linear infinite;
+}
+
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .indicador svg {
+    animation-duration: 1.6s !important;
+    animation-iteration-count: infinite !important;
+  }
+}

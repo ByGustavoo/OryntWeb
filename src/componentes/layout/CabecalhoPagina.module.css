@@ -1,0 +1,40 @@
+.cabecalhoPagina {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--espaco-4);
+  margin-bottom: var(--espaco-6);
+}
+
+.textos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+  min-width: 0;
+}
+
+.titulo {
+  font-size: var(--tamanho-2xl);
+}
+
+.descricao {
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-base);
+}
+
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-2);
+}
+
+@media (max-width: 767px) {
+  .cabecalhoPagina {
+    margin-bottom: var(--espaco-5);
+  }
+
+  .titulo {
+    font-size: var(--tamanho-xl);
+  }
+}

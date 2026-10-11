@@ -1,0 +1,5 @@
+.nome {
+  font-weight: var(--peso-forte);
+  letter-spacing: var(--letras-titulo);
+  white-space: nowrap;
+}

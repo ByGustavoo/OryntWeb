@@ -1,0 +1,54 @@
+.botao {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  border: 1px solid transparent;
+  border-radius: var(--raio-md);
+  color: var(--texto-secundario);
+  transition:
+    background-color var(--duracao-rapida) var(--curva-saida),
+    border-color var(--duracao-rapida) var(--curva-saida),
+    color var(--duracao-rapida) var(--curva-saida),
+    transform var(--duracao-rapida) var(--curva-saida);
+}
+
+.botao:focus-visible {
+  outline: none;
+  box-shadow: var(--anel-foco);
+}
+
+.botao:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.botao:disabled {
+  opacity: 0.45;
+}
+
+.md {
+  width: var(--alvo-toque);
+  height: var(--alvo-toque);
+}
+
+.sm {
+  width: var(--altura-controle-sm);
+  height: var(--altura-controle-sm);
+  border-radius: var(--raio-sm);
+}
+
+.secundario {
+  background-color: var(--superficie);
+  border-color: var(--borda-forte);
+}
+
+@media (hover: hover) {
+  .botao:hover:not(:disabled) {
+    background-color: var(--superficie-suave);
+    color: var(--texto);
+  }
+
+  .secundario:hover:not(:disabled) {
+    border-color: var(--borda-controle);
+  }
+}

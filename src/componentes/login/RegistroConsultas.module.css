@@ -1,0 +1,119 @@
+.registro {
+  --altura-linha-registro: 2.375rem;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-2);
+  padding: var(--espaco-4) var(--espaco-5) var(--espaco-2);
+}
+
+.vivo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--texto-terciario);
+  font-family: var(--fonte-numeros);
+  font-size: 10px;
+}
+
+.pulso {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--sucesso-grafico);
+  animation: piscar 2s ease-in-out infinite;
+}
+
+.lista {
+  position: relative;
+  flex: 1;
+  min-height: calc(var(--linhas) * var(--altura-linha-registro));
+  margin-bottom: var(--espaco-2);
+  overflow: hidden;
+}
+
+.linha {
+  --cor-marca: var(--sucesso-grafico);
+
+  position: absolute;
+  inset: 0 0 auto;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--espaco-2);
+  height: var(--altura-linha-registro);
+  padding-inline: var(--espaco-5);
+  transform: translateY(calc(var(--indice) * var(--altura-linha-registro)));
+  transition:
+    transform var(--duracao-expressiva) var(--curva-saida),
+    opacity var(--duracao-lenta) var(--curva-saida);
+  animation: entrar var(--duracao-expressiva) var(--curva-saida);
+}
+
+.linha[data-saindo] {
+  opacity: 0;
+}
+
+.moderada {
+  --cor-marca: var(--aviso-grafico);
+}
+
+.lenta {
+  --cor-marca: var(--erro-grafico);
+
+  background-color: color-mix(in srgb, var(--erro-grafico) 10%, transparent);
+  box-shadow: inset 2px 0 0 var(--erro-grafico);
+}
+
+.marca {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--cor-marca);
+}
+
+.sql {
+  overflow: hidden;
+  color: var(--identidade-texto);
+  font-family: var(--fonte-numeros);
+  font-size: var(--tamanho-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.duracao {
+  color: var(--identidade-texto-secundario);
+  font-family: var(--fonte-numeros);
+  font-size: var(--tamanho-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.lenta .duracao {
+  color: var(--erro);
+  font-weight: var(--peso-forte);
+}
+
+@keyframes entrar {
+  from {
+    opacity: 0;
+    background-color: var(--identidade-realce);
+    transform: translateY(calc((var(--indice) - 0.6) * var(--altura-linha-registro)));
+  }
+
+  40% {
+    opacity: 1;
+    background-color: var(--identidade-realce);
+  }
+}
+
+@keyframes piscar {
+  50% {
+    opacity: 0.35;
+  }
+}

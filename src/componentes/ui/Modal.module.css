@@ -1,0 +1,166 @@
+.sobreposicao {
+  position: fixed;
+  inset: 0;
+  z-index: var(--camada-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--espaco-4);
+  background-color: var(--veu);
+  animation: aparecer var(--duracao-base) var(--curva-saida);
+}
+
+.painel {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-height: calc(100dvh - var(--espaco-8));
+  background-color: var(--superficie-elevada);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-xl);
+  box-shadow: var(--sombra-sobreposicao);
+  animation: subir var(--duracao-lenta) var(--curva-saida);
+}
+
+.painel:focus {
+  outline: none;
+}
+
+.saindo {
+  animation: sumir var(--duracao-base) var(--curva-entrada) forwards;
+}
+
+.saindo .painel {
+  animation: descer var(--duracao-base) var(--curva-entrada) forwards;
+}
+
+.sm {
+  max-width: 420px;
+}
+
+.md {
+  max-width: 560px;
+}
+
+.lg {
+  max-width: 760px;
+}
+
+.cabecalho {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espaco-4);
+  padding: var(--espaco-5) var(--espaco-5) var(--espaco-4) var(--espaco-6);
+}
+
+.textos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-1);
+  padding-top: 2px;
+}
+
+.titulo {
+  font-size: var(--tamanho-lg);
+}
+
+.descricao {
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+}
+
+.fechar {
+  margin-top: -2px;
+}
+
+.conteudo {
+  padding: var(--espaco-2) var(--espaco-6) var(--espaco-6);
+  overflow-y: auto;
+}
+
+.rodape {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--espaco-3);
+  padding: var(--espaco-4) var(--espaco-6);
+  border-top: 1px solid var(--borda);
+  background-color: var(--superficie-suave);
+  border-radius: 0 0 var(--raio-xl) var(--raio-xl);
+}
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes sumir {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes subir {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+}
+
+@keyframes descer {
+  to {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
+@media (max-width: 599px) {
+  .sobreposicao {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .painel {
+    max-width: none;
+    max-height: calc(100dvh - var(--espaco-6));
+    border-radius: var(--raio-xl) var(--raio-xl) 0 0;
+    border-bottom: none;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    animation-name: subirFolha;
+  }
+
+  .saindo .painel {
+    animation-name: descerFolha;
+  }
+
+  .cabecalho {
+    padding: var(--espaco-4) var(--espaco-4) var(--espaco-3) var(--espaco-5);
+  }
+
+  .conteudo {
+    padding: var(--espaco-2) var(--espaco-5) var(--espaco-5);
+  }
+
+  .rodape {
+    flex-direction: column-reverse;
+    padding: var(--espaco-4) var(--espaco-5);
+    border-radius: 0;
+  }
+
+  .rodape > * {
+    width: 100%;
+  }
+
+  @keyframes subirFolha {
+    from {
+      transform: translateY(100%);
+    }
+  }
+
+  @keyframes descerFolha {
+    to {
+      transform: translateY(100%);
+    }
+  }
+}

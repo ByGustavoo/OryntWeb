@@ -1,0 +1,38 @@
+.cartao {
+  min-width: 0;
+  border: 1px solid var(--identidade-borda);
+  border-radius: var(--raio-lg);
+  background-color: var(--identidade-superficie);
+  background-image: linear-gradient(180deg, var(--identidade-realce), transparent 48%);
+  box-shadow: var(--sombra-flutuante);
+  transition:
+    border-color var(--duracao-lenta) var(--curva-saida),
+    box-shadow var(--duracao-lenta) var(--curva-saida),
+    transform var(--duracao-lenta) var(--curva-saida);
+}
+
+.destaque {
+  border-color: color-mix(in srgb, var(--identidade-destaque) 42%, var(--identidade-borda));
+}
+
+.titulo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: var(--identidade-texto-secundario);
+  font-size: var(--tamanho-xs);
+}
+
+.titulo svg {
+  flex-shrink: 0;
+  color: var(--identidade-destaque);
+}
+
+@media (hover: hover) {
+  .cartao:hover {
+    border-color: color-mix(in srgb, var(--identidade-destaque) 56%, var(--identidade-borda));
+    box-shadow: var(--sombra-sobreposicao);
+    transform: translateY(-3px);
+  }
+}

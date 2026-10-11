@@ -1,0 +1,29 @@
+.painel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+  padding: var(--espaco-4);
+  border: 1px dashed var(--borda-forte);
+  border-radius: var(--raio-md);
+}
+
+.titulo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-2);
+  max-width: none;
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+}
+
+.marca {
+  margin-left: auto;
+  padding: 2px var(--espaco-2);
+  border-radius: var(--raio-pilula);
+  background-color: var(--neutro-suave);
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+}

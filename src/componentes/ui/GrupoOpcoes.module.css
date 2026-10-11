@@ -1,0 +1,62 @@
+.grupo {
+  display: inline-flex;
+  padding: 3px;
+  gap: 2px;
+  background-color: var(--superficie-suave);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-md);
+}
+
+.opcao {
+  position: relative;
+  display: grid;
+}
+
+.entrada {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.rotulo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: var(--espaco-3);
+  border-radius: calc(var(--raio-md) - 3px);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--duracao-rapida) var(--curva-saida),
+    color var(--duracao-rapida) var(--curva-saida),
+    box-shadow var(--duracao-base) var(--curva-saida);
+}
+
+.md .rotulo {
+  height: calc(var(--altura-controle) - 8px);
+}
+
+.sm .rotulo {
+  height: calc(var(--altura-controle-sm) - 8px);
+}
+
+.entrada:checked + .rotulo {
+  background-color: var(--segmento-ativo);
+  color: var(--texto);
+  box-shadow:
+    var(--sombra-cartao),
+    0 0 0 1px var(--borda);
+}
+
+.entrada:focus-visible + .rotulo {
+  box-shadow: var(--anel-foco);
+}
+
+@media (hover: hover) {
+  .entrada:not(:checked) + .rotulo:hover {
+    color: var(--texto);
+  }
+}

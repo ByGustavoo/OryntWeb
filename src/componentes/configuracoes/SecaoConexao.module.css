@@ -1,0 +1,13 @@
+.secao {
+  gap: var(--espaco-4);
+}
+
+.secao > header {
+  margin-bottom: 0;
+}
+
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-2);
+}

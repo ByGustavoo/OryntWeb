@@ -1,0 +1,72 @@
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  max-height: 18rem;
+  margin: 0;
+  padding: var(--espaco-1);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.lista:focus {
+  outline: none;
+}
+
+.opcao {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  min-height: var(--altura-controle);
+  padding: var(--espaco-2) var(--espaco-2) var(--espaco-2) var(--espaco-3);
+  border-radius: var(--raio-sm);
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  cursor: pointer;
+  user-select: none;
+}
+
+.ativa {
+  background-color: var(--superficie-suave);
+}
+
+.selecionada {
+  font-weight: var(--peso-medio);
+}
+
+.vazia {
+  color: var(--texto-secundario);
+}
+
+.desabilitada {
+  color: var(--texto-desabilitado);
+  cursor: not-allowed;
+}
+
+.icone {
+  flex-shrink: 0;
+}
+
+.textos {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.descricao {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-regular);
+}
+
+.marca {
+  flex-shrink: 0;
+  color: var(--destaque);
+  opacity: 0;
+}
+
+.marcaVisivel {
+  opacity: 1;
+}
