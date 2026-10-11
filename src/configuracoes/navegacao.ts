@@ -21,6 +21,18 @@ export interface FuncionalidadePlanejada extends ItemNavegacao {
 
 export const funcionalidadesPlanejadas: FuncionalidadePlanejada[] = [
   {
+    rotulo: 'Relatórios',
+    icone: FileChartColumn,
+    destino: caminhos.relatorios,
+    planejado: true,
+    descricao: 'Resumos periódicos para acompanhar a evolução do banco e compartilhar com o time.',
+    previsto: [
+      'Resumo de desempenho por período',
+      'Comparação entre períodos',
+      'Exportação para compartilhar fora do Orynt',
+    ],
+  },
+  {
     rotulo: 'Consultas SQL',
     icone: SquareTerminal,
     destino: caminhos.consultas,
@@ -30,18 +42,6 @@ export const funcionalidadesPlanejadas: FuncionalidadePlanejada[] = [
       'Lista completa das consultas, com busca e ordenação',
       'Histórico de tempo e de execuções de cada consulta',
       'Plano de execução para entender onde o tempo é gasto',
-    ],
-  },
-  {
-    rotulo: 'Usuários e permissões',
-    icone: Users,
-    destino: caminhos.usuarios,
-    planejado: true,
-    descricao: 'Uma visão clara de quem acessa o banco e do que cada pessoa ou serviço pode fazer.',
-    previsto: [
-      'Papéis e usuários do banco, com os atributos de cada um',
-      'Permissões por banco, esquema e tabela',
-      'Sessões abertas por usuário',
     ],
   },
   {
@@ -57,15 +57,15 @@ export const funcionalidadesPlanejadas: FuncionalidadePlanejada[] = [
     ],
   },
   {
-    rotulo: 'Relatórios',
-    icone: FileChartColumn,
-    destino: caminhos.relatorios,
+    rotulo: 'Usuários e permissões',
+    icone: Users,
+    destino: caminhos.usuarios,
     planejado: true,
-    descricao: 'Resumos periódicos para acompanhar a evolução do banco e compartilhar com o time.',
+    descricao: 'Uma visão clara de quem acessa o banco e do que cada pessoa ou serviço pode fazer.',
     previsto: [
-      'Resumo de desempenho por período',
-      'Comparação entre períodos',
-      'Exportação para compartilhar fora do Orynt',
+      'Papéis e usuários do banco, com os atributos de cada um',
+      'Permissões por banco, esquema e tabela',
+      'Sessões abertas por usuário',
     ],
   },
 ];

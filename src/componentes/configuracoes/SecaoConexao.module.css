@@ -6,8 +6,23 @@
   margin-bottom: 0;
 }
 
+.vazio {
+  flex: 1;
+  justify-content: center;
+}
+
 .acoes {
   display: flex;
   flex-wrap: wrap;
   gap: var(--espaco-2);
+}
+
+.conectando {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  max-width: none;
+  padding-block: var(--espaco-4);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
 }

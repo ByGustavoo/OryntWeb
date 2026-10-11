@@ -5,21 +5,17 @@ import { NomeOrynt } from '@/componentes/comum/NomeOrynt';
 import { ID_CONTEUDO_PRINCIPAL } from '@/configuracoes/aplicacao';
 import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
 import { useAutenticacao } from '@/provedores/ProvedorAutenticacao';
-import { useConexao } from '@/provedores/ProvedorConexao';
 import { caminhos } from '@/rotas/caminhos';
 import estilos from './PaginaNaoEncontrada.module.css';
 
 export default function PaginaNaoEncontrada() {
   useTituloDocumento('Página não encontrada');
   const { pathname } = useLocation();
-  const { situacao } = useConexao();
-  const { situacao: situacaoAcesso } = useAutenticacao();
+  const { situacao } = useAutenticacao();
   const destino =
-    situacaoAcesso !== 'AUTENTICADA'
-      ? { caminho: caminhos.login, rotulo: 'Ir para a tela de login' }
-      : situacao === 'CONECTADA'
-        ? { caminho: caminhos.dashboard, rotulo: 'Ir para o Dashboard' }
-        : { caminho: caminhos.conexao, rotulo: 'Ir para a tela de conexão' };
+    situacao === 'AUTENTICADA'
+      ? { caminho: caminhos.dashboard, rotulo: 'Ir para o Dashboard' }
+      : { caminho: caminhos.login, rotulo: 'Ir para a tela de login' };
 
   return (
     <div className={estilos.pagina}>

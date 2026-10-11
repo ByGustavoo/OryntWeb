@@ -1,6 +1,6 @@
 import type { FormEvent, ReactNode, RefObject } from 'react';
 import { CircleCheck, Database } from 'lucide-react';
-import { Botao, CampoSenha, CampoTexto, Nota } from '@/componentes/ui';
+import { CampoSenha, CampoTexto, Nota } from '@/componentes/ui';
 import type { OperacaoConexao } from '@/ganchos/useFluxoConexao';
 import type { TesteConexaoDTO } from '@/modelos/conexao';
 import { rotuloTipoBanco } from '@/modelos/rotulos';
@@ -14,21 +14,19 @@ import { idCampoConexao } from './identificadores';
 import estilos from './FormularioConexao.module.css';
 
 interface FormularioConexaoProps {
+  id: string;
   campos: CamposConexao;
   erros: ErrosConexao;
   operacaoEmAndamento: OperacaoConexao | null;
   falha: { falha: FalhaConexao; operacao: OperacaoConexao } | null;
   teste: TesteConexaoDTO | null;
-  podeVoltar: boolean;
   alertaRef: RefObject<HTMLDivElement>;
+  testeRef: RefObject<HTMLDivElement>;
   aoAlterar: (campo: CampoConexao, valor: string) => void;
   aoSair: (campo: CampoConexao, valor: string) => void;
   aoPreencherPelaUrl: (campos: CamposDaUrl) => void;
   aoConectar: () => void;
   aoTestar: () => void;
-  aoCancelarTentativa: () => void;
-  aoVoltar: () => void;
-  aoLimpar: () => void;
   children?: ReactNode;
 }
 
@@ -39,26 +37,22 @@ function descreverAndamento(operacao: OperacaoConexao | null, campos: CamposCone
 }
 
 export function FormularioConexao({
+  id,
   campos,
   erros,
   operacaoEmAndamento,
   falha,
   teste,
-  podeVoltar,
   alertaRef,
+  testeRef,
   aoAlterar,
   aoSair,
   aoPreencherPelaUrl,
   aoConectar,
   aoTestar,
-  aoCancelarTentativa,
-  aoVoltar,
-  aoLimpar,
   children,
 }: FormularioConexaoProps) {
   const enviando = operacaoEmAndamento !== null;
-  const conectando = operacaoEmAndamento === 'CONECTAR';
-  const testando = operacaoEmAndamento === 'TESTAR';
 
   const propriedadesDoCampo = (campo: CampoConexao) => ({
     id: idCampoConexao(campo),
@@ -76,7 +70,7 @@ export function FormularioConexao({
   };
 
   return (
-    <form className={estilos.formulario} onSubmit={enviar} noValidate aria-busy={enviando}>
+    <form id={id} className={estilos.formulario} onSubmit={enviar} noValidate aria-busy={enviando}>
       {falha ? (
         <AlertaFalhaConexao
           ref={alertaRef}
@@ -163,7 +157,13 @@ export function FormularioConexao({
       </div>
 
       {teste ? (
-        <Nota tom="sucesso" icone={CircleCheck} titulo={teste.simulado ? 'Teste simulado concluído.' : 'Teste concluído.'} role="status">
+        <Nota
+          ref={testeRef}
+          tom="sucesso"
+          icone={CircleCheck}
+          titulo={teste.simulado ? 'Teste simulado concluído.' : 'Teste concluído.'}
+          role="status"
+        >
           {teste.versaoServidor} respondeu em {formatarNumero(teste.latenciaMs)} ms.
           {teste.simulado ? ' Nenhum banco real foi acessado.' : ''}
         </Nota>
@@ -172,28 +172,6 @@ export function FormularioConexao({
       <p className="visualmente-oculto" role="status">
         {descreverAndamento(operacaoEmAndamento, campos)}
       </p>
-
-      <div className={estilos.acoes}>
-        <Botao type="submit" tamanho="lg" carregando={conectando} disabled={testando} className={estilos.conectar}>
-          {conectando ? 'Conectando…' : 'Conectar'}
-        </Botao>
-        <Botao variante="secundario" tamanho="lg" carregando={testando} disabled={conectando} onClick={aoTestar}>
-          {testando ? 'Testando…' : 'Testar conexão'}
-        </Botao>
-        {enviando ? (
-          <Botao variante="terciario" tamanho="lg" onClick={aoCancelarTentativa} className={estilos.secundaria}>
-            Cancelar
-          </Botao>
-        ) : podeVoltar ? (
-          <Botao variante="terciario" tamanho="lg" onClick={aoVoltar} className={estilos.secundaria}>
-            Cancelar
-          </Botao>
-        ) : (
-          <Botao variante="terciario" tamanho="lg" onClick={aoLimpar} className={estilos.secundaria}>
-            Limpar campos
-          </Botao>
-        )}
-      </div>
 
       {children}
     </form>

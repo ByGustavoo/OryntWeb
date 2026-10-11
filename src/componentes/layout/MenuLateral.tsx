@@ -1,11 +1,15 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
+import { LogOut, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
+import { descreverFalha } from '@/api/tratamentoErros';
 import { MarcaOrynt } from '@/componentes/comum/MarcaOrynt';
 import { NomeOrynt } from '@/componentes/comum/NomeOrynt';
+import { IndicadorGiratorio } from '@/componentes/ui';
 import { NOME_APLICACAO } from '@/configuracoes/aplicacao';
 import { navegacaoPrincipal, navegacaoRodape } from '@/configuracoes/navegacao';
 import type { ItemNavegacao } from '@/configuracoes/navegacao';
+import { useAutenticacao } from '@/provedores/ProvedorAutenticacao';
+import { useNotificacoes } from '@/provedores/ProvedorNotificacoes';
 import { caminhos } from '@/rotas/caminhos';
 import { manterTabDentro } from '@/utilitarios/foco';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
@@ -112,6 +116,7 @@ export function MenuLateral({ recolhido, emGaveta, abertoEmGaveta, aoAlternarRec
         </nav>
 
         <div className={estilos.rodape}>
+          <BotaoSair />
           <ItemMenu item={navegacaoRodape} recolhido={recolhidoVisivel} />
           {!emGaveta ? (
             <button
@@ -133,6 +138,42 @@ export function MenuLateral({ recolhido, emGaveta, abertoEmGaveta, aoAlternarRec
         </div>
       </aside>
     </>
+  );
+}
+
+function BotaoSair() {
+  const { usuario, sair } = useAutenticacao();
+  const notificacoes = useNotificacoes();
+  const [saindo, setSaindo] = useState(false);
+  const rotulo = usuario ? `Sair da conta ${usuario.email}` : 'Sair da conta';
+
+  const encerrar = async () => {
+    if (saindo) return;
+    setSaindo(true);
+    try {
+      await sair();
+    } catch (erro) {
+      setSaindo(false);
+      notificacoes.erro('Não foi possível sair.', descreverFalha(erro));
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      className={estilos.item}
+      onClick={encerrar}
+      title={rotulo}
+      aria-label={rotulo}
+      aria-busy={saindo || undefined}
+    >
+      {saindo ? (
+        <IndicadorGiratorio tamanho={18} className={estilos.iconeItem} />
+      ) : (
+        <LogOut className={estilos.iconeItem} size={18} strokeWidth={2} aria-hidden="true" />
+      )}
+      <span className={estilos.rotuloItem}>{saindo ? 'Saindo…' : 'Sair'}</span>
+    </button>
   );
 }
 

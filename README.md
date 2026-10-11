@@ -5,7 +5,7 @@
 <br>
 
 <div align="center">
-  <strong>Orynt</strong> é o frontend de uma aplicação para monitorar, analisar e administrar bancos PostgreSQL, que guia quem desenvolve até a origem de um problema: <em>toda lentidão tem uma origem</em>. Nesta primeira fase ele entrega a tela de login, a tela de conexão, a estrutura da aplicação e um dashboard inicial. O backend ainda não existe: o login, a conexão e os dados são simulados, e a interface avisa isso em todas as telas.
+  <strong>Orynt</strong> é o frontend de uma aplicação para monitorar, analisar e administrar bancos PostgreSQL, que guia quem desenvolve até a origem de um problema: <em>toda lentidão tem uma origem</em>. Nesta primeira fase ele entrega a tela de login, o cadastro e a troca de conexões, a estrutura da aplicação e um dashboard inicial. O backend ainda não existe: o login, a conexão e os dados são simulados, e a interface avisa isso em todas as telas.
 </div>
 
 <br> <br>
@@ -42,7 +42,7 @@ consulta que explica.
 
 ## 📌 Status do Projeto
 
-* **Fase 1 (concluída):** login fictício, conexão simulada, estrutura da aplicação e dashboard com dados demonstrativos.
+* **Fase 1 (concluída):** login fictício, conexões salvas simuladas, estrutura da aplicação e dashboard com dados demonstrativos.
 
 * **Planejado:** Consultas SQL, Usuários e permissões, Objetos do banco e Relatórios. As quatro telas existem na navegação e mostram só o que está previsto.
 
@@ -64,11 +64,13 @@ consulta que explica.
 
 🔹 **Conexão**
 
-* Formulário com tipo de banco, nome, host, porta, banco de dados, usuário e senha, validado campo a campo
+* Modal aberto sobre a aplicação, com tipo de banco, nome, host, porta, banco de dados, usuário e senha, validado campo a campo
 
 * Preenchimento a partir de uma URL `postgresql://usuario:senha@host:porta/banco`
 
-* Conexões recentes, guardadas sem a senha
+* Conexões salvas: a usada por último carrega sozinha ao entrar, e a troca é feita pelo cabeçalho
+
+* Gerenciamento em Configurações: conectar, renomear e excluir
 
 * Teste de conexão separado da conexão
 
@@ -76,11 +78,13 @@ consulta que explica.
 
 🔹 **Aplicação**
 
-* Menu lateral recolhível, que vira gaveta em telas menores
+* Menu lateral recolhível, que vira gaveta em telas menores, com o botão "Sair"
 
-* Cabeçalho com a conexão ativa, o tipo de banco e o selo de demonstração
+* Cabeçalho com a conexão ativa, o seletor de conexões salvas e o selo de demonstração
 
 * Tema escuro, claro ou automático
+
+* Versão e data de lançamento do Orynt Web e da Orynt API em Configurações
 
 🔹 **Dashboard**
 
@@ -117,7 +121,9 @@ $ npm run dev
 ```
 
 Sem um arquivo `.env`, a aplicação usa os dados simulados e não precisa de backend. A primeira tela é
-o login; depois dele vem a tela de conexão, onde qualquer conjunto de dados válido conecta.
+o login; depois dele vem o dashboard, que carrega a conexão salva usada por último ou, se não houver
+nenhuma, mostra o botão "Conectar ao banco". Ele abre o modal de conexão, onde qualquer conjunto de
+dados válido conecta.
 
 <br>
 
@@ -134,16 +140,17 @@ também aparecem na própria tela de login, com um botão que preenche os campos
 | Senha | `orynt-demo` |
 
 Qualquer outra combinação mostra "E-mail ou senha incorretos". O link "Esqueceu sua senha?" só avisa
-que a recuperação chega em uma próxima versão. Para voltar à tela de login depois de entrar, rode
-`oryntSimulacao.sair()` no console do navegador.
+que a recuperação chega em uma próxima versão. Para voltar à tela de login depois de entrar, use
+"Sair", no rodapé do menu lateral.
 
 <br>
 
 ## 🔎 Como Testar os Cenários
 
-Em desenvolvimento, a tela de conexão mostra o painel **Cenário da simulação**, que define o resultado
+Em desenvolvimento, o modal de conexão mostra o painel **Cenário da simulação**, que define o resultado
 da próxima tentativa: sucesso, senha incorreta, servidor inacessível, banco inexistente ou tempo
-esgotado. O painel não entra no build de produção.
+esgotado. O cenário vale também para a ativação de uma conexão salva. O painel não entra no build de
+produção.
 
 O console do navegador tem os mesmos controles e alguns a mais:
 
@@ -153,6 +160,9 @@ oryntSimulacao.cenario('SENHA_INCORRETA')
 
 // Faz as rotas que começam assim responderem 503 (false desliga)
 oryntSimulacao.falhar('/dashboard')
+
+// Com '/conexoes', a verificação da conexão falha e o dashboard oferece "Tentar novamente"
+oryntSimulacao.falhar('/conexoes')
 
 // Fixa a latência em milissegundos, para ver os esqueletos (false volta ao normal)
 oryntSimulacao.latencia(8000)
@@ -190,6 +200,18 @@ oryntSimulacao.sair()
 
 Copie `.env.example` para `.env` para alterar os valores.
 
+`public/config.js` define `window.__ORYNT_CONFIG__` e é carregado antes da aplicação, para que o mesmo
+build sirva qualquer ambiente. `urlApi` tem prioridade sobre `VITE_URL_API`; `versao` e `dataLancamento`
+aparecem em Configurações › Versões. Sem `versao`, a tela usa o `version` do `package.json`.
+
+```js
+window.__ORYNT_CONFIG__ = {
+  urlApi: 'https://api.exemplo.com/orynt',
+  versao: '1.0.0',
+  dataLancamento: '2026-09-29T14:32:05Z',
+};
+```
+
 <br>
 
 ## 🔌 Integração com a API
@@ -218,7 +240,7 @@ fictícios dependem do campo `simulada` da conexão, e somem quando a API respon
 
 * **Simulação:** enquanto não há API, o simulador faz o papel do servidor com cookies de sessão comuns (um do login, outro da conexão), sem senha e sem dado real.
 
-* **Conexões recentes:** guardam só nome, host, porta, banco e usuário.
+* **Conexões salvas:** pelo contrato ficam na conta, com a senha cifrada pela API. No simulador a lista fica no `localStorage`, só com nome, tipo, host, porta, banco, usuário e último uso.
 
 <br>
 
@@ -229,10 +251,10 @@ src
 ├── api             # Cliente HTTP, rotas da API, erros e transporte fetch
 ├── componentes
 │   ├── comum       # Marca e tela de verificação
-│   ├── conexao     # Formulário, URL de conexão, recentes, alerta e sucesso
-│   ├── configuracoes # Seções de conexão e de aparência
+│   ├── conexao     # Modal e formulário, URL de conexão, conexões salvas e alerta
+│   ├── configuracoes # Seções de conexão em uso, de conexões salvas, de aparência e de versões
 │   ├── dashboard   # Indicadores, gráfico de atividade e tabela de consultas
-│   ├── layout      # Menu lateral, cabeçalho e indicador da conexão
+│   ├── layout      # Menu lateral, cabeçalho e seletor de conexão
 │   ├── login       # Formulário de acesso e painel animado de monitoramento
 │   └── ui          # Design system
 ├── configuracoes   # Ambiente, nome da aplicação e navegação
@@ -243,8 +265,8 @@ src
 ├── layouts         # Estrutura com menu, cabeçalho e conteúdo
 ├── modelos         # DTOs, enums e rótulos
 ├── paginas         # Uma página por rota
-├── provedores      # Tema, notificações, autenticação e conexão ativa
-├── regras          # Validação, URL de conexão e leitura de falhas, com testes
+├── provedores      # Tema, notificações, autenticação, conexões e modal de nova conexão
+├── regras          # Validação, URL de conexão, conexões salvas e leitura de falhas, com testes
 ├── rotas           # Caminhos, tabela de rotas e guardas de acesso e de conexão
 ├── servicos        # Serviços de autenticação, de conexão e de dashboard
 └── utilitarios     # Formatação, SQL e foco

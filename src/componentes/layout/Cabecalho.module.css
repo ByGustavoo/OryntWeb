@@ -91,7 +91,8 @@
 }
 
 @media (max-width: 420px) {
-  .marca {
+  .marca,
+  button.configuracoes {
     display: none;
   }
 }

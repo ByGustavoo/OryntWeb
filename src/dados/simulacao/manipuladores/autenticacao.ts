@@ -4,7 +4,7 @@ import { ORDEM_CAMPOS_ACESSO, mesmoEmail, validarAcesso } from '@/regras/validac
 import type { CamposAcesso } from '@/regras/validacaoAcesso';
 import { encerrarAcessoSimulado, gravarAcessoSimulado, lerAcessoSimulado } from '../acessoSimulado';
 import { CREDENCIAIS_DEMONSTRACAO, USUARIO_DEMONSTRACAO } from '../credenciaisDemonstracao';
-import { dadosInvalidos, ok, problema } from '../resposta';
+import { dadosInvalidos, ok, problema, semConteudo } from '../resposta';
 import { encerrarSessaoSimulada } from '../sessaoSimulada';
 
 const ESPERA_MINIMA_MS = 700;
@@ -65,4 +65,9 @@ export function buscarUsuarioAtual(): RespostaTransporte {
 export function sairDoAcessoSimulado(): void {
   encerrarAcessoSimulado();
   encerrarSessaoSimulada();
+}
+
+export function sair(): RespostaTransporte {
+  sairDoAcessoSimulado();
+  return semConteudo();
 }

@@ -1,6 +1,5 @@
 import { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import { TelaVerificacao } from '@/componentes/comum/TelaVerificacao';
 import { funcionalidadesPlanejadas } from '@/configuracoes/navegacao';
 import { LayoutAplicacao } from '@/layouts/LayoutAplicacao';
 import { RotaAutenticada } from './RotaAutenticada';
@@ -9,7 +8,6 @@ import { RotaVisitante } from './RotaVisitante';
 import { caminhos } from './caminhos';
 
 const PaginaLogin = lazy(() => import('@/paginas/PaginaLogin'));
-const PaginaConexao = lazy(() => import('@/paginas/PaginaConexao'));
 const PaginaDashboard = lazy(() => import('@/paginas/PaginaDashboard'));
 const PaginaFuncionalidadePlanejada = lazy(() => import('@/paginas/PaginaFuncionalidadePlanejada'));
 const PaginaConfiguracoes = lazy(() => import('@/paginas/PaginaConfiguracoes'));
@@ -30,15 +28,6 @@ export function RotasAplicacao() {
       </Route>
 
       <Route element={<RotaAutenticada />}>
-        <Route
-          path={caminhos.conexao}
-          element={
-            <Suspense fallback={<TelaVerificacao />}>
-              <PaginaConexao />
-            </Suspense>
-          }
-        />
-
         <Route element={<RotaProtegida />}>
           <Route element={<LayoutAplicacao />}>
             <Route path={caminhos.inicio} element={<Navigate to={caminhos.dashboard} replace />} />

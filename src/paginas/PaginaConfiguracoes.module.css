@@ -1,9 +1,26 @@
 .pagina {
-  max-width: 52rem;
+  container: configuracoes / inline-size;
 }
 
-.secoes {
-  display: flex;
-  flex-direction: column;
-  gap: var(--espaco-6);
+.secoes,
+.conexoes {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--espaco-5);
+}
+
+@container configuracoes (min-width: 900px) {
+  .conexoes {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  }
+
+  .conexoes > :only-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@container configuracoes (min-width: 1200px) {
+  .conexoes {
+    grid-template-columns: minmax(0, 6fr) minmax(0, 7fr);
+  }
 }

@@ -1,11 +1,20 @@
 import type { RequisicaoTransporte, RespostaTransporte } from '@/api/transporte';
 import { PROBLEMAS_CONEXAO } from '@/modelos/conexao';
-import type { ConexaoDTO, TesteConexaoDTO } from '@/modelos/conexao';
+import type { ConexaoDTO, ConexaoSalvaDTO, TesteConexaoDTO } from '@/modelos/conexao';
+import {
+  mesmaConexao,
+  registrarConexaoSalva,
+  removerConexaoSalva,
+  renomearConexaoSalva,
+  validarNomeConexaoSalva,
+} from '@/regras/conexoesSalvas';
+import type { AlvoConexao } from '@/regras/falhaConexao';
 import { ORDEM_CAMPOS, montarCredenciais, nomeSugerido, validarConexao } from '@/regras/validacaoConexao';
 import type { CamposConexao } from '@/regras/validacaoConexao';
 import { lerAcessoSimulado } from '../acessoSimulado';
+import { gravarConexoesSalvasSimuladas, lerConexoesSalvasSimuladas } from '../conexoesSalvasSimuladas';
 import { lerCenarioConexao } from '../controles';
-import { criado, dadosInvalidos, naoAutorizado, ok, problema, semConteudo } from '../resposta';
+import { criado, dadosInvalidos, naoAutorizado, ok, problema, rotaInexistente, semConteudo } from '../resposta';
 import { encerrarSessaoSimulada, gravarSessaoSimulada, lerSessaoSimulada } from '../sessaoSimulada';
 import { acessoNaoAutenticado } from './autenticacao';
 
@@ -14,6 +23,8 @@ const LATENCIA_TESTE_SIMULADA_MS = 38;
 const ESPERA_MINIMA_MS = 900;
 const ESPERA_MAXIMA_MS = 1600;
 const ESPERA_TEMPO_ESGOTADO_MS = 5000;
+
+type Parametros = Record<string, string>;
 
 function texto(valor: unknown): string {
   if (typeof valor === 'string') return valor;
@@ -32,15 +43,16 @@ function camposDoCorpo(corpo: unknown): CamposConexao {
   };
 }
 
-function recusar(campos: CamposConexao): RespostaTransporte | null {
+function recusarCampos(campos: CamposConexao): RespostaTransporte | null {
   const erros = validarConexao(campos);
   const errosCampos = ORDEM_CAMPOS.flatMap((campo) => {
     const mensagem = erros[campo];
     return mensagem ? [{ campo, mensagem }] : [];
   });
-  if (errosCampos.length > 0) return dadosInvalidos(errosCampos);
+  return errosCampos.length > 0 ? dadosInvalidos(errosCampos) : null;
+}
 
-  const { host, porta, banco, usuario } = montarCredenciais(campos);
+function recusarPeloCenario({ host, porta, banco, usuario }: AlvoConexao): RespostaTransporte | null {
   switch (lerCenarioConexao()) {
     case 'SENHA_INCORRETA':
       return problema(
@@ -65,12 +77,38 @@ function recusar(campos: CamposConexao): RespostaTransporte | null {
   }
 }
 
+function recusar(campos: CamposConexao): RespostaTransporte | null {
+  return recusarCampos(campos) ?? recusarPeloCenario(montarCredenciais(campos));
+}
+
+function conexaoInexistente(): RespostaTransporte {
+  return rotaInexistente('A conexão não existe mais. Ela pode ter sido excluída em outra tela.');
+}
+
+function abrirSessao(salva: ConexaoSalvaDTO, agora: Date): ConexaoDTO {
+  const conexao: ConexaoDTO = {
+    id: salva.id,
+    tipoBanco: salva.tipoBanco,
+    nome: salva.nome,
+    host: salva.host,
+    porta: salva.porta,
+    banco: salva.banco,
+    usuario: salva.usuario,
+    versaoServidor: VERSAO_SERVIDOR_SIMULADA,
+    conectadaEm: agora.toISOString(),
+    simulada: true,
+  };
+  gravarSessaoSimulada(conexao);
+  return conexao;
+}
+
 export function esperaDaTentativa(): number {
   if (lerCenarioConexao() === 'TEMPO_ESGOTADO') return ESPERA_TEMPO_ESGOTADO_MS;
   return ESPERA_MINIMA_MS + Math.random() * (ESPERA_MAXIMA_MS - ESPERA_MINIMA_MS);
 }
 
 export function testarConexao(requisicao: RequisicaoTransporte): RespostaTransporte {
+  if (!lerAcessoSimulado()) return acessoNaoAutenticado();
   const recusa = recusar(camposDoCorpo(requisicao.corpo));
   if (recusa) return recusa;
   const teste: TesteConexaoDTO = {
@@ -82,25 +120,72 @@ export function testarConexao(requisicao: RequisicaoTransporte): RespostaTranspo
 }
 
 export function criarConexao(requisicao: RequisicaoTransporte, agora: Date): RespostaTransporte {
+  if (!lerAcessoSimulado()) return acessoNaoAutenticado();
   const campos = camposDoCorpo(requisicao.corpo);
   const recusa = recusar(campos);
   if (recusa) return recusa;
 
   const { nome, host, porta, banco, usuario } = montarCredenciais(campos);
-  const conexao: ConexaoDTO = {
-    id: `simulada-${crypto.randomUUID().slice(0, 8)}`,
+  const salvas = lerConexoesSalvasSimuladas();
+  const existente = salvas.find((item) => mesmaConexao(item, { host, porta, banco, usuario }));
+  const salva: ConexaoSalvaDTO = {
+    id: existente?.id ?? `simulada-${crypto.randomUUID().slice(0, 8)}`,
     tipoBanco: 'POSTGRESQL',
     nome: nome ?? nomeSugerido(banco, host),
     host,
     porta,
     banco,
     usuario,
-    versaoServidor: VERSAO_SERVIDOR_SIMULADA,
-    conectadaEm: agora.toISOString(),
-    simulada: true,
+    ultimoUsoEm: agora.toISOString(),
   };
-  gravarSessaoSimulada(conexao);
-  return criado(conexao);
+  gravarConexoesSalvasSimuladas(registrarConexaoSalva(salvas, salva));
+  return criado(abrirSessao(salva, agora));
+}
+
+export function listarConexoes(): RespostaTransporte {
+  if (!lerAcessoSimulado()) return acessoNaoAutenticado();
+  return ok(lerConexoesSalvasSimuladas());
+}
+
+export function ativarConexao(_requisicao: RequisicaoTransporte, agora: Date, parametros: Parametros): RespostaTransporte {
+  if (!lerAcessoSimulado()) return acessoNaoAutenticado();
+  const salvas = lerConexoesSalvasSimuladas();
+  const salva = salvas.find((item) => item.id === parametros.id);
+  if (!salva) return conexaoInexistente();
+  const recusa = recusarPeloCenario(salva);
+  if (recusa) return recusa;
+
+  const usada: ConexaoSalvaDTO = { ...salva, ultimoUsoEm: agora.toISOString() };
+  gravarConexoesSalvasSimuladas(registrarConexaoSalva(salvas, usada));
+  return ok(abrirSessao(usada, agora));
+}
+
+export function renomearConexao(requisicao: RequisicaoTransporte, _agora: Date, parametros: Parametros): RespostaTransporte {
+  if (!lerAcessoSimulado()) return acessoNaoAutenticado();
+  const salvas = lerConexoesSalvasSimuladas();
+  const salva = salvas.find((item) => item.id === parametros.id);
+  if (!salva) return conexaoInexistente();
+
+  const nome = camposDoCorpo(requisicao.corpo).nome;
+  const erro = validarNomeConexaoSalva(nome);
+  if (erro) return dadosInvalidos([{ campo: 'nome', mensagem: erro }]);
+
+  const renomeada: ConexaoSalvaDTO = { ...salva, nome: nome.trim() };
+  gravarConexoesSalvasSimuladas(renomearConexaoSalva(salvas, salva.id, renomeada.nome));
+  const sessao = lerSessaoSimulada();
+  if (sessao?.id === salva.id) gravarSessaoSimulada({ ...sessao, nome: renomeada.nome });
+  return ok(renomeada);
+}
+
+export function excluirConexao(_requisicao: RequisicaoTransporte, _agora: Date, parametros: Parametros): RespostaTransporte {
+  if (!lerAcessoSimulado()) return acessoNaoAutenticado();
+  const salvas = lerConexoesSalvasSimuladas();
+  const salva = salvas.find((item) => item.id === parametros.id);
+  if (!salva) return conexaoInexistente();
+
+  gravarConexoesSalvasSimuladas(removerConexaoSalva(salvas, salva.id));
+  if (lerSessaoSimulada()?.id === salva.id) encerrarSessaoSimulada();
+  return semConteudo();
 }
 
 export function buscarConexaoAtual(): RespostaTransporte {

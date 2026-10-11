@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import type { HTMLAttributes, ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { Info } from 'lucide-react';
@@ -13,9 +14,12 @@ export interface NotaProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
 }
 
-export function Nota({ tom = 'neutro', icone: Icone = Info, titulo, children, className, ...resto }: NotaProps) {
+export const Nota = forwardRef<HTMLDivElement, NotaProps>(function Nota(
+  { tom = 'neutro', icone: Icone = Info, titulo, children, className, ...resto },
+  ref,
+) {
   return (
-    <div className={juntarClasses(estilos.nota, estilos[tom], className)} {...resto}>
+    <div ref={ref} className={juntarClasses(estilos.nota, estilos[tom], className)} {...resto}>
       <Icone size={16} strokeWidth={2} aria-hidden="true" className={estilos.icone} />
       <p className={estilos.texto}>
         {titulo ? <strong className={estilos.titulo}>{titulo} </strong> : null}
@@ -23,4 +27,4 @@ export function Nota({ tom = 'neutro', icone: Icone = Info, titulo, children, cl
       </p>
     </div>
   );
-}
+});

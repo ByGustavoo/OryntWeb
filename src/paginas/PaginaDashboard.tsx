@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ChartNoAxesColumn, FlaskConical, SearchX } from 'lucide-react';
 import { ehErroApi } from '@/api/tratamentoErros';
+import { PainelSemConexao } from '@/componentes/conexao/PainelSemConexao';
 import { GraficoAtividade } from '@/componentes/dashboard/GraficoAtividade';
 import { ResumoIndicadores } from '@/componentes/dashboard/ResumoIndicadores';
 import { TabelaConsultas } from '@/componentes/dashboard/TabelaConsultas';
@@ -17,9 +18,11 @@ import {
 } from '@/componentes/ui';
 import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
 import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
+import type { ConexaoDTO } from '@/modelos/conexao';
 import type { PeriodoDashboard } from '@/modelos/dashboard';
 import { descricaoPeriodo, periodosDashboard, rotuloPeriodo } from '@/modelos/rotulos';
 import { useConexao } from '@/provedores/ProvedorConexao';
+import type { SituacaoConexao } from '@/provedores/ProvedorConexao';
 import { servicoDashboard } from '@/servicos';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
 import estilos from './PaginaDashboard.module.css';
@@ -28,9 +31,30 @@ const PERIODO_INICIAL: PeriodoDashboard = 'ULTIMAS_24_HORAS';
 
 const opcoesPeriodo = periodosDashboard.map((periodo) => ({ valor: periodo, rotulo: rotuloPeriodo[periodo] }));
 
+function descreverSemConexao(situacao: SituacaoConexao): string {
+  if (situacao === 'DESCONECTADA') return 'Conecte um banco para ver como ele está se comportando.';
+  if (situacao === 'INDISPONIVEL') return 'O Orynt não conseguiu confirmar a conexão com o banco.';
+  return 'Preparando a conexão com o banco.';
+}
+
 export default function PaginaDashboard() {
   useTituloDocumento('Dashboard');
-  const { conexao, marcarDesconectada } = useConexao();
+  const { situacao, conexao } = useConexao();
+
+  if (!conexao) {
+    return (
+      <>
+        <CabecalhoPagina titulo="Dashboard" descricao={descreverSemConexao(situacao)} />
+        <PainelSemConexao />
+      </>
+    );
+  }
+
+  return <DashboardConectado key={conexao.id} conexao={conexao} />;
+}
+
+function DashboardConectado({ conexao }: { conexao: ConexaoDTO }) {
+  const { marcarDesconectada } = useConexao();
   const [periodo, setPeriodo] = useState<PeriodoDashboard>(PERIODO_INICIAL);
 
   const indicadores = useDadosAssincronos((signal) => servicoDashboard.buscarIndicadores(periodo, signal), [periodo]);
@@ -52,7 +76,7 @@ export default function PaginaDashboard() {
       />
 
       <div className={estilos.blocos}>
-        {conexao?.simulada ? (
+        {conexao.simulada ? (
           <Nota tom="aviso" icone={FlaskConical} titulo="Dados demonstrativos.">
             Os números desta tela são fictícios e não vêm do seu banco. Eles dão lugar aos dados reais quando o Orynt
             estiver ligado à API.

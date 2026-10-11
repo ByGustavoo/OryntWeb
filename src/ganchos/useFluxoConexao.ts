@@ -107,6 +107,10 @@ export function useFluxoConexao({ aoConectar, aoEncontrarCampoInvalido }: Opcoes
     setFase(INICIAL);
   }, []);
 
+  const descartarSenha = useCallback(() => {
+    setCampos((anteriores) => (anteriores.senha ? { ...anteriores, senha: '' } : anteriores));
+  }, []);
+
   const reiniciar = useCallback(() => {
     controlador.current?.abort();
     setCampos(CAMPOS_CONEXAO_INICIAIS);
@@ -127,6 +131,7 @@ export function useFluxoConexao({ aoConectar, aoEncontrarCampoInvalido }: Opcoes
     conectar: () => executar('CONECTAR'),
     testar: () => executar('TESTAR'),
     cancelarTentativa,
+    descartarSenha,
     reiniciar,
   };
 }

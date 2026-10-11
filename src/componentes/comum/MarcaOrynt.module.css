@@ -1,67 +1,37 @@
 .marca {
+  --fatia-encaixada: translate(-3.54px, 3.54px);
+
   flex-shrink: 0;
+  overflow: visible;
 }
 
-.luz {
-  stop-color: var(--marca-luz);
+.corpo,
+.fatia {
+  fill: none;
+  stroke-width: 11;
 }
 
-.tom100 {
-  stop-color: var(--marca-100);
+.corpo {
+  stroke: var(--marca-corpo);
 }
 
-.tom200 {
-  stop-color: var(--marca-200);
-}
-
-.tom300 {
-  stop-color: var(--marca-300);
-}
-
-.tom400 {
-  stop-color: var(--marca-400);
-}
-
-.tom500 {
-  stop-color: var(--marca-500);
-}
-
-.tom600 {
-  stop-color: var(--marca-600);
-}
-
-.tom700 {
-  stop-color: var(--marca-700);
-}
-
-.tom800 {
-  stop-color: var(--marca-800);
-}
-
-.tom900 {
-  stop-color: var(--marca-900);
-}
-
-.tom950 {
-  stop-color: var(--marca-950);
-}
-
-.destacado {
+.fatia {
+  stroke: var(--marca-destaque);
   transition: transform var(--duracao-lenta) var(--curva-mola);
 }
 
-.animada .destacado {
+.animada .fatia {
   animation: destacar var(--duracao-tema) var(--curva-mola) 420ms backwards;
 }
 
 @keyframes destacar {
   from {
-    transform: translateX(-48px);
+    transform: var(--fatia-encaixada);
   }
 }
 
 @media (hover: hover) {
-  a:hover .destacado {
-    transform: translateX(-48px);
+  a:hover .fatia {
+    transform: var(--fatia-encaixada);
   }
 }

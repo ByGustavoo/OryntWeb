@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
+  formatarDataOpcional,
   formatarDuracaoMs,
   formatarNumero,
   formatarPercentual,
   formatarTempoRelativo,
   formatarVariacao,
+  formatarVersao,
   pluralizar,
 } from './formatacao';
 
@@ -57,5 +59,27 @@ describe('pluralizar', () => {
   it('escolhe o singular só para um', () => {
     expect(pluralizar(1, 'consulta', 'consultas')).toBe('consulta');
     expect(pluralizar(0, 'consulta', 'consultas')).toBe('consultas');
+  });
+});
+
+describe('formatarVersao', () => {
+  it('prefixa com v a versão numérica', () => {
+    expect(formatarVersao('1.0.0')).toBe('v1.0.0');
+  });
+
+  it('mantém como está o que não começa com número', () => {
+    expect(formatarVersao('Simulada')).toBe('Simulada');
+  });
+});
+
+describe('formatarDataOpcional', () => {
+  it('devolve null sem instante ou com instante inválido', () => {
+    expect(formatarDataOpcional(null)).toBeNull();
+    expect(formatarDataOpcional('')).toBeNull();
+    expect(formatarDataOpcional('ontem')).toBeNull();
+  });
+
+  it('escreve dia, mês abreviado e ano', () => {
+    expect(formatarDataOpcional('2026-09-29T15:00:00')).toBe('29 de set. de 2026');
   });
 });

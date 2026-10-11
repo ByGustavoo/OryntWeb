@@ -50,7 +50,8 @@ export function Modal({
 
   useEffect(() => {
     if (aberto) {
-      origemRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      const focado = document.activeElement;
+      if (!painelRef.current?.contains(focado)) origemRef.current = focado instanceof HTMLElement ? focado : null;
       setMontado(true);
       setSaindo(false);
       return;
