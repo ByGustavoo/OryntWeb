@@ -7,7 +7,7 @@ dashboard, all on simulated data. The backend (OryntAPI) does not exist yet. Pro
 `REQUISITOS.md` and are requirements: do not change them without the user's approval.
 
 ## Type
-web/frontend - release: branch + PR to `main` (no CI or release workflow yet; no remote configured)
+web/frontend - release: branch + PR to `main` on `ByGustavoo/OryntWeb` (GitHub); the branch and the PR title take the commit id, such as `ORY-2`. No CI or release workflow yet.
 
 ## Stack
 React 18, TypeScript 5 (`strict`, `noUncheckedIndexedAccess`), Vite 5, React Router 6 (v7 future
