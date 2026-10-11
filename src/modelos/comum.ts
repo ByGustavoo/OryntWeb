@@ -11,3 +11,8 @@ export interface ErrorResponseDTO {
   detail: string;
   errors?: ErroCampoDTO[] | null;
 }
+
+export interface VersaoSistemaDTO {
+  versao: string;
+  dataLancamento: string | null;
+}

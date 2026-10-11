@@ -125,6 +125,11 @@
   transition: color var(--duracao-rapida) var(--curva-saida);
 }
 
+button.item {
+  width: 100%;
+  text-align: left;
+}
+
 .item::before {
   content: '';
   position: absolute;

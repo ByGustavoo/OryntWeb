@@ -1,15 +1,6 @@
 :root {
-  --marca-luz: #ffffff;
-  --marca-100: #d6e4ff;
-  --marca-200: #b5d0ff;
-  --marca-300: #8bb6ff;
-  --marca-400: #5b9cff;
-  --marca-500: #3b82f6;
-  --marca-600: #2563eb;
-  --marca-700: #1d4ed8;
-  --marca-800: #1b3da6;
-  --marca-900: #152c73;
-  --marca-950: #0c1a47;
+  --marca-corpo: var(--texto);
+  --marca-destaque: var(--destaque);
 
   --identidade-texto: var(--texto);
   --identidade-texto-secundario: var(--texto-secundario);
@@ -83,8 +74,6 @@
 
 [data-tema='claro'] {
   color-scheme: light;
-
-  --marca-luz: #e6efff;
 
   --fundo: #f7f8fa;
   --superficie: #ffffff;

@@ -29,13 +29,19 @@ export interface TesteConexaoDTO {
   simulado: boolean;
 }
 
-export interface ConexaoRecente {
-  nome: string | null;
+export interface ConexaoSalvaDTO {
+  id: string;
+  tipoBanco: TipoBanco;
+  nome: string;
   host: string;
   porta: number;
   banco: string;
   usuario: string;
-  usadaEm: string;
+  ultimoUsoEm: string;
+}
+
+export interface RenomeacaoConexaoDTO {
+  nome: string;
 }
 
 export const PROBLEMAS_CONEXAO = {

@@ -1,0 +1,67 @@
+.painel {
+  align-items: center;
+}
+
+.estado {
+  padding-bottom: var(--espaco-6);
+}
+
+.conectando {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espaco-4);
+  padding: var(--espaco-10) var(--espaco-6);
+  text-align: center;
+}
+
+.girando {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--raio-lg);
+  background-color: var(--destaque-suave);
+  color: var(--destaque);
+}
+
+.textos {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espaco-1);
+  min-width: 0;
+  max-width: 100%;
+}
+
+.titulo {
+  font-size: var(--tamanho-md);
+  font-weight: var(--peso-forte);
+  letter-spacing: -0.01em;
+}
+
+.endereco {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+}
+
+.salvas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+  width: min(100%, 30rem);
+}
+
+.tituloSalvas {
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+}
+
+.acoes {
+  display: flex;
+  justify-content: center;
+  margin-block: var(--espaco-5) var(--espaco-6);
+}

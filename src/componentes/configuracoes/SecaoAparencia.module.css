@@ -224,6 +224,24 @@
   }
 }
 
+@container aparencia (min-width: 860px) {
+  .opcao {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--espaco-4);
+  }
+
+  .previa {
+    flex: 0 0 clamp(6rem, 38%, 11rem);
+  }
+
+  .textos {
+    flex: 1;
+    min-width: 0;
+    padding: 0 var(--espaco-3) 0 0;
+  }
+}
+
 @container aparencia (max-width: 560px) {
   .grupo {
     grid-template-columns: minmax(0, 1fr);

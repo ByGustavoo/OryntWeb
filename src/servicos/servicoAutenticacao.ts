@@ -10,4 +10,8 @@ export const servicoAutenticacao = {
   buscarUsuarioAtual(signal?: AbortSignal): Promise<UsuarioDTO> {
     return clienteHttp.get<UsuarioDTO>(rotasApi.autenticacao.sessao, { signal });
   },
+
+  sair(signal?: AbortSignal): Promise<void> {
+    return clienteHttp.delete<void>(rotasApi.autenticacao.sessao, { signal });
+  },
 };

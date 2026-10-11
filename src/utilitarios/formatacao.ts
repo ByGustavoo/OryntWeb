@@ -16,6 +16,7 @@ const formatadorInstante = new Intl.DateTimeFormat(LOCALIDADE, {
   hour: '2-digit',
   minute: '2-digit',
 });
+const formatadorData = new Intl.DateTimeFormat(LOCALIDADE, { day: '2-digit', month: 'short', year: 'numeric' });
 
 export function formatarNumero(valor: number): string {
   return formatadorInteiro.format(valor);
@@ -58,6 +59,15 @@ export function formatarDiaSemana(instante: string): string {
 
 export function formatarInstante(instante: string): string {
   return formatadorInstante.format(new Date(instante)).replace('.', '');
+}
+
+export function formatarDataOpcional(instante: string | null): string | null {
+  if (!instante || Number.isNaN(new Date(instante).getTime())) return null;
+  return formatadorData.format(new Date(instante));
+}
+
+export function formatarVersao(versao: string): string {
+  return /^\d/.test(versao) ? `v${versao}` : versao;
 }
 
 export function formatarTempoRelativo(instante: string, agora: Date = new Date()): string {

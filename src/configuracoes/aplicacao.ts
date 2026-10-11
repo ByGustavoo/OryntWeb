@@ -6,7 +6,6 @@ export const DESCRICAO_APLICACAO =
 export const PREFIXO_ARMAZENAMENTO = 'orynt:';
 export const CHAVE_TEMA = `${PREFIXO_ARMAZENAMENTO}tema`;
 export const CHAVE_MENU_RECOLHIDO = `${PREFIXO_ARMAZENAMENTO}menu-recolhido`;
-export const CHAVE_CONEXOES_RECENTES = `${PREFIXO_ARMAZENAMENTO}conexoes-recentes`;
 
 export const PONTOS_QUEBRA = {
   gaveta: 1099,

@@ -1,53 +1,210 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { ehCancelamento } from '@/api/ErroApi';
-import type { ConexaoDTO } from '@/modelos/conexao';
+import { ehErroApi } from '@/api/tratamentoErros';
+import type { ConexaoDTO, ConexaoSalvaDTO } from '@/modelos/conexao';
+import {
+  conexaoMaisRecente,
+  ordenarPorUso,
+  registrarConexaoSalva,
+  removerConexaoSalva,
+  renomearConexaoSalva,
+  salvaDaConexao,
+} from '@/regras/conexoesSalvas';
+import { interpretarFalhaConexao } from '@/regras/falhaConexao';
+import type { FalhaConexao } from '@/regras/falhaConexao';
 import { servicoConexao } from '@/servicos';
+import { useAutenticacao } from './ProvedorAutenticacao';
+import { useNotificacoes } from './ProvedorNotificacoes';
 
-export type SituacaoConexao = 'VERIFICANDO' | 'DESCONECTADA' | 'CONECTADA';
+export type SituacaoConexao = 'VERIFICANDO' | 'CONECTANDO' | 'CONECTADA' | 'DESCONECTADA' | 'INDISPONIVEL';
+
+export interface FalhaReconexao {
+  conexao: ConexaoSalvaDTO;
+  falha: FalhaConexao;
+}
 
 interface EstadoConexao {
   situacao: SituacaoConexao;
   conexao: ConexaoDTO | null;
+  salvas: ConexaoSalvaDTO[];
+  alvo: ConexaoSalvaDTO | null;
+  falhaReconexao: FalhaReconexao | null;
+  erroVerificacao: unknown;
+  verificandoDeNovo: boolean;
 }
 
 interface ValorContextoConexao extends EstadoConexao {
   registrarConexao: (conexao: ConexaoDTO) => void;
-  marcarDesconectada: () => void;
+  ativarConexao: (salva: ConexaoSalvaDTO) => Promise<void>;
+  renomearConexao: (id: string, nome: string) => Promise<void>;
+  excluirConexao: (id: string) => Promise<void>;
   encerrarConexao: () => Promise<void>;
+  marcarDesconectada: () => void;
+  verificarNovamente: () => void;
 }
 
 const ContextoConexao = createContext<ValorContextoConexao | null>(null);
 
-const DESCONECTADA: EstadoConexao = { situacao: 'DESCONECTADA', conexao: null };
+const INICIAL: EstadoConexao = {
+  situacao: 'VERIFICANDO',
+  conexao: null,
+  salvas: [],
+  alvo: null,
+  falhaReconexao: null,
+  erroVerificacao: null,
+  verificandoDeNovo: false,
+};
+
+function conectada(conexao: ConexaoDTO, salvas: ConexaoSalvaDTO[]): EstadoConexao {
+  return { ...INICIAL, situacao: 'CONECTADA', conexao, salvas };
+}
+
+function desconectada(salvas: ConexaoSalvaDTO[], falhaReconexao: FalhaReconexao | null = null): EstadoConexao {
+  return { ...INICIAL, situacao: 'DESCONECTADA', salvas, falhaReconexao };
+}
 
 export function ProvedorConexao({ children }: { children: ReactNode }) {
-  const [estado, setEstado] = useState<EstadoConexao>({ situacao: 'VERIFICANDO', conexao: null });
+  const { situacao: situacaoAcesso, marcarAnonima } = useAutenticacao();
+  const notificacoes = useNotificacoes();
+  const [estado, setEstado] = useState<EstadoConexao>(INICIAL);
+  const [tentativa, setTentativa] = useState(0);
+  const temSessao = situacaoAcesso !== 'ANONIMA';
 
-  useEffect(() => {
-    const controlador = new AbortController();
-    servicoConexao
-      .buscarConexaoAtual(controlador.signal)
-      .then((conexao) => setEstado({ situacao: 'CONECTADA', conexao }))
-      .catch((erro: unknown) => {
-        if (controlador.signal.aborted || ehCancelamento(erro)) return;
-        setEstado(DESCONECTADA);
-      });
-    return () => controlador.abort();
+  const ativar = useCallback(async (salva: ConexaoSalvaDTO, signal?: AbortSignal): Promise<FalhaConexao | null> => {
+    setEstado((anterior) => ({
+      ...anterior,
+      situacao: anterior.conexao ? 'CONECTADA' : 'CONECTANDO',
+      alvo: salva,
+      falhaReconexao: null,
+      erroVerificacao: null,
+    }));
+    try {
+      const conexao = await servicoConexao.ativarConexao(salva.id, signal);
+      if (signal?.aborted) return null;
+      setEstado((anterior) => conectada(conexao, registrarConexaoSalva(anterior.salvas, salvaDaConexao(conexao))));
+      return null;
+    } catch (erro) {
+      if (signal?.aborted || ehCancelamento(erro)) return null;
+      const falha = interpretarFalhaConexao(erro, salva);
+      setEstado((anterior) =>
+        anterior.conexao ? conectada(anterior.conexao, anterior.salvas) : desconectada(anterior.salvas, { conexao: salva, falha }),
+      );
+      return falha;
+    }
   }, []);
 
-  const registrarConexao = useCallback((conexao: ConexaoDTO) => setEstado({ situacao: 'CONECTADA', conexao }), []);
+  useEffect(() => {
+    if (!temSessao) {
+      setEstado(INICIAL);
+      return;
+    }
+    setEstado((anterior) => (anterior.situacao === 'INDISPONIVEL' ? { ...anterior, verificandoDeNovo: true } : INICIAL));
 
-  const marcarDesconectada = useCallback(() => setEstado(DESCONECTADA), []);
+    const controlador = new AbortController();
+    const { signal } = controlador;
+
+    const verificar = async () => {
+      const [atual, lista] = await Promise.allSettled([
+        servicoConexao.buscarConexaoAtual(signal),
+        servicoConexao.listarConexoes(signal),
+      ]);
+      if (signal.aborted) return;
+
+      if (lista.status === 'rejected') {
+        if (ehErroApi(lista.reason, 'NAO_AUTORIZADO')) marcarAnonima();
+        else setEstado({ ...INICIAL, situacao: 'INDISPONIVEL', erroVerificacao: lista.reason });
+        return;
+      }
+
+      const salvas = ordenarPorUso(lista.value);
+      if (atual.status === 'fulfilled') {
+        setEstado(conectada(atual.value, salvas));
+        return;
+      }
+      if (!ehErroApi(atual.reason, 'NAO_AUTORIZADO')) {
+        setEstado({ ...INICIAL, situacao: 'INDISPONIVEL', salvas, erroVerificacao: atual.reason });
+        return;
+      }
+
+      const recente = conexaoMaisRecente(salvas);
+      if (!recente) {
+        setEstado(desconectada(salvas));
+        return;
+      }
+      setEstado({ ...INICIAL, situacao: 'CONECTANDO', salvas, alvo: recente });
+      await ativar(recente, signal);
+    };
+
+    void verificar();
+    return () => controlador.abort();
+  }, [temSessao, tentativa, ativar, marcarAnonima]);
+
+  const registrarConexao = useCallback((conexao: ConexaoDTO) => {
+    setEstado((anterior) => conectada(conexao, registrarConexaoSalva(anterior.salvas, salvaDaConexao(conexao))));
+  }, []);
+
+  const ativarConexao = useCallback(
+    async (salva: ConexaoSalvaDTO) => {
+      const falha = await ativar(salva);
+      if (falha) {
+        notificacoes.erro(`Não foi possível conectar a ${salva.nome}.`, `${falha.descricao} ${falha.orientacao}`);
+        return;
+      }
+      notificacoes.sucesso(`Conectado a ${salva.nome}.`);
+    },
+    [ativar, notificacoes],
+  );
+
+  const renomearConexao = useCallback(async (id: string, nome: string) => {
+    const renomeada = await servicoConexao.renomearConexao(id, { nome });
+    setEstado((anterior) => ({
+      ...anterior,
+      conexao: anterior.conexao?.id === id ? { ...anterior.conexao, nome: renomeada.nome } : anterior.conexao,
+      salvas: renomearConexaoSalva(anterior.salvas, id, renomeada.nome),
+    }));
+  }, []);
+
+  const excluirConexao = useCallback(async (id: string) => {
+    await servicoConexao.excluirConexao(id);
+    setEstado((anterior) => {
+      const salvas = removerConexaoSalva(anterior.salvas, id);
+      if (anterior.conexao?.id === id) return desconectada(salvas);
+      const falhaReconexao = anterior.falhaReconexao?.conexao.id === id ? null : anterior.falhaReconexao;
+      return { ...anterior, salvas, falhaReconexao };
+    });
+  }, []);
 
   const encerrarConexao = useCallback(async () => {
     await servicoConexao.encerrarConexao();
-    setEstado(DESCONECTADA);
+    setEstado((anterior) => desconectada(anterior.salvas));
   }, []);
 
+  const marcarDesconectada = useCallback(() => setEstado((anterior) => desconectada(anterior.salvas)), []);
+
+  const verificarNovamente = useCallback(() => setTentativa((valor) => valor + 1), []);
+
   const valor = useMemo<ValorContextoConexao>(
-    () => ({ ...estado, registrarConexao, marcarDesconectada, encerrarConexao }),
-    [estado, registrarConexao, marcarDesconectada, encerrarConexao],
+    () => ({
+      ...estado,
+      registrarConexao,
+      ativarConexao,
+      renomearConexao,
+      excluirConexao,
+      encerrarConexao,
+      marcarDesconectada,
+      verificarNovamente,
+    }),
+    [
+      estado,
+      registrarConexao,
+      ativarConexao,
+      renomearConexao,
+      excluirConexao,
+      encerrarConexao,
+      marcarDesconectada,
+      verificarNovamente,
+    ],
   );
 
   return <ContextoConexao.Provider value={valor}>{children}</ContextoConexao.Provider>;
@@ -57,10 +214,4 @@ export function useConexao(): ValorContextoConexao {
   const contexto = useContext(ContextoConexao);
   if (!contexto) throw new Error('useConexao precisa estar dentro de <ProvedorConexao>.');
   return contexto;
-}
-
-export function useConexaoAtiva(): ConexaoDTO {
-  const { conexao } = useConexao();
-  if (!conexao) throw new Error('useConexaoAtiva só pode ser usado em telas protegidas por uma conexão ativa.');
-  return conexao;
 }

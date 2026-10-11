@@ -1,4 +1,5 @@
 .resumo {
+  container: resumo-conexao / inline-size;
   display: flex;
   flex-direction: column;
   border: 1px solid var(--borda);
@@ -31,4 +32,18 @@
   font-size: var(--tamanho-sm);
   font-weight: var(--peso-medio);
   text-align: right;
+}
+
+@container resumo-conexao (min-width: 26rem) {
+  .item {
+    justify-content: flex-start;
+  }
+
+  .termo {
+    flex-basis: 9rem;
+  }
+
+  .valor {
+    text-align: left;
+  }
 }

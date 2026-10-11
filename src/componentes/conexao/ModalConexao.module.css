@@ -1,0 +1,13 @@
+.conteudo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-5);
+}
+
+.cancelar {
+  margin-right: auto;
+}
+
+.conectar {
+  min-width: 8.5rem;
+}

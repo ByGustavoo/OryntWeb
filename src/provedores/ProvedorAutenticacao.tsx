@@ -13,6 +13,8 @@ interface EstadoAutenticacao {
 
 interface ValorContextoAutenticacao extends EstadoAutenticacao {
   registrarUsuario: (usuario: UsuarioDTO) => void;
+  marcarAnonima: () => void;
+  sair: () => Promise<void>;
 }
 
 const ContextoAutenticacao = createContext<ValorContextoAutenticacao | null>(null);
@@ -36,7 +38,17 @@ export function ProvedorAutenticacao({ children }: { children: ReactNode }) {
 
   const registrarUsuario = useCallback((usuario: UsuarioDTO) => setEstado({ situacao: 'AUTENTICADA', usuario }), []);
 
-  const valor = useMemo<ValorContextoAutenticacao>(() => ({ ...estado, registrarUsuario }), [estado, registrarUsuario]);
+  const marcarAnonima = useCallback(() => setEstado(ANONIMA), []);
+
+  const sair = useCallback(async () => {
+    await servicoAutenticacao.sair();
+    setEstado(ANONIMA);
+  }, []);
+
+  const valor = useMemo<ValorContextoAutenticacao>(
+    () => ({ ...estado, registrarUsuario, marcarAnonima, sair }),
+    [estado, registrarUsuario, marcarAnonima, sair],
+  );
 
   return <ContextoAutenticacao.Provider value={valor}>{children}</ContextoAutenticacao.Provider>;
 }
