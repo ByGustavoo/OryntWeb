@@ -72,7 +72,7 @@ export function ModalRenomearConexao({ conexao, aberto, aoFechar, aoRenomear }: 
         <CampoTexto
           ref={campoRef}
           rotulo="Nome da conexão"
-          dica={erro ? undefined : 'É o nome que aparece no cabeçalho e na lista de conexões.'}
+          dica={erro ? undefined : 'É o nome que aparece no menu da conta e na lista de conexões.'}
           erro={erro}
           value={nome}
           readOnly={salvando}

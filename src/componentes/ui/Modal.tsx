@@ -21,7 +21,7 @@ export interface ModalProps {
   aoFechar: () => void;
   titulo: string;
   descricao?: string;
-  tamanho?: 'sm' | 'md' | 'lg';
+  tamanho?: 'sm' | 'md' | 'lg' | 'xl';
   rodape?: ReactNode;
   papel?: 'dialog' | 'alertdialog';
   focarPrimeiroCampo?: boolean;

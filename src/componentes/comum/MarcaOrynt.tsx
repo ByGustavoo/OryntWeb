@@ -7,8 +7,8 @@ interface MarcaOryntProps {
   className?: string;
 }
 
-const CORPO = 'M47.5 33.8A17 17 0 1 1 30.2 16.5';
-const FATIA = 'M35.52 13.03A17 17 0 0 1 50.97 28.48';
+const CORPO = 'M15 2A15 15 0 1 0 30 17H23A8 8 0 1 1 15 9Z';
+const FATIA = 'M17 0A15 15 0 0 1 32 15H25A8 8 0 0 0 17 7Z';
 
 export function MarcaOrynt({ tamanho = 32, animada = false, className }: MarcaOryntProps) {
   return (
@@ -16,7 +16,7 @@ export function MarcaOrynt({ tamanho = 32, animada = false, className }: MarcaOr
       className={juntarClasses(estilos.marca, animada && estilos.animada, className)}
       width={tamanho}
       height={tamanho}
-      viewBox="7 6.5 50.5 50.5"
+      viewBox="0 0 32 32"
       aria-hidden="true"
       focusable="false"
     >

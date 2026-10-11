@@ -39,8 +39,9 @@ silenciosa no resto.
 * **Navegação:** menu lateral recolhível no desktop e gaveta abaixo de 1100px.
 * **Tipo de banco:** aparece como campo já resolvido (PostgreSQL), não como lista de uma opção.
 * **Rótulos:** capitalização de frase ("Usuários e permissões", "Objetos do banco"), como nos outros projetos.
-* **Telas planejadas:** agrupadas no menu sob "Em breve". Mostram o que está previsto e não simulam nada.
-* **Demonstração:** selo "Demonstração" no cabeçalho enquanto há uma conexão simulada ativa e aviso "Dados demonstrativos" no dashboard. Sem conexão, o cabeçalho não mostra o selo (pedido do usuário em 11 de outubro de 2026).
+* **Navegação em grupos e subgrupos:** pedido do usuário em 11 de outubro de 2026, no modelo do PrismaWeb. O menu tem o Dashboard, o grupo "Análise" (Relatórios e Consultas SQL) e o grupo "Gerenciamento" (Objetos do banco e Usuários e permissões); Configurações segue no rodapé. Cada item de grupo abre as suas telas: Relatórios (Resumo, Exportação, Comparação), Consultas SQL (Todas, Histórico, Planos de execução), Objetos do banco (Visões, Índices, Tabelas, Funções) e Usuários e permissões (Papéis, Sessões, Permissões). Os nomes dos grupos e das telas foram escolhidos por boa prática, a partir do que já estava previsto para cada funcionalidade.
+* **Telas planejadas:** o grupo em que nada está pronto leva o selo "Em breve" ao lado do título (antes havia um único grupo chamado "Em breve"). Cada tela tem a própria rota, mostra o que está previsto para a funcionalidade, com a tela aberta em evidência, e não simula nada.
+* **Demonstração:** selo "Demonstração" no menu da conta enquanto há uma conexão simulada ativa e aviso "Dados demonstrativos" no dashboard. Sem conexão, o selo não aparece. O selo saiu do cabeçalho a pedido do usuário em 11 de outubro de 2026.
 * **Dashboard:** períodos de 1 h, 24 h, 7 dias e 30 dias; a tabela vira cartões em telas estreitas.
 * **Versões:** seção em Configurações, abaixo de "Aparência", com um cartão para o Orynt Web e outro para a Orynt API, cada um com a versão e a data de lançamento (pedido do usuário em 11 de outubro de 2026). A versão do front vem de `window.__ORYNT_CONFIG__.versao` e, na falta dela, do `version` do `package.json`; a data de lançamento vem só de `window.__ORYNT_CONFIG__.dataLancamento`. A da API vem de `GET /sistema/versao`. Com dados simulados, o cartão da API mostra "Simulada" e diz que nenhuma API está em uso.
 
@@ -64,7 +65,7 @@ de entrada e a paleta do produto muda.
 | Sessão | Como em Q2: cookie `HttpOnly` criado pela API no login. Enquanto não há API, o simulador guarda só o usuário (sem senha) num cookie de sessão comum. |
 | Painel da tela de login | Formulário à esquerda e painel animado à direita, com métrica, rota e consulta de origem numa cena com dados fictícios. Respeita a preferência de movimento reduzido. Em telas estreitas o formulário vem primeiro. |
 | Tema | Alternância entre escuro e claro na tela de login, com a escolha lembrada no navegador. O modo automático continua nas configurações (Q6). |
-| Paleta | Escuro: fundo `#0A0A0A`, superfícies `#111111` e `#171717`, texto branco. Claro: fundo branco levemente acinzentado, superfícies brancas, texto escuro. Azul como cor de destaque nos dois temas, no lugar do ciano. Vale para o produto inteiro. |
+| Paleta | Escuro: fundo `#0A0A0A`, superfícies `#111111` e `#171717`, texto branco. Claro: fundo branco levemente acinzentado, superfícies brancas, texto escuro. Azul como cor de destaque nos dois temas, no lugar do ciano. Vale para o produto inteiro. No tema escuro, o card de notificação usa `#1B1B1B` com borda `#272727`, para se destacar do fundo como no OrbitWeb (pedido do usuário em 11 de outubro de 2026). |
 
 Ficaram de fora: cadastro de usuários, recuperação de senha real e autenticação real. O botão "Sair"
 entrou em 11 de outubro de 2026 (S1 de "Conexões salvas").
@@ -88,11 +89,11 @@ que o modal deixasse de abrir sozinho: sem conexão salva, o dashboard espera o 
 | # | Tema | Decisão |
 |---|---|---|
 | Q1 | O que é "conexão salva" | Conexões guardadas na conta, no servidor, com a senha cifrada do lado da API. O front nunca recebe a senha de volta. |
-| Q2 | Quantas por conta | Várias. A usada por último carrega sozinha ao entrar, e a troca é feita pelo cabeçalho. |
-| Q3 | Fechar o modal sem conectar | Permitido. O dashboard mostra "Nenhum banco conectado" com o botão "Conectar ao banco". O cabeçalho não repete esse estado: sem conexão ativa e sem conexão salva, o indicador de conexão some; havendo conexões salvas, ele mostra "Sem conexão" e serve para escolher uma (pedido do usuário em 11 de outubro de 2026). |
+| Q2 | Quantas por conta | Várias. A usada por último carrega sozinha ao entrar, e a troca é feita pelo menu da conta, no cabeçalho. |
+| Q3 | Fechar o modal sem conectar | Permitido. O dashboard mostra "Nenhum banco conectado" com o botão "Conectar ao banco". O cabeçalho não mostra a conexão: nome, tipo, estado e troca ficam no menu da conta, que sem conexão ativa diz "Nenhum banco conectado" e lista as conexões salvas para escolher uma (pedido do usuário em 11 de outubro de 2026, quando o indicador de conexão saiu da barra superior). |
 | Q4 | Depois de conectar | O modal fecha e o dashboard carrega, com a notificação "Conectado a `nome`". A etapa "Conexão estabelecida" deixou de existir. |
 | Q5 | Conteúdo do modal | Tudo o que a página tinha: colar URL, os seis campos, "Testar conexão" e o alerta de falha. |
-| S1 | Botão "Sair" | No rodapé do menu lateral. Encerra o login e a conexão ativa; as conexões salvas continuam na conta. Aprovada. |
+| S1 | Botão "Sair" | No menu da conta: um círculo com a primeira letra do usuário, no canto superior direito do cabeçalho, ao lado do botão de tema. O menu mostra a conta, a conexão em uso (nome, tipo, servidor, banco, usuário e o selo de estado), as outras conexões salvas para trocar, "Gerenciar conexões" e "Sair". Saiu do rodapé do menu lateral a pedido do usuário em 11 de outubro de 2026. O círculo aparece com ou sem banco conectado, para que "Sair" continue ao alcance; sem conexão, o menu diz "Nenhum banco conectado". Encerra o login e a conexão ativa; as conexões salvas continuam na conta. Aprovada. |
 | S2 | Falha ao verificar | Um erro em `GET /conexoes/atual` ou `GET /conexoes` que não seja "sem conexão" mostra "Não foi possível verificar a conexão" com "Tentar novamente", e não abre o modal. Aprovada. |
 | S3 | Gerenciar conexões | Seção "Conexões salvas" em Configurações: conectar, renomear e excluir. Aprovada. |
 

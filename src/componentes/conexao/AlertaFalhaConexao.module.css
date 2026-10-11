@@ -47,3 +47,16 @@
   justify-self: start;
   margin-top: var(--espaco-1);
 }
+
+@container formulario (min-width: 640px) {
+  .alerta {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: start;
+  }
+
+  .acao {
+    grid-column: 3;
+    align-self: center;
+    margin-top: 0;
+  }
+}

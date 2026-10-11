@@ -27,3 +27,16 @@
   font-size: var(--tamanho-xs);
   font-weight: var(--peso-medio);
 }
+
+@container formulario (min-width: 640px) {
+  .painel {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: center;
+    gap: var(--espaco-5);
+  }
+
+  .marca {
+    margin-left: 0;
+  }
+}

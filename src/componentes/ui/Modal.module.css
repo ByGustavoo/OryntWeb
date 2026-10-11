@@ -46,6 +46,10 @@
   max-width: 760px;
 }
 
+.xl {
+  max-width: 920px;
+}
+
 .cabecalho {
   display: flex;
   align-items: flex-start;

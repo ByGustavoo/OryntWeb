@@ -7,7 +7,7 @@ import { NOME_APLICACAO } from '@/configuracoes/aplicacao';
 import { useNovaConexao } from '@/provedores/ProvedorNovaConexao';
 import { caminhos } from '@/rotas/caminhos';
 import { BotaoTema } from './BotaoTema';
-import { SeletorConexao } from './SeletorConexao';
+import { MenuConta } from './MenuConta';
 import estilos from './Cabecalho.module.css';
 
 interface CabecalhoProps {
@@ -38,12 +38,10 @@ export const Cabecalho = forwardRef<HTMLButtonElement, CabecalhoProps>(function 
               aria-controls="menu-lateral"
             />
             <Link to={caminhos.dashboard} className={estilos.marca} aria-label={`${NOME_APLICACAO}, ir para o Dashboard`}>
-              <MarcaOrynt tamanho={26} />
+              <MarcaOrynt />
             </Link>
           </div>
         ) : null}
-
-        <SeletorConexao />
 
         <div className={estilos.acoes}>
           <Botao tamanho="sm" variante="secundario" icone={Plus} className={estilos.novaConexao} onClick={abrirNovaConexao}>
@@ -53,10 +51,10 @@ export const Cabecalho = forwardRef<HTMLButtonElement, CabecalhoProps>(function 
           <BotaoIcone
             icone={Settings2}
             rotulo="Configurações"
-            className={estilos.configuracoes}
             onClick={() => navegar(caminhos.configuracoes)}
           />
           <BotaoTema />
+          <MenuConta />
         </div>
       </div>
     </header>

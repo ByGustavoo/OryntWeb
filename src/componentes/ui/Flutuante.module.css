@@ -17,6 +17,14 @@
   transform-origin: bottom left;
 }
 
+.alinhadoAoFim.deCima {
+  transform-origin: top right;
+}
+
+.alinhadoAoFim.deBaixo {
+  transform-origin: bottom right;
+}
+
 @keyframes abrir {
   from {
     opacity: 0;

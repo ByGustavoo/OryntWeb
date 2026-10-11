@@ -1,18 +1,20 @@
 import { Link } from 'react-router-dom';
-import { ArrowLeft, CalendarClock, CircleDashed } from 'lucide-react';
+import { ArrowLeft, CalendarClock, CircleDashed, CircleDot } from 'lucide-react';
 import { CabecalhoPagina } from '@/componentes/layout/CabecalhoPagina';
 import { Painel, Selo } from '@/componentes/ui';
-import type { FuncionalidadePlanejada } from '@/configuracoes/navegacao';
+import type { FuncionalidadePlanejada, TelaPlanejada } from '@/configuracoes/navegacao';
 import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
 import { caminhos } from '@/rotas/caminhos';
+import { juntarClasses } from '@/utilitarios/juntarClasses';
 import estilos from './PaginaFuncionalidadePlanejada.module.css';
 
 interface PaginaFuncionalidadePlanejadaProps {
   funcionalidade: FuncionalidadePlanejada;
+  tela: TelaPlanejada;
 }
 
-export default function PaginaFuncionalidadePlanejada({ funcionalidade }: PaginaFuncionalidadePlanejadaProps) {
-  useTituloDocumento(funcionalidade.rotulo);
+export default function PaginaFuncionalidadePlanejada({ funcionalidade, tela }: PaginaFuncionalidadePlanejadaProps) {
+  useTituloDocumento(`${funcionalidade.rotulo}: ${tela.rotulo}`);
   const Icone = funcionalidade.icone;
 
   return (
@@ -35,17 +37,33 @@ export default function PaginaFuncionalidadePlanejada({ funcionalidade }: Pagina
           </p>
         </div>
 
-        <div className={estilos.previsto}>
-          <h3 className={estilos.tituloPrevisto}>O que está previsto</h3>
+        <nav className={estilos.previsto} aria-labelledby="titulo-previsto">
+          <h3 className={estilos.tituloPrevisto} id="titulo-previsto">
+            O que está previsto
+          </h3>
           <ul className={estilos.lista}>
-            {funcionalidade.previsto.map((item) => (
-              <li className={estilos.item} key={item}>
-                <CircleDashed size={16} strokeWidth={2} aria-hidden="true" className={estilos.marcador} />
-                {item}
-              </li>
-            ))}
+            {funcionalidade.filhos.map((filho) => {
+              const atual = filho.destino === tela.destino;
+              const Marcador = atual ? CircleDot : CircleDashed;
+
+              return (
+                <li key={filho.destino}>
+                  <Link
+                    to={filho.destino}
+                    className={juntarClasses(estilos.item, atual && estilos.itemAtual)}
+                    aria-current={atual ? 'page' : undefined}
+                  >
+                    <Marcador size={16} strokeWidth={2} aria-hidden="true" className={estilos.marcador} />
+                    <span className={estilos.textosItem}>
+                      <span className={estilos.rotuloItem}>{filho.rotulo}</span>
+                      <span className={estilos.descricaoItem}>{filho.descricao}</span>
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
-        </div>
+        </nav>
 
         <Link to={caminhos.dashboard} className={estilos.voltar}>
           <ArrowLeft size={16} strokeWidth={2} aria-hidden="true" />

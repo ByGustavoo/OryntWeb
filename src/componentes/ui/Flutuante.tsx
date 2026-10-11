@@ -13,6 +13,7 @@ export interface FlutuanteProps {
   ancora: RefObject<HTMLElement>;
   aoFechar: (devolverFocoParaAncora: boolean) => void;
   larguraMinimaDaAncora?: boolean;
+  alinhamento?: 'inicio' | 'fim';
   id?: string;
   papel?: 'dialog' | 'listbox';
   rotulo?: string;
@@ -32,6 +33,7 @@ export function Flutuante({
   ancora,
   aoFechar,
   larguraMinimaDaAncora = false,
+  alinhamento = 'inicio',
   id,
   papel = 'dialog',
   rotulo,
@@ -60,7 +62,8 @@ export function Flutuante({
     const topo = abrirAcima
       ? retangulo.top - DISTANCIA_ANCORA - altura
       : Math.min(retangulo.bottom + DISTANCIA_ANCORA, window.innerHeight - MARGEM_TELA - altura);
-    const esquerda = Math.min(Math.max(retangulo.left, MARGEM_TELA), window.innerWidth - MARGEM_TELA - largura);
+    const esquerdaAlinhada = alinhamento === 'fim' ? retangulo.right - largura : retangulo.left;
+    const esquerda = Math.min(Math.max(esquerdaAlinhada, MARGEM_TELA), window.innerWidth - MARGEM_TELA - largura);
 
     setPosicao({
       top: Math.max(topo, MARGEM_TELA),
@@ -68,7 +71,7 @@ export function Flutuante({
       minWidth: larguraMinimaDaAncora ? retangulo.width : 0,
       origem: abrirAcima ? 'base' : 'topo',
     });
-  }, [ancora, larguraMinimaDaAncora]);
+  }, [ancora, larguraMinimaDaAncora, alinhamento]);
 
   useLayoutEffect(() => {
     if (!aberto) {
@@ -137,6 +140,7 @@ export function Flutuante({
       className={juntarClasses(
         estilos.flutuante,
         posicao?.origem === 'base' ? estilos.deBaixo : estilos.deCima,
+        alinhamento === 'fim' && estilos.alinhadoAoFim,
         className,
       )}
       style={estilo}

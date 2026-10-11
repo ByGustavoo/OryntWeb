@@ -1,15 +1,17 @@
-import { useEffect, useRef, useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
-import { LogOut, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
-import { descreverFalha } from '@/api/tratamentoErros';
+import { useEffect, useId, useRef, useState } from 'react';
+import { Link, NavLink, useLocation } from 'react-router-dom';
+import { ChevronDown, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
 import { MarcaOrynt } from '@/componentes/comum/MarcaOrynt';
 import { NomeOrynt } from '@/componentes/comum/NomeOrynt';
-import { IndicadorGiratorio } from '@/componentes/ui';
 import { NOME_APLICACAO } from '@/configuracoes/aplicacao';
-import { navegacaoPrincipal, navegacaoRodape } from '@/configuracoes/navegacao';
+import {
+  contemCaminho,
+  destinoInicial,
+  navegacaoPrincipal,
+  navegacaoRodape,
+  secaoPlanejada,
+} from '@/configuracoes/navegacao';
 import type { ItemNavegacao } from '@/configuracoes/navegacao';
-import { useAutenticacao } from '@/provedores/ProvedorAutenticacao';
-import { useNotificacoes } from '@/provedores/ProvedorNotificacoes';
 import { caminhos } from '@/rotas/caminhos';
 import { manterTabDentro } from '@/utilitarios/foco';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
@@ -99,12 +101,13 @@ export function MenuLateral({ recolhido, emGaveta, abertoEmGaveta, aoAlternarRec
                 recolhidoVisivel ? (
                   <span className={estilos.divisor} aria-hidden="true" />
                 ) : (
-                  <p className={estilos.tituloSecao} aria-hidden="true">
-                    {secao.titulo}
-                  </p>
+                  <div className={estilos.cabecalhoSecao} aria-hidden="true">
+                    <p className={estilos.tituloSecao}>{secao.titulo}</p>
+                    {secaoPlanejada(secao) ? <span className={estilos.marcaSecao}>Em breve</span> : null}
+                  </div>
                 )
               ) : null}
-              <ul className={estilos.itens}>
+              <ul className={estilos.itens} aria-label={secao.titulo}>
                 {secao.itens.map((item) => (
                   <li key={item.destino}>
                     <ItemMenu item={item} recolhido={recolhidoVisivel} />
@@ -116,7 +119,6 @@ export function MenuLateral({ recolhido, emGaveta, abertoEmGaveta, aoAlternarRec
         </nav>
 
         <div className={estilos.rodape}>
-          <BotaoSair />
           <ItemMenu item={navegacaoRodape} recolhido={recolhidoVisivel} />
           {!emGaveta ? (
             <button
@@ -141,56 +143,85 @@ export function MenuLateral({ recolhido, emGaveta, abertoEmGaveta, aoAlternarRec
   );
 }
 
-function BotaoSair() {
-  const { usuario, sair } = useAutenticacao();
-  const notificacoes = useNotificacoes();
-  const [saindo, setSaindo] = useState(false);
-  const rotulo = usuario ? `Sair da conta ${usuario.email}` : 'Sair da conta';
-
-  const encerrar = async () => {
-    if (saindo) return;
-    setSaindo(true);
-    try {
-      await sair();
-    } catch (erro) {
-      setSaindo(false);
-      notificacoes.erro('Não foi possível sair.', descreverFalha(erro));
-    }
-  };
-
-  return (
-    <button
-      type="button"
-      className={estilos.item}
-      onClick={encerrar}
-      title={rotulo}
-      aria-label={rotulo}
-      aria-busy={saindo || undefined}
-    >
-      {saindo ? (
-        <IndicadorGiratorio tamanho={18} className={estilos.iconeItem} />
-      ) : (
-        <LogOut className={estilos.iconeItem} size={18} strokeWidth={2} aria-hidden="true" />
-      )}
-      <span className={estilos.rotuloItem}>{saindo ? 'Saindo…' : 'Sair'}</span>
-    </button>
-  );
-}
-
 function ItemMenu({ item, recolhido }: { item: ItemNavegacao; recolhido: boolean }) {
+  const { pathname } = useLocation();
+  const idFilhos = useId();
+  const filhos = item.filhos ?? [];
+  const ativo = contemCaminho(item, pathname);
+  const [aberto, setAberto] = useState(ativo);
   const Icone = item.icone;
   const rotuloCompleto = item.planejado ? `${item.rotulo} (em breve)` : item.rotulo;
+  const filhosVisiveis = aberto && !recolhido;
+
+  useEffect(() => {
+    if (ativo) setAberto(true);
+  }, [ativo]);
+
+  if (filhos.length === 0) {
+    return (
+      <NavLink
+        to={item.destino}
+        end
+        title={recolhido ? rotuloCompleto : undefined}
+        aria-label={rotuloCompleto}
+        className={({ isActive }) => juntarClasses(estilos.item, isActive && estilos.itemAtivo)}
+      >
+        <Icone className={estilos.iconeItem} size={18} strokeWidth={2} aria-hidden="true" />
+        <span className={estilos.rotuloItem}>{item.rotulo}</span>
+      </NavLink>
+    );
+  }
 
   return (
-    <NavLink
-      to={item.destino}
-      end
-      title={recolhido ? rotuloCompleto : undefined}
-      aria-label={rotuloCompleto}
-      className={({ isActive }) => juntarClasses(estilos.item, isActive && estilos.itemAtivo)}
-    >
-      <Icone className={estilos.iconeItem} size={18} strokeWidth={2} aria-hidden="true" />
-      <span className={estilos.rotuloItem}>{item.rotulo}</span>
-    </NavLink>
+    <>
+      {recolhido ? (
+        <Link
+          to={destinoInicial(item)}
+          title={rotuloCompleto}
+          aria-label={rotuloCompleto}
+          aria-current={ativo ? 'page' : undefined}
+          className={juntarClasses(estilos.item, ativo && estilos.itemAtivo)}
+        >
+          <Icone className={estilos.iconeItem} size={18} strokeWidth={2} aria-hidden="true" />
+          <span className={estilos.rotuloItem}>{item.rotulo}</span>
+        </Link>
+      ) : (
+        <button
+          type="button"
+          className={juntarClasses(estilos.item, estilos.gatilho, ativo && estilos.itemAtivo)}
+          onClick={() => setAberto((valor) => !valor)}
+          aria-label={rotuloCompleto}
+          aria-expanded={aberto}
+          aria-controls={idFilhos}
+        >
+          <Icone className={estilos.iconeItem} size={18} strokeWidth={2} aria-hidden="true" />
+          <span className={estilos.rotuloItem}>{item.rotulo}</span>
+          <ChevronDown
+            className={juntarClasses(estilos.seta, aberto && estilos.setaAberta)}
+            size={16}
+            strokeWidth={2}
+            aria-hidden="true"
+          />
+        </button>
+      )}
+
+      <div id={idFilhos} className={juntarClasses(estilos.filhos, filhosVisiveis && estilos.filhosAbertos)}>
+        <div className={estilos.recorteFilhos}>
+          <ul className={estilos.listaFilhos} aria-label={item.rotulo}>
+            {filhos.map((filho) => (
+              <li key={filho.destino}>
+                <NavLink
+                  to={filho.destino}
+                  end
+                  className={({ isActive }) => juntarClasses(estilos.filho, isActive && estilos.filhoAtivo)}
+                >
+                  <span className={estilos.rotuloFilho}>{filho.rotulo}</span>
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </>
   );
 }

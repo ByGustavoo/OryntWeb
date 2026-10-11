@@ -1,6 +1,6 @@
 import { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import { funcionalidadesPlanejadas } from '@/configuracoes/navegacao';
+import { destinoInicial, funcionalidadesPlanejadas } from '@/configuracoes/navegacao';
 import { LayoutAplicacao } from '@/layouts/LayoutAplicacao';
 import { RotaAutenticada } from './RotaAutenticada';
 import { RotaProtegida } from './RotaProtegida';
@@ -36,9 +36,18 @@ export function RotasAplicacao() {
               <Route
                 key={funcionalidade.destino}
                 path={funcionalidade.destino}
-                element={<PaginaFuncionalidadePlanejada funcionalidade={funcionalidade} />}
+                element={<Navigate to={destinoInicial(funcionalidade)} replace />}
               />
             ))}
+            {funcionalidadesPlanejadas.flatMap((funcionalidade) =>
+              funcionalidade.filhos.map((tela) => (
+                <Route
+                  key={tela.destino}
+                  path={tela.destino}
+                  element={<PaginaFuncionalidadePlanejada funcionalidade={funcionalidade} tela={tela} />}
+                />
+              )),
+            )}
             <Route path={caminhos.configuracoes} element={<PaginaConfiguracoes />} />
           </Route>
         </Route>

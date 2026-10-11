@@ -49,20 +49,54 @@
 .lista {
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-3);
+  gap: var(--espaco-1);
+  margin-inline: calc(var(--espaco-3) * -1);
 }
 
 .item {
   display: flex;
   align-items: flex-start;
   gap: var(--espaco-3);
+  padding: var(--espaco-2) var(--espaco-3);
+  border-radius: var(--raio-md);
   color: var(--texto);
+  transition: background-color var(--duracao-rapida) var(--curva-saida);
+}
+
+.item:focus-visible {
+  outline: none;
+  box-shadow: var(--anel-foco);
+}
+
+.itemAtual {
+  background-color: var(--destaque-suave);
 }
 
 .marcador {
   flex-shrink: 0;
-  margin-top: 4px;
+  margin-top: 3px;
   color: var(--texto-terciario);
+}
+
+.textosItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.rotuloItem {
+  font-weight: var(--peso-medio);
+}
+
+.descricaoItem {
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+}
+
+.itemAtual .marcador,
+.itemAtual .rotuloItem {
+  color: var(--destaque);
 }
 
 .voltar {
@@ -85,6 +119,10 @@
 }
 
 @media (hover: hover) {
+  .item:not(.itemAtual):hover {
+    background-color: var(--superficie-suave);
+  }
+
   .voltar:hover {
     background-color: var(--destaque-suave);
   }
