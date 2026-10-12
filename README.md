@@ -60,6 +60,10 @@ consulta que explica.
 
 * Login fictício, conferido pelo simulador com as credenciais de demonstração
 
+* Recuperação de senha em `/recuperar-senha`, em três etapas: e-mail, código de verificação de 6 dígitos e nova senha, com medidor de força
+
+* A recuperação nunca diz se o e-mail informado tem conta: a resposta é a mesma para qualquer endereço
+
 * Painel animado com dados fictícios: um pico no tempo médio é rastreado até a consulta que o causou
 
 * Alternância entre tema escuro e claro, lembrada no navegador
@@ -187,9 +191,14 @@ também aparecem na própria tela de login, com um botão que preenche os campos
 | E-mail | `demo@orynt.local` |
 | Senha | `orynt-demo` |
 
-Qualquer outra combinação mostra "E-mail ou senha incorretos". O link "Esqueceu sua senha?" só avisa
-que a recuperação chega em uma próxima versão. Para voltar à tela de login depois de entrar, abra o
-menu da conta (o círculo com a inicial, no canto superior direito) e use "Sair".
+Qualquer outra combinação mostra "E-mail ou senha incorretos". Para voltar à tela de login depois de
+entrar, abra o menu da conta (o círculo com a inicial, no canto superior direito) e use "Sair".
+
+O link "Esqueceu sua senha?" abre a recuperação de senha. Ela também é fictícia: nenhum e-mail é
+enviado. Informe `demo@orynt.local` e o código de verificação aparece no cartão "Caixa de entrada
+simulada", na própria tela, com o botão "Usar código". Qualquer outro e-mail passa pela mesma etapa e
+recebe a mesma resposta, mas nenhum código funciona, porque só o e-mail de demonstração tem conta. A
+senha nova é conferida e descartada: o acesso continua sendo `orynt-demo`.
 
 <br>
 
@@ -223,6 +232,15 @@ oryntSimulacao.esvaziar()
 
 // Encerra a conexão simulada com o banco
 oryntSimulacao.encerrarSessao()
+
+// Na recuperação de senha, faz o código enviado expirar agora
+oryntSimulacao.expirarCodigo()
+
+// Na etapa da nova senha, faz o prazo da troca acabar agora
+oryntSimulacao.expirarRedefinicao()
+
+// Com '/autenticacao/recuperacao', as três etapas da recuperação mostram o erro do servidor
+oryntSimulacao.falhar('/autenticacao/recuperacao')
 
 // Encerra o login e a conexão, e recarrega na tela de login
 oryntSimulacao.sair()
@@ -287,6 +305,8 @@ fictícios dependem do campo `simulada` da conexão, e somem quando a API respon
 
 * **Login:** é fictício nesta fase. A senha digitada não é gravada em lugar nenhum e sai da memória do formulário quando o acesso é aceito.
 
+* **Recuperação de senha:** a tela nunca confirma se um e-mail tem conta, e código errado, expirado ou de e-mail sem conta recebem a mesma mensagem. E-mail, código e senha nova ficam só na memória da página, fora da URL e do armazenamento do navegador.
+
 * **Sessão:** o contrato prevê um cookie `HttpOnly; Secure; SameSite=Strict` criado pela API no login, que nenhum script consegue ler.
 
 * **Simulação:** enquanto não há API, o simulador faz o papel do servidor com cookies de sessão comuns (um do login, outro da conexão), sem senha e sem dado real.
@@ -307,14 +327,15 @@ src
 │   ├── dashboard   # Indicadores, gráfico de atividade e tabela de consultas
 │   ├── layout      # Menu lateral, cabeçalho e menu da conta
 │   ├── login       # Formulário de acesso e painel animado de monitoramento
+│   ├── recuperacao # Etapas da recuperação de senha, medidor de força e cartão de demonstração
 │   ├── relatorios  # Barra de período, blocos do resumo, da exportação e da comparação
 │   └── ui          # Design system
 ├── configuracoes   # Ambiente, nome da aplicação e navegação
 ├── dados
 │   └── simulacao   # Simulador da API e dados demonstrativos
 ├── estilos         # Tokens, temas e estilos globais
-├── ganchos         # Fluxos de acesso e de conexão, cena do login e dados assíncronos
-├── layouts         # Estrutura com menu, cabeçalho e conteúdo
+├── ganchos         # Fluxos de acesso, de recuperação de senha e de conexão, cena do login e dados assíncronos
+├── layouts         # Estrutura com menu, cabeçalho e conteúdo, e a do login e da recuperação de senha
 ├── modelos         # DTOs, enums e rótulos
 ├── paginas         # Uma página por rota
 ├── provedores      # Tema, notificações, autenticação, conexões e modal de nova conexão

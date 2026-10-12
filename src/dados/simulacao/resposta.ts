@@ -16,6 +16,10 @@ export function criado(corpo: unknown): RespostaTransporte {
   return { status: 201, corpo };
 }
 
+export function aceito(): RespostaTransporte {
+  return { status: 202, corpo: undefined };
+}
+
 export function semConteudo(): RespostaTransporte {
   return { status: 204, corpo: undefined };
 }

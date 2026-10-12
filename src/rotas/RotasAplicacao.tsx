@@ -7,7 +7,9 @@ import { RotaProtegida } from './RotaProtegida';
 import { RotaVisitante } from './RotaVisitante';
 import { caminhos } from './caminhos';
 
+const LayoutAcesso = lazy(() => import('@/layouts/LayoutAcesso'));
 const PaginaLogin = lazy(() => import('@/paginas/PaginaLogin'));
+const PaginaRecuperacaoSenha = lazy(() => import('@/paginas/PaginaRecuperacaoSenha'));
 const PaginaDashboard = lazy(() => import('@/paginas/PaginaDashboard'));
 const PaginaResumoRelatorio = lazy(() => import('@/paginas/PaginaResumoRelatorio'));
 const PaginaExportacaoRelatorio = lazy(() => import('@/paginas/PaginaExportacaoRelatorio'));
@@ -21,13 +23,15 @@ export function RotasAplicacao() {
     <Routes>
       <Route element={<RotaVisitante />}>
         <Route
-          path={caminhos.login}
           element={
             <Suspense fallback={null}>
-              <PaginaLogin />
+              <LayoutAcesso />
             </Suspense>
           }
-        />
+        >
+          <Route path={caminhos.login} element={<PaginaLogin />} />
+          <Route path={caminhos.recuperarSenha} element={<PaginaRecuperacaoSenha />} />
+        </Route>
       </Route>
 
       <Route element={<RotaAutenticada />}>

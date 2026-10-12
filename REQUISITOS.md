@@ -55,21 +55,51 @@ de entrada e a paleta do produto muda.
 |---|---|
 | Rota inicial | `/login` é a primeira tela. Sem login, qualquer outra rota leva a ela. |
 | Depois do login | O usuário vai direto para `/dashboard`, com ou sem conexão. Quem já está logado e abre `/login` também vai para lá. |
-| Autenticação | Fictícia nesta fase: um e-mail e uma senha de teste definidos no projeto, conferidos pelo simulador. Sem cadastro, sem recuperação de senha e sem API. Não é apresentada como segura. |
+| Autenticação | Fictícia nesta fase: um e-mail e uma senha de teste definidos no projeto, conferidos pelo simulador. Sem cadastro e sem API. A recuperação de senha tem tela e fluxo próprios, também simulados (ver "Recuperação de senha"). Não é apresentada como segura. |
 | Credenciais de teste | `demo@orynt.local` e `orynt-demo`, em `src/dados/simulacao/credenciaisDemonstracao.ts`, no README e na própria tela de login. |
 | Campos | E-mail e senha, ambos obrigatórios. A senha tem mostrar e ocultar. |
 | Validação | Campo vazio só é cobrado no envio; formato do e-mail, ao sair do campo; depois de um erro, a cada tecla. No envio, o foco vai ao primeiro campo com problema. |
 | Credenciais incorretas | Mensagem única, que não diz qual dos dois campos errou. O e-mail fica preenchido e a senha fica selecionada para ser redigitada. |
 | Carregamento | O botão mostra "Entrando…" e ignora novos envios enquanto a verificação corre. |
-| Esqueceu sua senha? | Só informa que a recuperação estará disponível em uma próxima versão. |
+| Esqueceu sua senha? | Abre `/recuperar-senha`, levando o e-mail já digitado (revisto em 12 de outubro de 2026, ver "Recuperação de senha"). |
 | Senha do login | Mesma regra da senha do banco: nunca vai para `localStorage`, `sessionStorage`, cookie, URL ou console. |
 | Sessão | Como em Q2: cookie `HttpOnly` criado pela API no login. Enquanto não há API, o simulador guarda só o usuário (sem senha) num cookie de sessão comum. |
 | Painel da tela de login | Formulário à esquerda e painel animado à direita, com métrica, rota e consulta de origem numa cena com dados fictícios. Respeita a preferência de movimento reduzido. Em telas estreitas o formulário vem primeiro. |
 | Tema | Alternância entre escuro e claro na tela de login, com a escolha lembrada no navegador. O modo automático continua nas configurações (Q6). |
 | Paleta | Escuro: fundo `#0A0A0A`, superfícies `#111111` e `#171717`, texto branco. Claro: fundo branco levemente acinzentado, superfícies brancas, texto escuro. Azul como cor de destaque nos dois temas, no lugar do ciano. Vale para o produto inteiro. No tema escuro, o card de notificação usa `#1B1B1B` com borda `#272727`, para se destacar do fundo como no OrbitWeb (pedido do usuário em 11 de outubro de 2026). |
 
-Ficaram de fora: cadastro de usuários, recuperação de senha real e autenticação real. O botão "Sair"
-entrou em 11 de outubro de 2026 (S1 de "Conexões salvas").
+Ficaram de fora: cadastro de usuários, envio real de e-mail e autenticação real. O botão "Sair"
+entrou em 11 de outubro de 2026 (S1 de "Conexões salvas") e a tela de recuperação de senha, em 12 de
+outubro de 2026.
+
+## Recuperação de senha
+
+Pedido pelo usuário em 12 de outubro de 2026: quem esqueceu a senha informa o e-mail, recebe um código
+de verificação, valida o código e só então troca a senha. A tela não pode dizer se o e-mail informado
+existe, para não servir de consulta a quem tenta descobrir contas.
+
+| # | Tema | Decisão |
+|---|---|---|
+| Q1 | Como o código chega na demonstração | Sem backend, nenhum e-mail é enviado. Um cartão "Caixa de entrada simulada", na própria tela, mostra o código quando o e-mail é o de demonstração (`demo@orynt.local`). Ele só existe com dados simulados e some com a API. |
+| Q2 | O que a troca faz na demonstração | A senha nova é conferida e descartada. O acesso continua sendo `orynt-demo`, e a tela diz isso antes e depois de salvar. |
+| Q3 | Depois de trocar | Volta para `/login` com o e-mail preenchido, o foco na senha e o aviso de que a troca foi concluída. Não entra direto. |
+| Q4 | Regra da senha nova | De 8 a 128 caracteres, mais a confirmação. Não exige mistura de maiúsculas, números e símbolos. |
+| S1 | Colar o código | Colar preenche os seis dígitos de uma vez, mesmo com espaço, traço ou texto em volta, e a validação dispara sozinha ao completar o sexto dígito, digitado ou colado. Aprovada. |
+| S2 | Força da senha | Medidor de quatro barras abaixo do campo, com o nível (fraca, razoável, boa, forte) e uma orientação. É só orientação: quem decide se a senha é aceita é a regra de Q4. O campo mostra uma mensagem por vez: o erro, que conta quantos caracteres faltam, toma o lugar da orientação (pedido do usuário em 12 de outubro de 2026). Aprovada. |
+| S3 | Outras sessões | A etapa da senha avisa que, ao salvar, as outras sessões abertas da conta são encerradas, e o contrato da API exige isso. Aprovada. |
+
+Regras:
+
+* **Rota:** `/recuperar-senha`, com o mesmo layout do login (formulário à esquerda, painel à direita). Quem já está logado é levado ao dashboard.
+* **Etapas:** e-mail, código e nova senha, numeradas na tela ("Etapa 2 de 3"). Ficam só na memória da página: recarregar volta à etapa 1.
+* **Sigilo sobre a conta:** depois do e-mail, a resposta é sempre a mesma: "Se `e-mail` estiver cadastrado, você vai receber uma mensagem com o código de verificação e o passo a passo para recuperar a senha". A etapa do código abre para qualquer e-mail válido, e código errado, expirado ou de e-mail sem conta recebem a mesma mensagem, "Código incorreto ou expirado".
+* **Código:** 6 dígitos numéricos, válido por 10 minutos, com 5 tentativas. Na quinta tentativa errada o código deixa de valer e a tela pede um novo.
+* **Reenvio:** liberado 60 segundos depois de cada pedido, com a contagem na tela. Um novo código invalida o anterior.
+* **Usar outro e-mail:** volta à etapa 1 com o e-mail preenchido.
+* **Nova senha:** só abre com o código validado. A validação vale por 10 minutos; se o prazo acabar, a tela volta à etapa 1 e explica por quê.
+* **Validação:** como no login: campo vazio só é cobrado no envio; formato do e-mail, tamanho da senha e confirmação, ao sair do campo; depois de um erro, a cada tecla.
+* **Sigilo dos dados:** e-mail, código e senha não vão para a URL, o `localStorage`, o `sessionStorage`, cookies ou o console. O e-mail passa entre o login e a recuperação pela memória do layout que as duas telas compartilham.
+* **Simulação:** o cartão de demonstração acompanha as três etapas (o e-mail de teste, a caixa de entrada simulada, o aviso de que a senha é descartada). Para um e-mail sem conta, a caixa simulada diz que não há mensagem; é o simulador mostrando a caixa de entrada, não a tela revelando a conta.
 
 ## Regras da conexão
 

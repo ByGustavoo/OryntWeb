@@ -82,6 +82,12 @@ describe('descreverFalha', () => {
     expect(descreverFalha(new ErroApi('TEMPO_ESGOTADO', 'x'))).toBe('O servidor demorou demais para responder. Tente de novo.');
   });
 
+  it('pede para aguardar quando o limite de tentativas é atingido', () => {
+    expect(descreverFalha(com('LIMITE_EXCEDIDO', 'rate limit: 5/10min'))).toBe(
+      'Foram muitas tentativas em pouco tempo. Aguarde alguns minutos e tente de novo.',
+    );
+  });
+
   it('usa um texto padrão quando a API não informa o detail', () => {
     expect(descreverFalha(new ErroApi('NAO_ENCONTRADO', 'x', 404))).toBe(
       'O registro não existe mais. Ele pode ter sido excluído em outra tela.',

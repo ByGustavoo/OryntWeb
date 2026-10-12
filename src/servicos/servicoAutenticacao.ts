@@ -1,6 +1,13 @@
 import { clienteHttp } from '@/api/clienteHttp';
 import { rotasApi } from '@/api/rotasApi';
-import type { CredenciaisAcessoDTO, UsuarioDTO } from '@/modelos/autenticacao';
+import type {
+  CredenciaisAcessoDTO,
+  NovaSenhaDTO,
+  PedidoRecuperacaoDTO,
+  RedefinicaoLiberadaDTO,
+  UsuarioDTO,
+  VerificacaoCodigoDTO,
+} from '@/modelos/autenticacao';
 
 export const servicoAutenticacao = {
   entrar(credenciais: CredenciaisAcessoDTO, signal?: AbortSignal): Promise<UsuarioDTO> {
@@ -13,5 +20,17 @@ export const servicoAutenticacao = {
 
   sair(signal?: AbortSignal): Promise<void> {
     return clienteHttp.delete<void>(rotasApi.autenticacao.sessao, { signal });
+  },
+
+  solicitarRecuperacao(pedido: PedidoRecuperacaoDTO, signal?: AbortSignal): Promise<void> {
+    return clienteHttp.post<void>(rotasApi.autenticacao.recuperacao, pedido, { signal });
+  },
+
+  verificarCodigoRecuperacao(verificacao: VerificacaoCodigoDTO, signal?: AbortSignal): Promise<RedefinicaoLiberadaDTO> {
+    return clienteHttp.post<RedefinicaoLiberadaDTO>(rotasApi.autenticacao.verificacaoRecuperacao, verificacao, { signal });
+  },
+
+  redefinirSenha(novaSenha: NovaSenhaDTO, signal?: AbortSignal): Promise<void> {
+    return clienteHttp.post<void>(rotasApi.autenticacao.novaSenha, novaSenha, { signal });
   },
 };

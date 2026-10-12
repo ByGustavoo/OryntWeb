@@ -17,6 +17,7 @@ import { servicoAutenticacao } from '@/servicos';
 export type FaseAcesso = { tipo: 'INICIAL' } | { tipo: 'ENVIANDO' } | { tipo: 'ERRO'; falha: FalhaAcesso };
 
 interface OpcoesFluxoAcesso {
+  emailInicial?: string;
   aoEntrar: (usuario: UsuarioDTO) => void;
   aoEncontrarCampoInvalido: (campo: CampoAcesso) => void;
   aoRecusarCredenciais: () => void;
@@ -25,8 +26,8 @@ interface OpcoesFluxoAcesso {
 const INICIAL: FaseAcesso = { tipo: 'INICIAL' };
 const ENVIANDO: FaseAcesso = { tipo: 'ENVIANDO' };
 
-export function useFluxoAcesso({ aoEntrar, aoEncontrarCampoInvalido, aoRecusarCredenciais }: OpcoesFluxoAcesso) {
-  const [campos, setCampos] = useState<CamposAcesso>(CAMPOS_ACESSO_INICIAIS);
+export function useFluxoAcesso({ emailInicial = '', aoEntrar, aoEncontrarCampoInvalido, aoRecusarCredenciais }: OpcoesFluxoAcesso) {
+  const [campos, setCampos] = useState<CamposAcesso>({ ...CAMPOS_ACESSO_INICIAIS, email: emailInicial });
   const [erros, setErros] = useState<ErrosAcesso>({});
   const [fase, setFase] = useState<FaseAcesso>(INICIAL);
   const controlador = useRef<AbortController | null>(null);

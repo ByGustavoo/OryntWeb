@@ -1,0 +1,35 @@
+.medidor {
+  --forca-cor: var(--borda-forte);
+
+  position: relative;
+}
+
+.medidor[data-nivel='FRACA'] {
+  --forca-cor: var(--erro-grafico);
+}
+
+.medidor[data-nivel='RAZOAVEL'] {
+  --forca-cor: var(--aviso-grafico);
+}
+
+.medidor[data-nivel='BOA'],
+.medidor[data-nivel='FORTE'] {
+  --forca-cor: var(--sucesso-grafico);
+}
+
+.barras {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--espaco-1);
+}
+
+.barra {
+  height: 4px;
+  background-color: var(--borda-forte);
+  border-radius: var(--raio-pilula);
+  transition: background-color var(--duracao-base) var(--curva-saida);
+}
+
+.barra[data-ativa] {
+  background-color: var(--forca-cor);
+}

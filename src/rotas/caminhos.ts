@@ -1,6 +1,7 @@
 export const caminhos = {
   inicio: '/',
   login: '/login',
+  recuperarSenha: '/recuperar-senha',
   dashboard: '/dashboard',
   relatorios: '/relatorios',
   relatoriosResumo: '/relatorios/resumo',

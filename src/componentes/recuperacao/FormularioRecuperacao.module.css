@@ -1,0 +1,78 @@
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-5);
+}
+
+.formulario > * {
+  animation: var(--animacao-emergir) var(--entrada-duracao, 0ms) var(--curva-saida)
+    calc(var(--entrada-inicio, 0ms) + var(--entrada-passo, 0ms) * (3 + var(--ordem, 3))) backwards;
+}
+
+.campos {
+  --ordem: 1;
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+}
+
+.observacao,
+.enviar {
+  --ordem: 2;
+}
+
+.aviso,
+.formulario > .aviso {
+  animation: var(--animacao-revelar) var(--duracao-lenta) var(--curva-saida);
+}
+
+.regiaoAviso:empty {
+  display: none;
+}
+
+.apoio {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-1) var(--espaco-4);
+  margin-inline: calc(var(--espaco-1) * -1);
+}
+
+.espera {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  max-width: none;
+  padding-inline: var(--espaco-1);
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-sm);
+}
+
+.espera span {
+  margin-left: 0.35em;
+  color: var(--texto-secundario);
+}
+
+.enviar > svg:last-child {
+  transition: transform var(--duracao-base) var(--curva-saida);
+}
+
+@media (hover: hover) {
+  .enviar:hover:not(:disabled) > svg:last-child {
+    transform: translateX(3px);
+  }
+}
+
+@media (max-height: 760px) {
+  .formulario {
+    gap: var(--espaco-4);
+  }
+}
+
+@media (pointer: coarse) {
+  .espera {
+    min-height: var(--alvo-toque);
+  }
+}

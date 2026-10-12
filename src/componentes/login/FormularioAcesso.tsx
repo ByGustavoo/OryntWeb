@@ -1,26 +1,40 @@
-import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { ArrowRight, CircleAlert, Clock } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ArrowRight, CircleAlert, CircleCheck } from 'lucide-react';
 import { Botao, CampoSenha, CampoTexto, Nota } from '@/componentes/ui';
-import { NOME_APLICACAO } from '@/configuracoes/aplicacao';
 import type { FalhaAcesso } from '@/regras/falhaAcesso';
 import type { CampoAcesso, CamposAcesso, ErrosAcesso } from '@/regras/validacaoAcesso';
+import { caminhos } from '@/rotas/caminhos';
+import { juntarClasses } from '@/utilitarios/juntarClasses';
 import { idCampoAcesso } from './identificadores';
 import estilos from './FormularioAcesso.module.css';
+import estilosLink from './LinkAcesso.module.css';
+
+export type AvisoSenhaRedefinida = 'REAL' | 'DEMONSTRACAO';
 
 interface FormularioAcessoProps {
   campos: CamposAcesso;
   erros: ErrosAcesso;
   enviando: boolean;
   falha: FalhaAcesso | null;
+  senhaRedefinida: AvisoSenhaRedefinida | null;
   aoAlterar: (campo: CampoAcesso, valor: string) => void;
   aoSair: (campo: CampoAcesso, valor: string) => void;
   aoEntrar: () => void;
+  aoPedirRecuperacao: () => void;
 }
 
-export function FormularioAcesso({ campos, erros, enviando, falha, aoAlterar, aoSair, aoEntrar }: FormularioAcessoProps) {
-  const [recuperacaoPedida, setRecuperacaoPedida] = useState(false);
-
+export function FormularioAcesso({
+  campos,
+  erros,
+  enviando,
+  falha,
+  senhaRedefinida,
+  aoAlterar,
+  aoSair,
+  aoEntrar,
+  aoPedirRecuperacao,
+}: FormularioAcessoProps) {
   const propriedadesDoCampo = (campo: CampoAcesso) => ({
     id: idCampoAcesso(campo),
     name: campo,
@@ -45,6 +59,19 @@ export function FormularioAcesso({ campos, erros, enviando, falha, aoAlterar, ao
         </Nota>
       ) : null}
 
+      <div role="status" className={estilos.regiaoRedefinicao}>
+        {senhaRedefinida === 'REAL' && !falha ? (
+          <Nota tom="sucesso" icone={CircleCheck} titulo="Senha alterada." className={estilos.aviso}>
+            Entre com a nova senha. As outras sessões abertas desta conta foram encerradas.
+          </Nota>
+        ) : null}
+        {senhaRedefinida === 'DEMONSTRACAO' && !falha ? (
+          <Nota tom="sucesso" icone={CircleCheck} titulo="Recuperação concluída." className={estilos.aviso}>
+            Nesta demonstração a senha nova é descartada: o acesso continua sendo o do cartão abaixo.
+          </Nota>
+        ) : null}
+      </div>
+
       <div className={estilos.campos}>
         <CampoTexto
           {...propriedadesDoCampo('email')}
@@ -60,18 +87,14 @@ export function FormularioAcesso({ campos, erros, enviando, falha, aoAlterar, ao
 
         <div className={estilos.senha}>
           <CampoSenha {...propriedadesDoCampo('senha')} rotulo="Senha" preenchimentoAutomatico="current-password" />
-          <button type="button" className={estilos.recuperar} onClick={() => setRecuperacaoPedida(true)}>
+          <Link
+            className={juntarClasses(estilosLink.link, estilos.recuperar)}
+            to={caminhos.recuperarSenha}
+            onClick={aoPedirRecuperacao}
+          >
             Esqueceu sua senha?
-          </button>
+          </Link>
         </div>
-      </div>
-
-      <div role="status" className={estilos.regiaoRecuperacao}>
-        {recuperacaoPedida ? (
-          <Nota tom="info" icone={Clock} titulo="Recuperação de senha em breve." className={estilos.aviso}>
-            Esta função estará disponível em uma próxima versão do {NOME_APLICACAO}.
-          </Nota>
-        ) : null}
       </div>
 
       <p className="visualmente-oculto" role="status">

@@ -32,26 +32,10 @@
 
 .recuperar {
   align-self: flex-end;
-  min-height: 24px;
-  padding-inline: var(--espaco-1);
   margin-right: calc(var(--espaco-1) * -1);
-  border-radius: var(--raio-xs);
-  color: var(--destaque);
-  font-size: var(--tamanho-sm);
-  font-weight: var(--peso-medio);
-  text-decoration: underline transparent;
-  text-underline-offset: 3px;
-  transition:
-    color var(--duracao-rapida) var(--curva-saida),
-    text-decoration-color var(--duracao-rapida) var(--curva-saida);
 }
 
-.recuperar:focus-visible {
-  outline: none;
-  box-shadow: var(--anel-foco);
-}
-
-.regiaoRecuperacao:empty {
+.regiaoRedefinicao:empty {
   display: none;
 }
 
@@ -59,23 +43,12 @@
   animation: var(--animacao-revelar) var(--duracao-lenta) var(--curva-saida);
 }
 
-.entrar svg:last-child {
+.entrar > svg:last-child {
   transition: transform var(--duracao-base) var(--curva-saida);
 }
 
 @media (hover: hover) {
-  .recuperar:hover {
-    color: var(--destaque-forte);
-    text-decoration-color: currentColor;
-  }
-
-  .entrar:hover:not(:disabled) svg:last-child {
+  .entrar:hover:not(:disabled) > svg:last-child {
     transform: translateX(3px);
-  }
-}
-
-@media (pointer: coarse) {
-  .recuperar {
-    min-height: var(--alvo-toque);
   }
 }

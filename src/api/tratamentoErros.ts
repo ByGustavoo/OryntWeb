@@ -11,6 +11,7 @@ const DESCRICAO_PADRAO: Record<TipoErroApi, string> = {
   NAO_AUTORIZADO: 'A conexão com o banco foi encerrada. Conecte de novo para continuar.',
   NAO_ENCONTRADO: 'O registro não existe mais. Ele pode ter sido excluído em outra tela.',
   CONFLITO: 'A alteração entra em conflito com dados já salvos.',
+  LIMITE_EXCEDIDO: 'Foram muitas tentativas em pouco tempo. Aguarde alguns minutos e tente de novo.',
   CANCELADO: 'A operação foi cancelada.',
 };
 

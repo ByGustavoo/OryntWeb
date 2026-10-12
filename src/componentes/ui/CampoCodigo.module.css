@@ -1,0 +1,134 @@
+.codigo {
+  position: relative;
+  display: flex;
+}
+
+.entrada {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  opacity: 0;
+  cursor: text;
+}
+
+.entrada:read-only {
+  cursor: progress;
+}
+
+.entrada:disabled {
+  cursor: not-allowed;
+}
+
+.casas {
+  display: flex;
+  flex: 1;
+  gap: var(--espaco-2);
+  min-width: 0;
+}
+
+.casa {
+  display: grid;
+  flex: 1 1 0;
+  place-items: center;
+  min-width: 0;
+  height: 3.25rem;
+  background-color: var(--superficie);
+  border: 1px solid var(--borda-controle);
+  border-radius: var(--raio-md);
+  color: var(--texto);
+  font-family: var(--fonte-numeros);
+  font-size: var(--tamanho-xl);
+  font-weight: var(--peso-medio);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  transition:
+    border-color var(--duracao-rapida) var(--curva-saida),
+    box-shadow var(--duracao-rapida) var(--curva-saida),
+    background-color var(--duracao-rapida) var(--curva-saida);
+}
+
+.casa:nth-child(3n + 4) {
+  margin-left: var(--espaco-2);
+}
+
+.entrada:focus ~ .casas .casa[data-ativa] {
+  border-color: var(--destaque);
+  box-shadow: var(--anel-foco);
+}
+
+.comErro .casa,
+.comErro .entrada:focus ~ .casas .casa[data-ativa] {
+  border-color: var(--erro);
+}
+
+.comErro .entrada:focus ~ .casas .casa[data-ativa] {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--erro) 25%, transparent);
+}
+
+.entrada:read-only ~ .casas .casa {
+  background-color: var(--superficie-suave);
+  color: var(--texto-secundario);
+}
+
+.entrada:disabled ~ .casas .casa {
+  background-color: var(--superficie-suave);
+  border-color: var(--borda-forte);
+  color: var(--texto-desabilitado);
+}
+
+.digito {
+  animation: pousar var(--duracao-base) var(--curva-saida);
+}
+
+.cursor {
+  display: none;
+  width: 2px;
+  height: 1.5rem;
+  background-color: var(--destaque);
+  border-radius: 1px;
+  animation: piscar 1.1s steps(1) infinite;
+}
+
+.entrada:focus:not(:read-only) ~ .casas .cursor {
+  display: block;
+}
+
+@keyframes pousar {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.9);
+  }
+}
+
+@keyframes piscar {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (hover: hover) {
+  .codigo:hover .entrada:not(:focus):not(:read-only):not(:disabled) ~ .casas .casa {
+    border-color: var(--texto-terciario);
+  }
+
+  .comErro:hover .entrada:not(:focus) ~ .casas .casa {
+    border-color: var(--erro);
+  }
+}
+
+@media (max-width: 360px) {
+  .casas {
+    gap: var(--espaco-1);
+  }
+
+  .casa {
+    height: 2.75rem;
+    font-size: var(--tamanho-lg);
+  }
+}
