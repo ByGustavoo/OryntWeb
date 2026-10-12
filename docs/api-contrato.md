@@ -71,6 +71,7 @@ Toda resposta de erro tem este corpo, o mesmo dos outros projetos:
 | `401`, `403` | `NAO_AUTORIZADO` | Volta para a tela de login ou mostra o dashboard sem conexão; no login, mostra "E-mail ou senha incorretos" |
 | `404` | `NAO_ENCONTRADO` | Estado de erro da região |
 | `409` | `CONFLITO` | Estado de erro da região |
+| `429` | `LIMITE_EXCEDIDO` | Pede para aguardar antes de tentar de novo; na recuperação de senha, pede um novo código |
 | outros `>= 400` | `SERVIDOR` | Estado de erro com "Tentar novamente"; o `detail` não é exibido |
 | sem resposta | `REDE` | "O Orynt não respondeu" |
 | 15 s sem resposta | `TEMPO_ESGOTADO` | "O servidor demorou demais para responder" |
@@ -99,6 +100,9 @@ ajustar `PROBLEMAS_CONEXAO` em `src/modelos/conexao.ts`.
 | `POST` | `/autenticacao/sessao` | Faz o login e abre a sessão | não |
 | `GET` | `/autenticacao/sessao` | Devolve o usuário da sessão | sim |
 | `DELETE` | `/autenticacao/sessao` | Encerra o login e a conexão ativa | sim |
+| `POST` | `/autenticacao/recuperacao` | Pede um código de recuperação de senha por e-mail | não |
+| `POST` | `/autenticacao/recuperacao/verificacao` | Valida o código e libera a troca da senha | não |
+| `POST` | `/autenticacao/recuperacao/senha` | Grava a senha nova | não |
 | `POST` | `/conexoes/teste` | Testa as credenciais do banco sem conectar | sim |
 | `POST` | `/conexoes` | Conecta ao banco, salva a conexão na conta e a ativa na sessão | sim |
 | `GET` | `/conexoes` | Lista as conexões salvas na conta | sim |
@@ -140,10 +144,29 @@ interface UsuarioDTO {
   email: string;
   simulado: boolean;
 }
+
+interface PedidoRecuperacaoDTO {
+  email: string;
+}
+
+interface VerificacaoCodigoDTO {
+  email: string;
+  codigo: string;
+}
+
+interface RedefinicaoLiberadaDTO {
+  tokenRedefinicao: string;
+}
+
+interface NovaSenhaDTO {
+  tokenRedefinicao: string;
+  senha: string;
+}
 ```
 
 * `UsuarioDTO` nunca traz a senha.
 * `simulado` é `true` só no simulador.
+* `tokenRedefinicao` é opaco, de uso único e de vida curta. O front o mantém só na memória da tela.
 
 ### 4.3 Conexão
 
@@ -283,8 +306,9 @@ interface ConsultaRelatorioDTO extends ConsultaResumoDTO {
 ## 5. Autenticação
 
 Nesta fase só o simulador responde a estas rotas, com um login fictício: ele aceita apenas as
-credenciais de `src/dados/simulacao/credenciaisDemonstracao.ts`. A autenticação real, o cadastro e a
-recuperação de senha são **A DEFINIR NO BACKEND**.
+credenciais de `src/dados/simulacao/credenciaisDemonstracao.ts`. A autenticação real e o cadastro são
+**A DEFINIR NO BACKEND**. A recuperação de senha (5.4 a 5.6) já tem contrato, porque a tela existe; o
+simulador a cumpre sem enviar e-mail e sem gravar a senha.
 
 ### 5.1 `POST /autenticacao/sessao`
 
@@ -302,6 +326,45 @@ recuperação de senha são **A DEFINIR NO BACKEND**.
 ### 5.3 `DELETE /autenticacao/sessao`
 
 * **`204`:** login encerrado, junto com a conexão ativa. As conexões salvas continuam na conta.
+
+### 5.4 `POST /autenticacao/recuperacao`
+
+Pede o envio de um código de recuperação. **A resposta não pode revelar se o e-mail tem conta.**
+
+* **Corpo:** `PedidoRecuperacaoDTO`.
+* **`202`:** sem corpo, para qualquer e-mail bem formado, com conta ou sem. O corpo, os cabeçalhos e o
+  tempo de resposta precisam ser os mesmos nos dois casos (o envio do e-mail acontece fora da requisição).
+* **`400`:** e-mail malformado, com `errors` em `email` (obrigatório, formato de e-mail, até 254 caracteres).
+* **`429`:** excesso de pedidos vindos da mesma origem. O limite é **A DEFINIR NO BACKEND** e não pode
+  depender de o e-mail existir.
+* Quando a conta existe, a API envia um e-mail com um código de 6 dígitos numéricos, válido por 10
+  minutos, e o passo a passo. Quando não existe, não envia nada.
+* Um novo código invalida o anterior e zera as tentativas. A API só gera outro código para o mesmo
+  e-mail depois de 60 segundos; antes disso responde `202` do mesmo jeito e mantém o código atual. O
+  front mostra essa contagem e só libera "Reenviar código" quando ela termina.
+
+### 5.5 `POST /autenticacao/recuperacao/verificacao`
+
+* **Corpo:** `VerificacaoCodigoDTO`.
+* **`200`:** `RedefinicaoLiberadaDTO`. O código deixa de valer assim que é aceito.
+* **`422`:** `type` terminando em `/problems/invalid-recovery-code`, para código errado, código expirado,
+  e-mail sem conta e e-mail que nunca pediu um código. As quatro situações recebem exatamente a mesma
+  resposta, e a tela mostra "Código incorreto ou expirado".
+* **`429`:** `type` terminando em `/problems/recovery-attempts-exceeded`, a partir da quinta tentativa
+  errada para o mesmo e-mail. O código deixa de valer, e nem o código certo é aceito até um novo pedido.
+  As tentativas são contadas também para e-mails sem conta, para que o `429` não revele nada.
+* **`400`:** e-mail malformado, com `errors`.
+
+### 5.6 `POST /autenticacao/recuperacao/senha`
+
+* **Corpo:** `NovaSenhaDTO`.
+* **`204`:** senha trocada. A API encerra todas as sessões abertas da conta e invalida o token. Não
+  abre uma sessão: a pessoa faz o login com a senha nova.
+* **`400`:** senha recusada, com `errors` em `senha` (de 8 a 128 caracteres, não aparada, sem exigência
+  de mistura de tipos de caractere). O token continua valendo.
+* **`422`:** `type` terminando em `/problems/invalid-reset-token`, para token inexistente, já usado ou
+  expirado. O token vale por 10 minutos (prazo **A DEFINIR NO BACKEND**). A tela volta à etapa do e-mail.
+* A senha nunca volta numa resposta nem aparece em log.
 
 ---
 
@@ -489,7 +552,8 @@ O fuso que define onde um dia começa e termina é **A DEFINIR NO BACKEND** (o s
 
 ## 10. Pendências do contrato
 
-* Autenticação real: como as contas são criadas e a recuperação de senha.
+* Autenticação real: como as contas são criadas.
+* Recuperação de senha: o serviço de envio de e-mail, o texto da mensagem, o limite de pedidos por origem e o prazo do token de redefinição.
 * Como a senha das conexões salvas é cifrada e onde fica a chave.
 * Limite de conexões salvas por conta, se houver.
 * URL base, nome do cookie e duração da sessão.

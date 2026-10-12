@@ -1,0 +1,39 @@
+.vazia,
+.unica {
+  grid-column: 1 / -1;
+  max-width: none;
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  line-height: var(--altura-linha-compacta);
+}
+
+.unica {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+}
+
+.destinatario {
+  color: var(--texto);
+  overflow-wrap: anywhere;
+}
+
+.codigo {
+  display: flex;
+  align-items: baseline;
+  gap: var(--espaco-2);
+}
+
+.codigo > :first-child {
+  font-weight: var(--peso-medio);
+  letter-spacing: 0.04em;
+}
+
+.codigo[data-vencido] > :first-child {
+  color: var(--texto-terciario);
+  text-decoration: line-through;
+}
+
+.situacao {
+  color: var(--erro);
+  font-size: var(--tamanho-xs);
+}

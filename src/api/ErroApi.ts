@@ -7,6 +7,7 @@ export type TipoErroApi =
   | 'NAO_AUTORIZADO'
   | 'NAO_ENCONTRADO'
   | 'CONFLITO'
+  | 'LIMITE_EXCEDIDO'
   | 'SERVIDOR'
   | 'CANCELADO';
 
@@ -40,5 +41,6 @@ export function tipoPorStatus(status: number): TipoErroApi {
   if (status === 401 || status === 403) return 'NAO_AUTORIZADO';
   if (status === 404) return 'NAO_ENCONTRADO';
   if (status === 409) return 'CONFLITO';
+  if (status === 429) return 'LIMITE_EXCEDIDO';
   return 'SERVIDOR';
 }

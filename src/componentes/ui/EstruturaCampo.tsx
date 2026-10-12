@@ -21,10 +21,22 @@ interface IdsCampo {
 interface EstruturaCampoProps extends PropriedadesMensagensCampo {
   id?: string;
   aviso?: string;
+  complemento?: ReactNode;
   children: (ids: IdsCampo) => ReactNode;
 }
 
-export function EstruturaCampo({ id, rotulo, dica, erro, aviso, sucesso, obrigatorio, className, children }: EstruturaCampoProps) {
+export function EstruturaCampo({
+  id,
+  rotulo,
+  dica,
+  erro,
+  aviso,
+  sucesso,
+  obrigatorio,
+  className,
+  complemento,
+  children,
+}: EstruturaCampoProps) {
   const idGerado = useId();
   const idControle = id ?? idGerado;
   const idMensagem = `${idControle}-mensagem`;
@@ -44,6 +56,8 @@ export function EstruturaCampo({ id, rotulo, dica, erro, aviso, sucesso, obrigat
       ) : null}
 
       {children({ idControle, idDescricao: mensagem ? idMensagem : undefined })}
+
+      {complemento}
 
       {erro ? (
         <p className={juntarClasses(estilos.mensagem, estilos.mensagemErro)} id={idMensagem}>

@@ -22,8 +22,10 @@ import {
   testarConexao,
 } from './manipuladores/conexoes';
 import { buscarAtividade, buscarConsultas, buscarIndicadores } from './manipuladores/dashboard';
+import { redefinirSenha, solicitarRecuperacao, verificarCodigoRecuperacao } from './manipuladores/recuperacaoSenha';
 import { buscarResumoRelatorio } from './manipuladores/relatorios';
 import { buscarVersao } from './manipuladores/sistema';
+import { expirarCodigoSimulado, expirarRedefinicaoSimulada } from './recuperacaoSimulada';
 import { rotaInexistente, servicoIndisponivel } from './resposta';
 import { encerrarSessaoSimulada } from './sessaoSimulada';
 
@@ -48,6 +50,14 @@ const rotas: Rota[] = [
   { metodo: 'POST', caminho: rotasApi.autenticacao.sessao, manipulador: entrar, espera: esperaDoAcesso },
   { metodo: 'GET', caminho: rotasApi.autenticacao.sessao, manipulador: buscarUsuarioAtual },
   { metodo: 'DELETE', caminho: rotasApi.autenticacao.sessao, manipulador: sair },
+  { metodo: 'POST', caminho: rotasApi.autenticacao.recuperacao, manipulador: solicitarRecuperacao, espera: esperaDoAcesso },
+  {
+    metodo: 'POST',
+    caminho: rotasApi.autenticacao.verificacaoRecuperacao,
+    manipulador: verificarCodigoRecuperacao,
+    espera: esperaDoAcesso,
+  },
+  { metodo: 'POST', caminho: rotasApi.autenticacao.novaSenha, manipulador: redefinirSenha, espera: esperaDoAcesso },
   { metodo: 'POST', caminho: rotasApi.conexoes.teste, manipulador: testarConexao, espera: esperaDaTentativa },
   { metodo: 'POST', caminho: rotasApi.conexoes.lista, manipulador: criarConexao, espera: esperaDaTentativa },
   { metodo: 'GET', caminho: rotasApi.conexoes.lista, manipulador: listarConexoes },
@@ -147,6 +157,8 @@ if (ambiente.desenvolvimento) {
       latencia: definirLatencia,
       esvaziar: (vazios = true) => definirDadosVazios(vazios),
       encerrarSessao: encerrarSessaoSimulada,
+      expirarCodigo: expirarCodigoSimulado,
+      expirarRedefinicao: expirarRedefinicaoSimulada,
       sair: () => {
         sairDoAcessoSimulado();
         window.location.reload();

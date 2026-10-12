@@ -1,5 +1,5 @@
 import { forwardRef, useState } from 'react';
-import type { InputHTMLAttributes } from 'react';
+import type { InputHTMLAttributes, ReactNode } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { classesControle } from './classesControle';
 import { EstruturaCampo } from './EstruturaCampo';
@@ -11,10 +11,11 @@ export interface CampoSenhaProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, 'className' | 'type' | 'autoComplete'>,
     PropriedadesMensagensCampo {
   preenchimentoAutomatico?: 'current-password' | 'new-password';
+  complemento?: ReactNode;
 }
 
 export const CampoSenha = forwardRef<HTMLInputElement, CampoSenhaProps>(function CampoSenha(
-  { rotulo, dica, erro, sucesso, className, id, disabled, preenchimentoAutomatico, ...resto },
+  { rotulo, dica, erro, sucesso, className, id, disabled, preenchimentoAutomatico, complemento, ...resto },
   ref,
 ) {
   const [visivel, setVisivel] = useState(false);
@@ -24,7 +25,15 @@ export const CampoSenha = forwardRef<HTMLInputElement, CampoSenhaProps>(function
     : { 'data-1p-ignore': '', 'data-lpignore': 'true', 'data-bwignore': '' };
 
   return (
-    <EstruturaCampo id={id} rotulo={rotulo} dica={dica} erro={erro} sucesso={sucesso} className={className}>
+    <EstruturaCampo
+      id={id}
+      rotulo={rotulo}
+      dica={dica}
+      erro={erro}
+      sucesso={sucesso}
+      className={className}
+      complemento={complemento}
+    >
       {({ idControle, idDescricao }) => (
         <div className={classesControle(erro, sucesso)}>
           <input

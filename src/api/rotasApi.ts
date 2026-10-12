@@ -1,6 +1,9 @@
 export const rotasApi = {
   autenticacao: {
     sessao: '/autenticacao/sessao',
+    recuperacao: '/autenticacao/recuperacao',
+    verificacaoRecuperacao: '/autenticacao/recuperacao/verificacao',
+    novaSenha: '/autenticacao/recuperacao/senha',
   },
   conexoes: {
     lista: '/conexoes',

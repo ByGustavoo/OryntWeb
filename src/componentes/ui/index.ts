@@ -1,6 +1,7 @@
 export { Botao } from './Botao';
 export type { BotaoProps, TamanhoBotao, VarianteBotao } from './Botao';
 export { BotaoIcone } from './BotaoIcone';
+export { CampoCodigo } from './CampoCodigo';
 export { CampoSelecao } from './CampoSelecao';
 export type { OpcaoSelecao } from './CampoSelecao';
 export { CampoSenha } from './CampoSenha';

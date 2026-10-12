@@ -1,0 +1,25 @@
+a.voltar {
+  align-self: center;
+  margin-block: calc(var(--espaco-2) * -1);
+  color: var(--texto-secundario);
+  animation: var(--animacao-emergir) var(--entrada-duracao, 0ms) var(--curva-saida)
+    calc(var(--entrada-inicio, 0ms) + var(--entrada-passo, 0ms) * 6) backwards;
+}
+
+.voltar svg {
+  transition: transform var(--duracao-base) var(--curva-saida);
+}
+
+.reservaDemonstracao {
+  min-height: 8.5rem;
+}
+
+@media (hover: hover) {
+  a.voltar:hover {
+    color: var(--texto);
+  }
+
+  .voltar:hover svg {
+    transform: translateX(-3px);
+  }
+}
