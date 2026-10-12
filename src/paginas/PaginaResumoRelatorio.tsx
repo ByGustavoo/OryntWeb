@@ -7,25 +7,25 @@ import { EsqueletoIndicadores } from '@/componentes/dashboard/GradeIndicadores';
 import { TabelaConsultas } from '@/componentes/dashboard/TabelaConsultas';
 import { CabecalhoPagina } from '@/componentes/layout/CabecalhoPagina';
 import { BarraPeriodo } from '@/componentes/relatorios/BarraPeriodo';
+import { CabecalhoImpressao } from '@/componentes/relatorios/CabecalhoImpressao';
 import { DestaquesRelatorio } from '@/componentes/relatorios/DestaquesRelatorio';
 import { DistribuicaoDesempenho } from '@/componentes/relatorios/DistribuicaoDesempenho';
 import { GraficoEvolucao } from '@/componentes/relatorios/GraficoEvolucao';
 import { IndicadoresRelatorio } from '@/componentes/relatorios/IndicadoresRelatorio';
-import { Botao, CabecalhoPainel, ConteudoAssincrono, Esqueleto, EstadoVazio, Nota, Painel } from '@/componentes/ui';
+import { CabecalhoPainel, ConteudoAssincrono, Esqueleto, EstadoVazio, Nota, Painel } from '@/componentes/ui';
 import { NOME_APLICACAO } from '@/configuracoes/aplicacao';
 import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
+import { useImpressao } from '@/ganchos/useImpressao';
 import { usePeriodoRelatorio } from '@/ganchos/usePeriodoRelatorio';
 import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
 import type { ConexaoDTO } from '@/modelos/conexao';
 import type { PeriodoRelatorio, ResumoRelatorioDTO } from '@/modelos/relatorios';
 import { useConexao } from '@/provedores/ProvedorConexao';
 import type { SituacaoConexao } from '@/provedores/ProvedorConexao';
-import { enderecoConexao } from '@/regras/conexoesSalvas';
 import { cabecalhoDoResumo, montarDestaques } from '@/regras/destaquesRelatorio';
-import { periodoAnteriorNaFrase, periodoNaFrase } from '@/regras/periodoRelatorio';
+import { periodoAnteriorNaFrase, periodoNaFrase, periodoVizinho, rotuloDoPeriodo } from '@/regras/periodoRelatorio';
 import { caminhos } from '@/rotas/caminhos';
 import { servicoRelatorios } from '@/servicos';
-import { formatarInstante } from '@/utilitarios/formatacao';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
 import estilos from './PaginaResumoRelatorio.module.css';
 
@@ -60,6 +60,10 @@ function ResumoConectado({ conexao }: { conexao: ConexaoDTO }) {
 
   const resumo = useDadosAssincronos((signal) => servicoRelatorios.buscarResumo(periodo, signal), [periodo]);
   const sessaoEncerrada = ehErroApi(resumo.erro, 'NAO_AUTORIZADO');
+  const impresso: PeriodoRelatorio = resumo.dados
+    ? { granularidade: resumo.dados.granularidade, inicio: resumo.dados.inicio }
+    : periodo;
+  const { imprimir, imprimindo, instante } = useImpressao(`${NOME_APLICACAO} - Resumo - ${rotuloDoPeriodo(impresso)}`);
 
   useEffect(() => {
     if (sessaoEncerrada) marcarDesconectada();
@@ -70,38 +74,37 @@ function ResumoConectado({ conexao }: { conexao: ConexaoDTO }) {
       <CabecalhoPagina
         titulo={TITULO}
         descricao={`Como o banco se comportou ${periodoNaFrase(periodo)}.`}
-        acoes={
-          <>
-            <Botao
-              variante="secundario"
-              icone={GitCompareArrows}
-              className="nao-imprimir"
-              onClick={() => navegar(caminhos.relatoriosComparacao, { state: { periodo } })}
-            >
-              Comparar
-            </Botao>
-            <Botao
-              variante="secundario"
-              icone={Download}
-              className="nao-imprimir"
-              onClick={() => navegar(caminhos.relatoriosExportacao, { state: { periodo } })}
-            >
-              Exportar
-            </Botao>
-            <Botao variante="secundario" icone={Printer} className="nao-imprimir" onClick={() => window.print()}>
-              Imprimir
-            </Botao>
-          </>
-        }
+        imprimir={false}
       />
 
       <div className={estilos.blocos}>
-        <p className={estilos.identificacao}>
-          <strong>{NOME_APLICACAO}</strong> · {conexao.nome} · <span className="codigo">{enderecoConexao(conexao)}</span> ·
-          gerado em {formatarInstante(hoje.toISOString())}
-        </p>
+        <CabecalhoImpressao
+          documento={TITULO}
+          periodo={impresso}
+          base={periodoVizinho(impresso, -1)}
+          conexao={conexao}
+          geradoEm={instante}
+        />
 
-        <BarraPeriodo periodo={periodo} hoje={hoje} aoMudar={mudarPeriodo} />
+        <BarraPeriodo
+          periodo={periodo}
+          hoje={hoje}
+          aoMudar={mudarPeriodo}
+          className="nao-imprimir"
+          acoes={[
+            {
+              icone: GitCompareArrows,
+              rotulo: 'Comparar',
+              aoAcionar: () => navegar(caminhos.relatoriosComparacao, { state: { periodo } }),
+            },
+            {
+              icone: Download,
+              rotulo: 'Exportar',
+              aoAcionar: () => navegar(caminhos.relatoriosExportacao, { state: { periodo } }),
+            },
+            { icone: Printer, rotulo: 'Imprimir', aoAcionar: imprimir, carregando: imprimindo },
+          ]}
+        />
 
         {conexao.simulada ? (
           <Nota tom="aviso" icone={FlaskConical} titulo="Dados demonstrativos.">

@@ -1,5 +1,6 @@
 import { useId } from 'react';
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import type { CSSProperties } from 'react';
+import { Area, AreaChart, CartesianGrid, Customized, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import type { TooltipProps } from 'recharts';
 import type { PeriodoDashboard, PontoAtividadeDTO } from '@/modelos/dashboard';
 import { descricaoPeriodo } from '@/modelos/rotulos';
@@ -11,12 +12,19 @@ import {
   formatarNumero,
   formatarNumeroCompacto,
 } from '@/utilitarios/formatacao';
-import { marcasDoEixo, prefereMovimentoReduzido } from '@/utilitarios/graficos';
+import { marcasDoEixo } from '@/utilitarios/graficos';
 import estilos from './GraficoAtividade.module.css';
 
 interface GraficoAtividadeProps {
   pontos: PontoAtividadeDTO[];
   periodo: PeriodoDashboard;
+}
+
+interface AreaDeTracado {
+  left?: number;
+  top?: number;
+  width?: number;
+  height?: number;
 }
 
 interface FormatoPeriodo {
@@ -26,7 +34,8 @@ interface FormatoPeriodo {
 }
 
 const ALTURA_GRAFICO_PX = 260;
-const DURACAO_TRACADO_MS = 900;
+const LARGURA_MAXIMA_RASTRO_PX = 128;
+const PROPORCAO_RASTRO = 0.3;
 
 const formatos: Record<PeriodoDashboard, FormatoPeriodo> = {
   ULTIMA_HORA: {
@@ -70,6 +79,33 @@ function DicaAtividade({ active, payload, formato }: TooltipProps<number, string
   );
 }
 
+function FioDeLeitura({ offset }: { offset?: AreaDeTracado }) {
+  const idRecorte = useId();
+  const idRastro = useId();
+  const { left = 0, top = 0, width = 0, height = 0 } = offset ?? {};
+  if (width <= 0 || height <= 0) return null;
+  const rastro = Math.min(LARGURA_MAXIMA_RASTRO_PX, width * PROPORCAO_RASTRO);
+
+  return (
+    <g className={estilos.leitura} clipPath={`url(#${idRecorte})`}>
+      <defs>
+        <clipPath id={idRecorte}>
+          <rect x={left} y={top} width={width + 1} height={height} />
+        </clipPath>
+        <linearGradient id={idRastro} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" className={estilos.rastroInicio} />
+          <stop offset="62%" className={estilos.rastroMeio} />
+          <stop offset="100%" className={estilos.rastroFim} />
+        </linearGradient>
+      </defs>
+      <g className={estilos.fio} style={{ '--percurso': `${width}px` } as CSSProperties}>
+        <rect x={left - rastro} y={top} width={rastro} height={height} fill={`url(#${idRastro})`} />
+        <line x1={left} y1={top} x2={left} y2={top + height} />
+      </g>
+    </g>
+  );
+}
+
 function resumir(pontos: PontoAtividadeDTO[], periodo: PeriodoDashboard, formato: FormatoPeriodo): string {
   const pico = pontos.reduce((maior, ponto) => (ponto.consultas > maior.consultas ? ponto : maior));
   const total = pontos.reduce((soma, ponto) => soma + ponto.consultas, 0);
@@ -82,6 +118,7 @@ export function GraficoAtividade({ pontos, periodo }: GraficoAtividadeProps) {
   const formato = formatos[periodo];
   if (pontos.length === 0) return null;
   const marcas = marcasDoEixo(Math.max(...pontos.map((ponto) => ponto.consultas)));
+  const leitura = `${pontos[0]?.instante}/${pontos.length}`;
 
   return (
     <figure className={estilos.figura} aria-describedby={idResumo}>
@@ -91,7 +128,7 @@ export function GraficoAtividade({ pontos, periodo }: GraficoAtividadeProps) {
 
       <div className={estilos.area} style={{ height: ALTURA_GRAFICO_PX }} aria-hidden="true">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={pontos} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+          <AreaChart key={leitura} data={pontos} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
             <defs>
               <linearGradient id={idGradiente} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" className={estilos.gradienteTopo} />
@@ -132,10 +169,9 @@ export function GraficoAtividade({ pontos, periodo }: GraficoAtividadeProps) {
               fill={`url(#${idGradiente})`}
               className={estilos.serie}
               activeDot={{ r: 5, strokeWidth: 2, className: estilos.pontoAtivo }}
-              isAnimationActive={!prefereMovimentoReduzido()}
-              animationDuration={DURACAO_TRACADO_MS}
-              animationEasing="ease-out"
+              isAnimationActive={false}
             />
+            <Customized component={FioDeLeitura} />
           </AreaChart>
         </ResponsiveContainer>
       </div>

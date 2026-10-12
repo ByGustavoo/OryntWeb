@@ -4,6 +4,8 @@
 }
 
 .area {
+  --duracao-leitura: 900ms;
+
   width: 100%;
   font-family: var(--fonte-numeros);
   font-variant-numeric: tabular-nums;
@@ -26,6 +28,86 @@
   stroke: var(--grafico-1);
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+.serie {
+  animation: revelarSerie var(--duracao-leitura) ease-out backwards;
+}
+
+.serie :global(.recharts-area-area) {
+  animation: assentarPreenchimento var(--duracao-leitura) ease-out var(--duracao-base) backwards;
+}
+
+.leitura {
+  pointer-events: none;
+}
+
+.fio {
+  opacity: 0;
+  animation:
+    percorrer var(--duracao-leitura) ease-out both,
+    sinalizar var(--duracao-leitura) linear;
+}
+
+.fio line {
+  stroke: var(--grafico-1);
+  stroke-width: 1;
+}
+
+.rastroInicio {
+  stop-color: var(--grafico-1);
+  stop-opacity: 0;
+}
+
+.rastroMeio {
+  stop-color: var(--grafico-1);
+  stop-opacity: 0.04;
+}
+
+.rastroFim {
+  stop-color: var(--grafico-1);
+  stop-opacity: 0.16;
+}
+
+@keyframes revelarSerie {
+  from {
+    clip-path: inset(-8px 100% -8px -8px) fill-box;
+  }
+
+  to {
+    clip-path: inset(-8px 0% -8px -8px) fill-box;
+  }
+}
+
+@keyframes assentarPreenchimento {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes percorrer {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(var(--percurso));
+  }
+}
+
+@keyframes sinalizar {
+  0% {
+    opacity: 0;
+  }
+
+  10%,
+  76% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
 }
 
 .gradienteTopo {

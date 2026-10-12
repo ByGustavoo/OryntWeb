@@ -256,7 +256,16 @@
 }
 
 @media print {
-  .conteiner .ordenacaoCompacta {
+  .conteiner {
+    --linhas-sql: 8;
+  }
+
+  .conteiner .ordenacaoCompacta,
+  .ordenar:not(.ordenarAtivo) svg {
     display: none;
+  }
+
+  .tabela tr {
+    break-inside: avoid;
   }
 }

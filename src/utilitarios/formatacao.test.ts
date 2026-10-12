@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   formatarComSinal,
+  formatarDataHoraCompleta,
   formatarDataOpcional,
   formatarDuracaoMs,
   formatarNumero,
@@ -85,6 +86,14 @@ describe('formatarDataOpcional', () => {
 
   it('escreve dia, mês abreviado e ano', () => {
     expect(formatarDataOpcional('2026-09-29T15:00:00')).toBe('29 de set. de 2026');
+  });
+});
+
+describe('formatarDataHoraCompleta', () => {
+  it('escreve o dia, o mês por extenso, o ano e a hora', () => {
+    const texto = formatarDataHoraCompleta(new Date(2026, 9, 12, 14, 31));
+    expect(texto).toContain('12 de outubro de 2026');
+    expect(texto).toContain('14:31');
   });
 });
 

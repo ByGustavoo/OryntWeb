@@ -19,6 +19,7 @@ export interface IndicadorNumericoProps {
 }
 
 const TAMANHO_ICONE = 18;
+const SEPARADORES_NUMERICOS = /([.,])/;
 
 export function IndicadorNumerico({
   icone: Icone,
@@ -46,7 +47,19 @@ export function IndicadorNumerico({
         <span className={estilos.nome}>{rotulo}</span>
       </dt>
       <dd className={`${estilos.valor} numeros`}>
-        <span aria-hidden="true">{formatar(exibido)}</span>
+        <span aria-hidden="true">
+          {formatar(exibido)
+            .split(SEPARADORES_NUMERICOS)
+            .map((trecho, posicao) =>
+              posicao % 2 === 1 ? (
+                <span className={estilos.separador} key={posicao}>
+                  {trecho}
+                </span>
+              ) : (
+                trecho
+              ),
+            )}
+        </span>
         <span className="visualmente-oculto">{formatar(valor)}</span>
         {unidade ? <span className={estilos.unidade}>{unidade}</span> : null}
       </dd>

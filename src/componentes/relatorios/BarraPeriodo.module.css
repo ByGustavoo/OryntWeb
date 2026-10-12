@@ -1,3 +1,7 @@
+.moldura {
+  container: barra-periodo / inline-size;
+}
+
 .barra {
   display: flex;
   flex-wrap: wrap;
@@ -49,9 +53,44 @@
   margin-left: auto;
 }
 
-@media print {
-  .barra {
-    padding-bottom: var(--espaco-3);
-    border-bottom: 1px solid var(--borda);
+.acoes {
+  display: flex;
+  gap: var(--espaco-2);
+}
+
+@container barra-periodo (min-width: 930px) and (max-width: 1149px) {
+  .acoes .acao {
+    width: var(--altura-controle);
+    padding-inline: 0;
+  }
+
+  .nomeAcao {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+
+@container barra-periodo (max-width: 929px) {
+  .acoes {
+    flex-basis: 100%;
+  }
+}
+
+@container barra-periodo (max-width: 399px) {
+  .acoes {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .acoes .acao {
+    padding-inline: var(--espaco-2);
+  }
+
+  .acoes .acao > svg {
+    display: none;
   }
 }

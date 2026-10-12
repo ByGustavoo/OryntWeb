@@ -17,6 +17,10 @@
   animation: destacar var(--duracao-tema) var(--curva-mola) 420ms backwards;
 }
 
+:global([data-travessia]) .fatia {
+  animation: destacar var(--duracao-tema) var(--curva-mola) calc(var(--duracao-chegada) - var(--duracao-rapida)) backwards;
+}
+
 @keyframes destacar {
   from {
     transform: var(--fatia-encaixada);

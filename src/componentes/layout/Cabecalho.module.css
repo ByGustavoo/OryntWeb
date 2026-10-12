@@ -35,6 +35,14 @@
   border-radius: var(--raio-md);
 }
 
+:global([data-travessia]) .cabecalho {
+  view-transition-name: cabecalho-aplicacao;
+}
+
+:global([data-travessia]) .marca > svg {
+  view-transition-name: marca-orynt;
+}
+
 .marca:focus-visible {
   outline: none;
   box-shadow: var(--anel-foco);

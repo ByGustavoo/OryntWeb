@@ -40,7 +40,9 @@ export function IndicadoresRelatorio({ indicadores, granularidade }: Indicadores
           rotulo="Consultas executadas"
           valor={indicadores.totalConsultas}
           formatar={formatarQuantidade}
-          contexto={<VariacaoIndicador valor={indicadores.variacaoTotalConsultas} referencia={referencia} />}
+          contexto={
+            <VariacaoIndicador valor={indicadores.variacaoTotalConsultas} referencia={referencia} favoravel="ALTA" />
+          }
         />
         <IndicadorNumerico
           icone={Timer}

@@ -16,6 +16,10 @@
   animation: clarear 900ms var(--curva-saida) backwards;
 }
 
+:global([data-travessia]) .painel {
+  view-transition-name: acesso-painel;
+}
+
 .painel::before {
   content: '';
   position: absolute;

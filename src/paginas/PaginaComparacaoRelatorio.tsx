@@ -4,16 +4,18 @@ import { ehErroApi } from '@/api/tratamentoErros';
 import { PainelSemConexao } from '@/componentes/conexao/PainelSemConexao';
 import { EsqueletoIndicadores } from '@/componentes/dashboard/GradeIndicadores';
 import { CabecalhoPagina } from '@/componentes/layout/CabecalhoPagina';
+import { CabecalhoImpressao } from '@/componentes/relatorios/CabecalhoImpressao';
 import { ConsultasComparadas } from '@/componentes/relatorios/ConsultasComparadas';
 import { DesempenhoComparado } from '@/componentes/relatorios/DesempenhoComparado';
 import { DestaquesRelatorio } from '@/componentes/relatorios/DestaquesRelatorio';
 import { GraficoComparacao } from '@/componentes/relatorios/GraficoComparacao';
 import { IndicadoresComparacao } from '@/componentes/relatorios/IndicadoresComparacao';
 import { SeletorComparacao } from '@/componentes/relatorios/SeletorComparacao';
-import { Botao, CabecalhoPainel, ConteudoAssincrono, Esqueleto, EstadoVazio, Nota, Painel } from '@/componentes/ui';
+import { CabecalhoPainel, ConteudoAssincrono, Esqueleto, EstadoVazio, Nota, Painel } from '@/componentes/ui';
 import { NOME_APLICACAO } from '@/configuracoes/aplicacao';
 import { useComparacaoRelatorio } from '@/ganchos/useComparacaoRelatorio';
 import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
+import { useImpressao } from '@/ganchos/useImpressao';
 import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
 import type { ConexaoDTO } from '@/modelos/conexao';
 import type { ComparacaoRelatorio } from '@/modelos/relatorios';
@@ -31,10 +33,9 @@ import {
   rotulosDaComparacao,
   titulosDaComparacao,
 } from '@/regras/comparacaoRelatorio';
-import { enderecoConexao } from '@/regras/conexoesSalvas';
+import { rotuloDoPeriodo } from '@/regras/periodoRelatorio';
 import { caminhos } from '@/rotas/caminhos';
 import { servicoRelatorios } from '@/servicos';
-import { formatarInstante } from '@/utilitarios/formatacao';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
 import estilos from './PaginaComparacaoRelatorio.module.css';
 
@@ -84,6 +85,10 @@ function ComparacaoConectada({ conexao }: { conexao: ConexaoDTO }) {
     [par],
   );
   const sessaoEncerrada = ehErroApi(comparacao.erro, 'NAO_AUTORIZADO');
+  const impresso = comparacao.dados ? periodosDaComparacao(comparacao.dados.principal, comparacao.dados.base) : par;
+  const { imprimir, imprimindo, instante } = useImpressao(
+    `${NOME_APLICACAO} - Comparação - ${rotuloDoPeriodo(impresso.periodo)} comparado com ${rotuloDoPeriodo(impresso.base)}`,
+  );
 
   useEffect(() => {
     if (sessaoEncerrada) marcarDesconectada();
@@ -94,20 +99,24 @@ function ComparacaoConectada({ conexao }: { conexao: ConexaoDTO }) {
       <CabecalhoPagina
         titulo={TITULO}
         descricao="O que mudou no banco entre dois períodos do mesmo tamanho."
-        acoes={
-          <Botao variante="secundario" icone={Printer} className="nao-imprimir" onClick={() => window.print()}>
-            Imprimir
-          </Botao>
-        }
+        imprimir={false}
       />
 
       <div className={estilos.blocos}>
-        <p className={estilos.identificacao}>
-          <strong>{NOME_APLICACAO}</strong> · {conexao.nome} · <span className="codigo">{enderecoConexao(conexao)}</span> ·
-          gerado em {formatarInstante(hoje.toISOString())}
-        </p>
+        <CabecalhoImpressao
+          documento={TITULO}
+          periodo={impresso.periodo}
+          base={impresso.base}
+          conexao={conexao}
+          geradoEm={instante}
+        />
 
-        <SeletorComparacao par={par} hoje={hoje} aoMudar={mudarPar} />
+        <SeletorComparacao
+          par={par}
+          hoje={hoje}
+          aoMudar={mudarPar}
+          acoes={[{ icone: Printer, rotulo: 'Imprimir', aoAcionar: imprimir, carregando: imprimindo }]}
+        />
 
         {conexao.simulada ? (
           <Nota tom="aviso" icone={FlaskConical} titulo="Dados demonstrativos.">

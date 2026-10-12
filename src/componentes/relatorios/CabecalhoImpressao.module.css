@@ -1,0 +1,100 @@
+.folha {
+  display: none;
+}
+
+@media print {
+  .folha {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espaco-5);
+    padding-bottom: var(--espaco-2);
+  }
+
+  .topo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--espaco-6);
+  }
+
+  .marca {
+    display: flex;
+    align-items: center;
+    gap: var(--espaco-3);
+  }
+
+  .nome {
+    color: var(--texto);
+    font-size: var(--tamanho-xl);
+    line-height: 1;
+  }
+
+  .documento {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    line-height: var(--altura-linha-compacta);
+  }
+
+  .secao {
+    color: var(--texto-terciario);
+    font-size: var(--tamanho-sm);
+  }
+
+  .nomeDocumento {
+    color: var(--texto);
+    font-size: var(--tamanho-md);
+    font-weight: var(--peso-forte);
+    letter-spacing: -0.01em;
+  }
+
+  .regua {
+    height: 2px;
+    background: linear-gradient(to right, var(--destaque) 0 var(--espaco-16), var(--borda-forte) var(--espaco-16));
+  }
+
+  .assunto {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espaco-1);
+  }
+
+  .titulo {
+    font-size: var(--tamanho-2xl);
+  }
+
+  .dia {
+    color: var(--texto-secundario);
+    font-weight: var(--peso-regular);
+  }
+
+  .complemento {
+    color: var(--texto-secundario);
+    font-size: var(--tamanho-base);
+  }
+
+  .dados {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espaco-3) var(--espaco-10);
+  }
+
+  .dado {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .dado dt {
+    color: var(--texto-terciario);
+    font-size: var(--tamanho-xs);
+  }
+
+  .dado dd {
+    color: var(--texto);
+    font-size: var(--tamanho-sm);
+    font-weight: var(--peso-medio);
+  }
+}

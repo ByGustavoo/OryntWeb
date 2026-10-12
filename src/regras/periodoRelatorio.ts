@@ -233,14 +233,14 @@ function diaEMes(data: Date, comAno: boolean): string {
   return comAno ? `${dia}/${mes}/${data.getFullYear()}` : `${dia}/${mes}`;
 }
 
-export function rotuloCurtoDoPeriodo(periodo: PeriodoRelatorio, comAno = false): string {
+export function rotuloCurtoDoPeriodo(periodo: PeriodoRelatorio, comAno = false, anoNasDuasPontas = false): string {
   const inicio = inicioDoPeriodo(periodo);
   if (periodo.granularidade === 'MES') return rotuloDoPeriodo(periodo, comAno);
   if (periodo.granularidade === 'DIA') return diaEMes(inicio, comAno);
 
   const fim = somarDias(inicioDoSeguinte(periodo), -1);
   const viraOAno = inicio.getFullYear() !== fim.getFullYear();
-  return `${diaEMes(inicio, comAno && viraOAno)} a ${diaEMes(fim, comAno)}`;
+  return `${diaEMes(inicio, comAno && (viraOAno || anoNasDuasPontas))} a ${diaEMes(fim, comAno)}`;
 }
 
 export function anosDoPeriodo(periodo: PeriodoRelatorio): number[] {

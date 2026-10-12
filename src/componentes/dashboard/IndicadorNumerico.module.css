@@ -136,6 +136,10 @@
   white-space: nowrap;
 }
 
+.separador {
+  margin-inline: -0.14em;
+}
+
 .unidade {
   color: var(--texto-secundario);
   font-family: var(--fonte-interface);

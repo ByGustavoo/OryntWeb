@@ -1,10 +1,15 @@
+import { Fragment } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAutenticacao } from '@/provedores/ProvedorAutenticacao';
+import { useChegadaNaAplicacao } from '@/ganchos/useChegadaNaAplicacao';
 import { caminhos } from './caminhos';
 
 export function RotaVisitante() {
-  const { situacao } = useAutenticacao();
+  const { liberada, tentativa } = useChegadaNaAplicacao();
 
-  if (situacao !== 'AUTENTICADA') return <Outlet />;
-  return <Navigate to={caminhos.dashboard} replace />;
+  if (liberada) return <Navigate to={caminhos.dashboard} replace />;
+  return (
+    <Fragment key={tentativa}>
+      <Outlet />
+    </Fragment>
+  );
 }
