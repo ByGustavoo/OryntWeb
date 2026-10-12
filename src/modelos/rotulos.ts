@@ -1,5 +1,6 @@
 import type { TipoBanco } from './conexao';
 import type { DesempenhoConsulta, PeriodoDashboard } from './dashboard';
+import type { GranularidadeRelatorio } from './relatorios';
 
 export const rotuloTipoBanco: Record<TipoBanco, string> = {
   POSTGRESQL: 'PostgreSQL',
@@ -25,4 +26,28 @@ export const rotuloDesempenho: Record<DesempenhoConsulta, string> = {
   RAPIDA: 'Rápida',
   MODERADA: 'Moderada',
   LENTA: 'Lenta',
+};
+
+export const rotuloFaixaDesempenho: Record<DesempenhoConsulta, string> = {
+  RAPIDA: 'Rápidas',
+  MODERADA: 'Moderadas',
+  LENTA: 'Lentas',
+};
+
+export const rotuloGranularidade: Record<GranularidadeRelatorio, string> = {
+  DIA: 'Dia',
+  SEMANA: 'Semana',
+  MES: 'Mês',
+};
+
+export const passoAnterior: Record<GranularidadeRelatorio, string> = {
+  DIA: 'Dia anterior',
+  SEMANA: 'Semana anterior',
+  MES: 'Mês anterior',
+};
+
+export const passoSeguinte: Record<GranularidadeRelatorio, string> = {
+  DIA: 'Dia seguinte',
+  SEMANA: 'Semana seguinte',
+  MES: 'Mês seguinte',
 };

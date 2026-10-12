@@ -22,6 +22,7 @@ const CONSULTA_MOVIMENTO_REDUZIDO = '(prefers-reduced-motion: reduce)';
 const CLASSE_TROCANDO_TEMA = 'trocando-tema';
 const CLASSE_CRUZANDO_TEMA = 'cruzando-tema';
 const DURACAO_TROCA_TEMA_MS = 640;
+const TEMA_DE_IMPRESSAO: TemaAplicado = 'claro';
 
 interface DocumentoComTransicao {
   startViewTransition?: (atualizar: () => void) => { finished: Promise<void> };
@@ -79,6 +80,22 @@ export function ProvedorTema({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     document.documentElement.dataset.tema = tema;
+  }, [tema]);
+
+  useEffect(() => {
+    const raiz = document.documentElement;
+    const clarear = () => {
+      raiz.dataset.tema = TEMA_DE_IMPRESSAO;
+    };
+    const restaurar = () => {
+      raiz.dataset.tema = tema;
+    };
+    window.addEventListener('beforeprint', clarear);
+    window.addEventListener('afterprint', restaurar);
+    return () => {
+      window.removeEventListener('beforeprint', clarear);
+      window.removeEventListener('afterprint', restaurar);
+    };
   }, [tema]);
 
   const definirModo = useCallback(

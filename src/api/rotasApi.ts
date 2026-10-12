@@ -14,6 +14,9 @@ export const rotasApi = {
     atividade: '/dashboard/atividade',
     consultas: '/dashboard/consultas',
   },
+  relatorios: {
+    resumo: '/relatorios/resumo',
+  },
   sistema: {
     versao: '/sistema/versao',
   },

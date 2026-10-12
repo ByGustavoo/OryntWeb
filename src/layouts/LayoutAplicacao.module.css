@@ -71,3 +71,20 @@
     padding-top: var(--espaco-6);
   }
 }
+
+@media print {
+  .casca,
+  .cascaRecolhida {
+    display: block;
+    min-height: 0;
+  }
+
+  .conteudo {
+    padding: 0;
+    border-left: none;
+  }
+
+  .limite {
+    max-width: none;
+  }
+}

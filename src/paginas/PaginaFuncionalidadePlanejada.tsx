@@ -2,15 +2,16 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, CalendarClock, CircleDashed, CircleDot } from 'lucide-react';
 import { CabecalhoPagina } from '@/componentes/layout/CabecalhoPagina';
 import { Painel, Selo } from '@/componentes/ui';
-import type { FuncionalidadePlanejada, TelaPlanejada } from '@/configuracoes/navegacao';
+import { telasPlanejadas } from '@/configuracoes/navegacao';
+import type { Funcionalidade, TelaFuncionalidade } from '@/configuracoes/navegacao';
 import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
 import { caminhos } from '@/rotas/caminhos';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
 import estilos from './PaginaFuncionalidadePlanejada.module.css';
 
 interface PaginaFuncionalidadePlanejadaProps {
-  funcionalidade: FuncionalidadePlanejada;
-  tela: TelaPlanejada;
+  funcionalidade: Funcionalidade;
+  tela: TelaFuncionalidade;
 }
 
 export default function PaginaFuncionalidadePlanejada({ funcionalidade, tela }: PaginaFuncionalidadePlanejadaProps) {
@@ -42,7 +43,7 @@ export default function PaginaFuncionalidadePlanejada({ funcionalidade, tela }: 
             O que está previsto
           </h3>
           <ul className={estilos.lista}>
-            {funcionalidade.filhos.map((filho) => {
+            {telasPlanejadas(funcionalidade).map((filho) => {
               const atual = filho.destino === tela.destino;
               const Marcador = atual ? CircleDot : CircleDashed;
 

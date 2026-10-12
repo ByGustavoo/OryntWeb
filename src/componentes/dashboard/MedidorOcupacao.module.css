@@ -1,0 +1,33 @@
+.ocupacao {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+}
+
+.trilho {
+  flex: 0 1 4.5rem;
+  height: 4px;
+  overflow: hidden;
+  border-radius: var(--raio-pilula);
+  background-color: var(--neutro-suave);
+}
+
+.texto {
+  min-width: 0;
+}
+
+.preenchimento {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background-color: var(--grafico-1);
+  transform-origin: left center;
+  transition: width var(--duracao-expressiva) var(--curva-saida);
+  animation: preencher var(--duracao-expressiva) var(--curva-saida) calc(var(--entrada, 0ms) + var(--duracao-base)) backwards;
+}
+
+@keyframes preencher {
+  from {
+    transform: scaleX(0);
+  }
+}

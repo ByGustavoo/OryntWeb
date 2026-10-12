@@ -40,9 +40,10 @@ silenciosa no resto.
 * **Tipo de banco:** aparece como campo já resolvido (PostgreSQL), não como lista de uma opção.
 * **Rótulos:** capitalização de frase ("Usuários e permissões", "Objetos do banco"), como nos outros projetos.
 * **Navegação em grupos e subgrupos:** pedido do usuário em 11 de outubro de 2026, no modelo do PrismaWeb. O menu tem o Dashboard, o grupo "Análise" (Relatórios e Consultas SQL) e o grupo "Gerenciamento" (Objetos do banco e Usuários e permissões); Configurações segue no rodapé. Cada item de grupo abre as suas telas: Relatórios (Resumo, Exportação, Comparação), Consultas SQL (Todas, Histórico, Planos de execução), Objetos do banco (Visões, Índices, Tabelas, Funções) e Usuários e permissões (Papéis, Sessões, Permissões). Os nomes dos grupos e das telas foram escolhidos por boa prática, a partir do que já estava previsto para cada funcionalidade.
-* **Telas planejadas:** o grupo em que nada está pronto leva o selo "Em breve" ao lado do título (antes havia um único grupo chamado "Em breve"). Cada tela tem a própria rota, mostra o que está previsto para a funcionalidade, com a tela aberta em evidência, e não simula nada.
+* **Telas planejadas:** o grupo em que nada está pronto leva o selo "Em breve" ao lado do título (antes havia um único grupo chamado "Em breve"). Num grupo que já tem tela pronta, a marca "Em breve" desce para o item em que nada está pronto (Consultas SQL) e para cada tela planejada de um item que já tem tela pronta (nenhuma hoje: as três telas de Relatórios estão prontas). Cada tela planejada tem a própria rota, mostra o que está previsto para a funcionalidade, com a tela aberta em evidência, e não simula nada.
 * **Demonstração:** selo "Demonstração" no menu da conta enquanto há uma conexão simulada ativa e aviso "Dados demonstrativos" no dashboard. Sem conexão, o selo não aparece. O selo saiu do cabeçalho a pedido do usuário em 11 de outubro de 2026.
 * **Dashboard:** períodos de 1 h, 24 h, 7 dias e 30 dias; a tabela vira cartões em telas estreitas.
+* **Consulta inteira e cópia:** pedido do usuário em 12 de outubro de 2026. Na tabela das consultas que mais pesam, do Dashboard e do Resumo, a consulta que não cabe em duas linhas (três nos cartões) é cortada com reticências e ganha um botão que a mostra inteira na própria linha; clicar no texto cortado também a abre. Toda linha tem um botão que copia o SQL completo, que aparece ao passar o mouse ou focar a linha e fica sempre visível em telas de toque. O texto copiado é só o SQL, sem aviso de demonstração, para poder ser colado e executado. A tabela de Comparação ainda não tem os dois botões.
 * **Versões:** seção em Configurações, abaixo de "Aparência", com um cartão para o Orynt Web e outro para a Orynt API, cada um com a versão e a data de lançamento (pedido do usuário em 11 de outubro de 2026). A versão do front vem de `window.__ORYNT_CONFIG__.versao` e, na falta dela, do `version` do `package.json`; a data de lançamento vem só de `window.__ORYNT_CONFIG__.dataLancamento`. A da API vem de `GET /sistema/versao`. Com dados simulados, o cartão da API mostra "Simulada" e diz que nenhuma API está em uso.
 
 ## Acesso (login)
@@ -110,7 +111,97 @@ Regras:
 * **Fechar o modal:** os campos digitados ficam para a próxima abertura, menos a senha, que é descartada. Durante uma tentativa, só "Cancelar" interrompe.
 * **Simulação:** a lista fica no `localStorage` em `orynt:simulacao:conexoes-salvas`, sem senha, e a tela de Configurações diz isso.
 
+## Relatórios: Resumo
+
+Pedido pelo usuário em 11 de outubro de 2026: a tela "Resumo" de Relatórios deixa de ser planejada. O
+Dashboard responde "como o banco está agora?"; o Resumo responde "como foi o período?".
+
+| # | Tema | Decisão |
+|---|---|---|
+| Q1 | Modelo de período | Períodos fechados de calendário: dia, semana (de segunda a domingo) ou mês, com setas para o anterior e o seguinte. |
+| Q2 | Período em andamento | Fica de fora. Hoje, esta semana e este mês não têm relatório; o "agora" é do Dashboard. |
+| Q3 | Conteúdo | Seis blocos: período, destaques em frases, quatro indicadores com a variação contra o período anterior, evolução do volume e do tempo médio com o pico marcado, divisão das execuções e do tempo por faixa de desempenho e as consultas que mais pesaram, com a variação do tempo médio de cada uma. |
+| Q4 | Período na URL | O endereço é sempre `/relatorios/resumo`, sem parâmetros (o usuário pediu a URL limpa). O período aberto fica no histórico do navegador: recarregar a página o mantém; abrir o endereço de novo começa no período mais recente. |
+| S1 | Imprimir | Botão "Imprimir", que abre a impressão do navegador. A folha sai sem menu, cabeçalho e controles, em tema claro, com a conexão e o momento em que foi gerada. Aprovada. |
+| S2 | Atalho no Dashboard | Link no painel "Atividade das consultas" para o resumo de ontem (períodos de 1 h e 24 h), da semana passada (7 dias) ou do mês passado (30 dias). Aprovada. |
+| S3 | Copiar destaques | Botão "Copiar" no bloco de destaques, que leva as frases como texto, com o nome da conexão e o período. Aprovada. |
+
+Regras:
+
+* **Período inicial:** a última semana fechada.
+* **Histórico:** dá para voltar até o primeiro período inteiro dos últimos 12 meses. A seta do período seguinte fica desabilitada no último período fechado, e "Mais recente" volta a ele.
+* **Trocar o tamanho do período:** a tela vai para o dia, a semana ou o mês que contém o último dia do período aberto, sem nunca cair num período em andamento.
+* **Comparação:** toda variação é contra o período de mesmo tamanho imediatamente anterior, que a tela nomeia ("Comparado com…").
+* **Destaques:** as frases são montadas pelo front a partir dos números do relatório. A queda do tempo médio é marcada como boa e a alta como ponto de atenção; o volume não tem juízo de valor.
+* **Desempenho:** a API classifica as consultas, como no Dashboard (Q3 de "Decisões"); o front só apresenta as faixas.
+* **Sem conexão:** a tela mostra o mesmo painel do Dashboard.
+* **Demonstração:** o aviso "Dados demonstrativos" aparece na tela e na folha impressa, e o texto copiado termina com "(dados demonstrativos)".
+
+## Relatórios: Exportação
+
+Pedido pelo usuário em 11 de outubro de 2026: a tela "Exportação" de Relatórios deixa de ser planejada.
+Ela entrega como arquivo o mesmo relatório que o Resumo mostra na tela.
+
+| # | Tema | Decisão |
+|---|---|---|
+| Q1 | Quem gera o arquivo | O front, a partir do mesmo `GET /relatorios/resumo`. Não há rota de exportação na API, e o arquivo nunca diverge do que o Resumo mostra. |
+| Q2 | Período | Um período fechado por vez, com a mesma barra do Resumo. |
+| Q3 | Formatos | CSV e JSON, sem dependência nova. PDF continua sendo o "Imprimir" do Resumo. Markdown entrou pela S3. |
+| Q4 | CSV com mais de um bloco | Um arquivo por bloco marcado, para cada um abrir como tabela na planilha. |
+| Q5 | Números no CSV | Padrão brasileiro por omissão (`;` entre as colunas e vírgula decimal), com opção de trocar para o internacional (`,` e ponto). |
+| S1 | Botão "Exportar" no Resumo | Ao lado de "Imprimir", abre a Exportação no período que estava na tela. Aprovada. |
+| S2 | Copiar como tabela | Cada bloco tem um botão que o copia com as colunas separadas por tabulação, para colar numa planilha. Aprovada. |
+| S3 | Formato Markdown | Um documento com título e uma tabela por bloco. Aprovada. |
+
+Regras:
+
+* **Blocos:** evolução, consultas, desempenho e indicadores, todos marcados ao abrir. Sem nenhum marcado, o botão de baixar fica desabilitado e a tela diz por quê.
+* **Arquivos:** CSV gera um arquivo por bloco; JSON e Markdown geram um arquivo só, com os blocos marcados na ordem do relatório.
+* **Nome do arquivo:** `orynt-resumo-<dia|semana|mes>-<primeiro dia>`, mais o bloco no CSV, mais `-demonstracao` quando os dados são fictícios.
+* **CSV:** UTF-8 com marca de ordem de bytes, linhas em CRLF, datas em `AAAA-MM-DD` e números sem separador de milhar. O texto que uma planilha leria como fórmula (começando por `=`, `+`, `-` ou `@`) sai com um apóstrofo na frente.
+* **JSON:** os mesmos nomes de campo do contrato da API, mais a conexão, o período, o momento em que foi gerado e `dadosDemonstrativos`.
+* **Markdown:** números no formato brasileiro, para leitura; o padrão dos números vale para o CSV e para a tabela copiada.
+* **Demonstração:** além do nome do arquivo, o aviso vai dentro do conteúdo: uma coluna "Origem dos dados" em cada linha do CSV e da tabela copiada, os campos `dadosDemonstrativos` e `aviso` no JSON e uma citação no topo do Markdown.
+* **Prévia:** a tela mostra as primeiras linhas, o nome, o tamanho e a quantidade de linhas de cada arquivo antes de baixar.
+* **Histórico:** a tela não guarda o que foi baixado.
+* **URL:** sempre `/relatorios/exportacao`, com o período no histórico do navegador, como no Resumo.
+
+## Relatórios: Comparação
+
+Pedido pelo usuário em 11 de outubro de 2026: a tela "Comparação" de Relatórios deixa de ser planejada.
+O Resumo responde "como foi o período?"; a Comparação responde "o que mudou entre estes dois períodos?",
+com os dois escolhidos livremente.
+
+| # | Tema | Decisão |
+|---|---|---|
+| Q1 | Períodos comparáveis | Dois períodos fechados do mesmo tamanho (dia com dia, semana com semana, mês com mês), dentro dos 12 meses de histórico. |
+| Q2 | Origem dos dados | Duas leituras do mesmo `GET /relatorios/resumo`, e o front calcula as diferenças. Não há rota de comparação na API, e a tela nunca diverge do Resumo. |
+| Q3 | Conteúdo | Seis blocos: os dois períodos, "O que mudou" em frases, quatro indicadores com o valor de cada lado, a evolução dos dois períodos sobreposta, a divisão por faixa de desempenho lado a lado e as consultas com o tempo médio nos dois períodos. |
+| Q4 | Ordem das consultas | Pela maior alta do tempo médio: as que pioraram vêm primeiro. |
+| S1 | Atalhos de comparação | "Dia anterior" e "7 dias antes", "Semana anterior" e "4 semanas antes", "Mês anterior" e "3 meses antes". Aprovada. |
+| S2 | Botão "Comparar" no Resumo | Abre a Comparação no período que estava na tela, contra o anterior. Aprovada. |
+| S3 | Imprimir | Mesma folha do Resumo: sem menu nem controles, em tema claro, com a conexão e o momento em que foi gerada. Aprovada. |
+| S4 | Copiar "O que mudou" | As frases como texto, com a conexão e os dois períodos. Aprovada. |
+| S5 | Filtro das consultas | Todas, Pioraram, Melhoraram. Aprovada. |
+
+Regras:
+
+* **Ao abrir:** a última semana fechada contra a semana anterior.
+* **Direção:** toda diferença é do período em relação ao de comparação. "Inverter os períodos" troca os dois de lugar.
+* **Período de comparação:** pode ser anterior ou posterior ao período, nunca igual; as setas dele pulam o período. Um atalho fora do histórico fica desabilitado.
+* **Andar com o período:** o de comparação mantém a distância (o atalho em uso continua valendo). Se a distância sair do histórico, ele volta a ser o período anterior.
+* **Trocar o tamanho:** os dois períodos passam para o novo tamanho e o de comparação volta a ser o anterior.
+* **Alinhamento da evolução:** hora com hora no dia, dia da semana com dia da semana na semana e dia do mês com dia do mês no mês. O mês mais curto termina antes.
+* **Meses de tamanhos diferentes:** o total aparece como é, com a variação do volume por dia ao lado, e uma frase avisa a diferença de dias.
+* **Juízo de valor:** a queda do tempo médio e das consultas lentas é marcada como boa e a alta como ponto de atenção; volume e pico de conexões não têm juízo.
+* **Consultas:** entram as que aparecem em pelo menos uma das duas listas. A que falta numa delas aparece sem valor naquele lado e sem variação: a lista traz só as que mais pesaram, então a tela não a chama de nova nem de extinta.
+* **Piorou e melhorou:** a consulta cujo tempo médio subiu ou caiu. Variação menor que 0,05% conta como igual.
+* **Desempenho:** a diferença da fatia do tempo é dada em pontos percentuais.
+* **Sem atividade:** se um dos dois períodos não teve consultas, a tela diz que não há o que comparar.
+* **Sem conexão e demonstração:** como no Resumo. O texto copiado termina a primeira linha com "(dados demonstrativos)".
+* **URL:** sempre `/relatorios/comparacao`, com os dois períodos no histórico do navegador, como no Resumo.
+
 ## Fora desta fase
 
-Backend, coleta de métricas reais, telas completas de Consultas SQL, Usuários e permissões, Objetos do
-banco e Relatórios, modo SSL, Docker, CI e vídeo de apresentação.
+Backend, coleta de métricas reais, telas completas de Consultas SQL, Usuários e permissões e Objetos do
+banco, modo SSL, Docker, CI e vídeo de apresentação.

@@ -7,6 +7,11 @@ import type {
 } from '@/modelos/dashboard';
 import { CONSULTAS_DISTINTAS, TEMPO_MEDIO_GERAL_MS, consultasFicticias } from './consultasFicticias';
 
+export interface SerieAtividade {
+  pontos: PontoAtividadeDTO[];
+  totalConsultas: number;
+}
+
 interface JanelaPeriodo {
   pontos: number;
   minutosPorPonto: number;
@@ -31,18 +36,18 @@ const LARGURA_DO_PICO = 22;
 const CARGA_MINIMA = 0.22;
 const CARGA_FIM_DE_SEMANA = 0.55;
 
-function sorteio(semente: number): number {
+export function sorteio(semente: number): number {
   let valor = (semente + 0x6d2b79f5) | 0;
   valor = Math.imul(valor ^ (valor >>> 15), valor | 1);
   valor ^= valor + Math.imul(valor ^ (valor >>> 7), valor | 61);
   return ((valor ^ (valor >>> 14)) >>> 0) / 4_294_967_296;
 }
 
-function sementeDoInstante(instante: Date): number {
+export function sementeDoInstante(instante: Date): number {
   return Math.floor(instante.getTime() / MS_POR_MINUTO);
 }
 
-function arredondar(valor: number, casas = 1): number {
+export function arredondar(valor: number, casas = 1): number {
   const fator = 10 ** casas;
   return Math.round(valor * fator) / fator;
 }
@@ -71,22 +76,17 @@ function inicioDoIntervaloAtual(agora: Date, minutos: number): Date {
   return new Date(agora.getFullYear(), agora.getMonth(), agora.getDate(), 0, alinhado);
 }
 
-function fatorDoPeriodo(fim: Date): number {
+export function fatorDoPeriodo(fim: Date): number {
   return 0.94 + 0.14 * sorteio(sementeDoInstante(fim) * 7 + 3);
 }
 
-interface Janela {
-  pontos: PontoAtividadeDTO[];
-  totalConsultas: number;
+interface Janela extends SerieAtividade {
   tempoMedioMs: number;
   fator: number;
 }
 
-function gerarJanela(periodo: PeriodoDashboard, fim: Date): Janela {
-  const { pontos: quantidade, minutosPorPonto } = janelasPeriodo[periodo];
-  const fator = fatorDoPeriodo(fim);
-  const brutos = Array.from({ length: quantidade }, (_, indice) => {
-    const inicio = new Date(fim.getTime() - (quantidade - indice) * minutosPorPonto * MS_POR_MINUTO);
+export function gerarSerie(inicios: Date[], minutosPorPonto: number, tempoMedioMs: number): SerieAtividade {
+  const brutos = inicios.map((inicio) => {
     const semente = sementeDoInstante(inicio);
     const carga = cargaMedia(inicio, minutosPorPonto);
     const consultas = Math.round(CONSULTAS_POR_MINUTO * minutosPorPonto * carga * (0.92 + 0.16 * sorteio(semente)));
@@ -96,18 +96,32 @@ function gerarJanela(periodo: PeriodoDashboard, fim: Date): Janela {
 
   const totalConsultas = brutos.reduce((soma, ponto) => soma + ponto.consultas, 0);
   const tempoRelativoMedio = brutos.reduce((soma, ponto) => soma + ponto.consultas * ponto.tempoRelativo, 0) / totalConsultas;
-  const tempoMedioMs = TEMPO_MEDIO_GERAL_MS * fator;
 
   return {
     totalConsultas,
-    tempoMedioMs,
-    fator,
     pontos: brutos.map((ponto) => ({
       instante: ponto.inicio.toISOString(),
       consultas: ponto.consultas,
       tempoMedioMs: arredondar((ponto.tempoRelativo / tempoRelativoMedio) * tempoMedioMs),
     })),
   };
+}
+
+export function conexoesNoInstante(instante: Date): number {
+  const oscilacao = sorteio(Math.floor(sementeDoInstante(instante) / 10));
+  return Math.round(8 + 34 * cargaNoInstante(instante) + 4 * oscilacao);
+}
+
+function gerarJanela(periodo: PeriodoDashboard, fim: Date): Janela {
+  const { pontos: quantidade, minutosPorPonto } = janelasPeriodo[periodo];
+  const fator = fatorDoPeriodo(fim);
+  const tempoMedioMs = TEMPO_MEDIO_GERAL_MS * fator;
+  const inicios = Array.from(
+    { length: quantidade },
+    (_, indice) => new Date(fim.getTime() - (quantidade - indice) * minutosPorPonto * MS_POR_MINUTO),
+  );
+
+  return { ...gerarSerie(inicios, minutosPorPonto, tempoMedioMs), tempoMedioMs, fator };
 }
 
 function janelaAtual(periodo: PeriodoDashboard, agora: Date): Janela {
@@ -120,7 +134,7 @@ function janelaAnterior(periodo: PeriodoDashboard, agora: Date): Janela {
   return gerarJanela(periodo, new Date(fimAtual.getTime() - pontos * minutosPorPonto * MS_POR_MINUTO));
 }
 
-function variacaoPercentual(atual: number, anterior: number): number | null {
+export function variacaoPercentual(atual: number, anterior: number): number | null {
   if (anterior <= 0) return null;
   return arredondar(((atual - anterior) / anterior) * 100);
 }
@@ -158,7 +172,6 @@ export function gerarConsultas(periodo: PeriodoDashboard, agora: Date): Consulta
 export function gerarIndicadores(periodo: PeriodoDashboard, agora: Date): IndicadoresDashboardDTO {
   const atual = janelaAtual(periodo, agora);
   const anterior = janelaAnterior(periodo, agora);
-  const oscilacao = sorteio(Math.floor(sementeDoInstante(agora) / 10));
 
   return {
     periodo,
@@ -168,7 +181,7 @@ export function gerarIndicadores(periodo: PeriodoDashboard, agora: Date): Indica
     variacaoTempoMedio: variacaoPercentual(atual.tempoMedioMs, anterior.tempoMedioMs),
     consultasLentas: gerarConsultas(periodo, agora).filter((consulta) => consulta.desempenho === 'LENTA').length,
     consultasDistintas: CONSULTAS_DISTINTAS,
-    conexoesAtivas: Math.round(8 + 34 * cargaNoInstante(agora) + 4 * oscilacao),
+    conexoesAtivas: conexoesNoInstante(agora),
     limiteConexoes: LIMITE_CONEXOES,
   };
 }

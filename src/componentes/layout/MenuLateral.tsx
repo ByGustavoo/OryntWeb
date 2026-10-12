@@ -7,6 +7,7 @@ import { NOME_APLICACAO } from '@/configuracoes/aplicacao';
 import {
   contemCaminho,
   destinoInicial,
+  itemPlanejado,
   navegacaoPrincipal,
   navegacaoRodape,
   secaoPlanejada,
@@ -110,7 +111,7 @@ export function MenuLateral({ recolhido, emGaveta, abertoEmGaveta, aoAlternarRec
               <ul className={estilos.itens} aria-label={secao.titulo}>
                 {secao.itens.map((item) => (
                   <li key={item.destino}>
-                    <ItemMenu item={item} recolhido={recolhidoVisivel} />
+                    <ItemMenu item={item} recolhido={recolhidoVisivel} marcarPlanejados={!secaoPlanejada(secao)} />
                   </li>
                 ))}
               </ul>
@@ -143,14 +144,21 @@ export function MenuLateral({ recolhido, emGaveta, abertoEmGaveta, aoAlternarRec
   );
 }
 
-function ItemMenu({ item, recolhido }: { item: ItemNavegacao; recolhido: boolean }) {
+interface ItemMenuProps {
+  item: ItemNavegacao;
+  recolhido: boolean;
+  marcarPlanejados?: boolean;
+}
+
+function ItemMenu({ item, recolhido, marcarPlanejados = false }: ItemMenuProps) {
   const { pathname } = useLocation();
   const idFilhos = useId();
   const filhos = item.filhos ?? [];
   const ativo = contemCaminho(item, pathname);
   const [aberto, setAberto] = useState(ativo);
   const Icone = item.icone;
-  const rotuloCompleto = item.planejado ? `${item.rotulo} (em breve)` : item.rotulo;
+  const planejado = itemPlanejado(item);
+  const rotuloCompleto = planejado ? `${item.rotulo} (em breve)` : item.rotulo;
   const filhosVisiveis = aberto && !recolhido;
 
   useEffect(() => {
@@ -196,6 +204,7 @@ function ItemMenu({ item, recolhido }: { item: ItemNavegacao; recolhido: boolean
         >
           <Icone className={estilos.iconeItem} size={18} strokeWidth={2} aria-hidden="true" />
           <span className={estilos.rotuloItem}>{item.rotulo}</span>
+          {planejado && marcarPlanejados ? <span className={estilos.marcaPlanejado}>Em breve</span> : null}
           <ChevronDown
             className={juntarClasses(estilos.seta, aberto && estilos.setaAberta)}
             size={16}
@@ -216,6 +225,9 @@ function ItemMenu({ item, recolhido }: { item: ItemNavegacao; recolhido: boolean
                   className={({ isActive }) => juntarClasses(estilos.filho, isActive && estilos.filhoAtivo)}
                 >
                   <span className={estilos.rotuloFilho}>{filho.rotulo}</span>
+                  {filho.planejado && marcarPlanejados && !planejado ? (
+                    <span className={estilos.marcaPlanejado}>Em breve</span>
+                  ) : null}
                 </NavLink>
               </li>
             ))}

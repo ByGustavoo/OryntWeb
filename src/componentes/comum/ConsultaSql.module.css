@@ -1,0 +1,61 @@
+.consulta {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espaco-2);
+  min-width: 0;
+}
+
+.moldura {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.abrivel {
+  cursor: pointer;
+}
+
+.acoes {
+  display: flex;
+  flex-shrink: 0;
+  gap: 2px;
+  margin-block: calc((var(--tamanho-sm) * 1.5 - var(--altura-controle-sm)) / 2);
+}
+
+.alternar svg {
+  transition: transform var(--duracao-base) var(--curva-saida);
+}
+
+.alternar[aria-expanded='true'] svg {
+  transform: rotate(180deg);
+}
+
+.copia {
+  display: flex;
+}
+
+.confirmada svg {
+  color: var(--sucesso);
+  animation: confirmar var(--duracao-lenta) var(--curva-mola);
+}
+
+@keyframes confirmar {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+}
+
+@media (hover: hover) {
+  .copia {
+    opacity: 0;
+    transition: opacity var(--duracao-rapida) var(--curva-saida);
+  }
+
+  tr:hover .copia,
+  .consulta:hover .copia,
+  .consulta:has(:focus-visible) .copia,
+  .fixada {
+    opacity: 1;
+  }
+}

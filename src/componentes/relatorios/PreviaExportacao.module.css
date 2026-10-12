@@ -1,0 +1,70 @@
+.painel {
+  position: sticky;
+  top: calc(var(--altura-cabecalho) + var(--espaco-4));
+  gap: var(--espaco-3);
+  min-width: 0;
+}
+
+.painel > header {
+  margin-bottom: var(--espaco-1);
+}
+
+.arquivos {
+  flex-wrap: wrap;
+  align-self: flex-start;
+  max-width: 100%;
+}
+
+.identificacao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--espaco-1) var(--espaco-3);
+  max-width: none;
+}
+
+.nome {
+  min-width: 0;
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  overflow-wrap: anywhere;
+}
+
+.medidas {
+  flex-shrink: 0;
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  white-space: nowrap;
+}
+
+.conteudo {
+  max-height: 26rem;
+  margin: 0;
+  padding: var(--espaco-4);
+  overflow: auto;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-md);
+  background-color: var(--superficie-suave);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-xs);
+  line-height: 1.7;
+  white-space: pre;
+  tab-size: 4;
+}
+
+.conteudo:focus-visible {
+  outline: none;
+  box-shadow: var(--anel-foco);
+}
+
+.restantes {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+}
+
+@container exportacao (max-width: 900px) {
+  .painel {
+    position: static;
+  }
+}

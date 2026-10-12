@@ -1,0 +1,5 @@
+.passos {
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--espaco-1);
+}

@@ -1,0 +1,59 @@
+.legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-2) var(--espaco-5);
+}
+
+.itemLegenda {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+}
+
+.traco {
+  flex-shrink: 0;
+  width: 18px;
+  height: 0;
+  border-top: 2px solid var(--grafico-1);
+}
+
+.tracoBase {
+  border-top-style: dashed;
+  border-top-color: var(--grafico-referencia);
+}
+
+.seriePrincipal :global(.recharts-line-curve) {
+  stroke: var(--grafico-1);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.serieBase :global(.recharts-line-curve) {
+  stroke: var(--grafico-referencia);
+}
+
+.marcadorPrincipal {
+  fill: var(--grafico-1);
+  stroke: var(--superficie);
+}
+
+.marcadorBase {
+  fill: var(--grafico-referencia);
+  stroke: var(--superficie);
+}
+
+.dicaData {
+  min-width: 3.25rem;
+  color: var(--texto-terciario);
+  font-family: var(--fonte-numeros);
+  font-size: var(--tamanho-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.dicaVariacao {
+  margin-top: 2px;
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+}

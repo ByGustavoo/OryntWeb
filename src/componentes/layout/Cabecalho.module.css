@@ -30,7 +30,8 @@
 .marca {
   display: grid;
   place-items: center;
-  padding: var(--espaco-1);
+  width: var(--alvo-toque);
+  height: var(--alvo-toque);
   border-radius: var(--raio-md);
 }
 
@@ -87,5 +88,11 @@
 
   button.novaConexaoCompacta {
     display: inline-grid;
+  }
+}
+
+@media print {
+  .cabecalho {
+    display: none;
   }
 }

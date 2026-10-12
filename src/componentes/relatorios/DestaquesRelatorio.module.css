@@ -1,0 +1,65 @@
+.painel {
+  height: 100%;
+}
+
+.lista {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--espaco-4);
+}
+
+.item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espaco-3);
+}
+
+.icone {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--raio-sm);
+}
+
+.neutro {
+  background-color: var(--destaque-suave);
+  color: var(--destaque);
+}
+
+.positivo {
+  background-color: var(--sucesso-suave);
+  color: var(--sucesso);
+}
+
+.atencao {
+  background-color: var(--aviso-suave);
+  color: var(--aviso);
+}
+
+.textos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-1);
+  min-width: 0;
+  padding-top: 2px;
+}
+
+.frase {
+  max-width: 68ch;
+  color: var(--texto);
+  line-height: var(--altura-linha-normal);
+}
+
+.sql {
+  --linhas-sql: 1;
+}
+
+@media print {
+  .sql {
+    --linhas-sql: 4;
+  }
+}

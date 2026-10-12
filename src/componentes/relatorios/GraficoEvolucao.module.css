@@ -1,0 +1,143 @@
+.figura {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-5);
+  min-width: 0;
+}
+
+.grafico {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.titulo {
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+}
+
+.area {
+  width: 100%;
+  font-family: var(--fonte-numeros);
+  font-variant-numeric: tabular-nums;
+}
+
+.area :global(.recharts-cartesian-grid line) {
+  stroke: var(--grafico-grade);
+}
+
+.area :global(.recharts-cartesian-axis-tick-value) {
+  fill: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+}
+
+.area :global(.recharts-surface) {
+  overflow: visible;
+}
+
+.barras :global(.recharts-rectangle) {
+  fill: var(--grafico-1);
+}
+
+.serie :global(.recharts-area-curve) {
+  stroke: var(--grafico-1);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.gradienteTopo {
+  stop-color: var(--grafico-1);
+  stop-opacity: 0.16;
+}
+
+.gradienteBase {
+  stop-color: var(--grafico-1);
+  stop-opacity: 0.02;
+}
+
+.marcador,
+.marcador :global(.recharts-reference-dot-dot) {
+  fill: var(--grafico-1);
+  stroke: var(--superficie);
+}
+
+.rotuloPico {
+  fill: var(--texto);
+  stroke: var(--superficie);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+  paint-order: stroke;
+  font-family: var(--fonte-interface);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+}
+
+.faixaCursor {
+  fill: var(--superficie-suave);
+}
+
+.linhaCursor {
+  stroke: var(--borda-forte);
+  stroke-width: 1;
+}
+
+.dica {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-1);
+  padding: var(--espaco-3);
+  background-color: var(--superficie-elevada);
+  border: 1px solid var(--borda-forte);
+  border-radius: var(--raio-md);
+  box-shadow: var(--sombra-flutuante);
+  font-family: var(--fonte-interface);
+}
+
+.dicaRotulo {
+  margin-bottom: 2px;
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+}
+
+.dicaLinha {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+}
+
+.dicaMarca {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--grafico-1);
+}
+
+.dicaValor {
+  color: var(--texto);
+  font-family: var(--fonte-numeros);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--peso-forte);
+}
+
+@media print {
+  .area,
+  .area :global(.recharts-responsive-container),
+  .area :global(.recharts-wrapper) {
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  .area :global(.recharts-surface) {
+    display: block;
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  .area :global(.recharts-tooltip-wrapper) {
+    display: none !important;
+  }
+}

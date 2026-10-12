@@ -4,6 +4,25 @@
   gap: var(--espaco-5);
 }
 
+.blocos > * {
+  --bloco: 0;
+
+  animation: var(--animacao-surgir) var(--duracao-lenta) var(--curva-saida) backwards;
+  animation-delay: calc(var(--passo-cascata-pagina) * (var(--bloco) + 1));
+}
+
+.blocos > :nth-child(2) {
+  --bloco: 1;
+}
+
+.blocos > :nth-child(3) {
+  --bloco: 2;
+}
+
+.blocos > :nth-child(n + 4) {
+  --bloco: 3;
+}
+
 .regiao {
   transition: opacity var(--duracao-base) var(--curva-saida);
 }
@@ -15,6 +34,43 @@
 
 .cabecalhoTabela {
   padding: var(--espaco-5) var(--espaco-6) 0;
+}
+
+.atalho {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  min-height: var(--altura-controle-sm);
+  margin-right: calc(var(--espaco-2) * -1);
+  padding-inline: var(--espaco-2);
+  border-radius: var(--raio-sm);
+  color: var(--destaque);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+  transition: background-color var(--duracao-rapida) var(--curva-saida);
+}
+
+.atalho svg {
+  transition: transform var(--duracao-base) var(--curva-saida);
+}
+
+.atalho:focus-visible {
+  outline: none;
+  box-shadow: var(--anel-foco);
+}
+
+.atalho:focus-visible svg {
+  transform: translateX(3px);
+}
+
+@media (hover: hover) {
+  .atalho:hover {
+    background-color: var(--destaque-suave);
+  }
+
+  .atalho:hover svg {
+    transform: translateX(3px);
+  }
 }
 
 .esqueletoTabela {

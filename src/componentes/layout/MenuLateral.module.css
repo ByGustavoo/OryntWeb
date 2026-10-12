@@ -119,6 +119,18 @@
   line-height: var(--altura-linha-compacta);
 }
 
+.marcaPlanejado {
+  flex-shrink: 0;
+  margin-left: auto;
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-regular);
+}
+
+.gatilho .marcaPlanejado {
+  margin-inline: calc(var(--espaco-1) * -1.5);
+}
+
 .divisor {
   display: block;
   height: 1px;
@@ -247,6 +259,7 @@
   position: relative;
   display: flex;
   align-items: center;
+  gap: var(--espaco-2);
   min-height: var(--altura-controle-sm);
   padding-inline: var(--espaco-3);
   border-radius: var(--raio-sm);
@@ -407,5 +420,12 @@
   .veuVisivel {
     opacity: 1;
     pointer-events: auto;
+  }
+}
+
+@media print {
+  .menu,
+  .veu {
+    display: none;
   }
 }

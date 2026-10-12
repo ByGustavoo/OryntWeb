@@ -1,0 +1,47 @@
+.secao {
+  height: 100%;
+}
+
+.contexto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-1);
+}
+
+.mudanca {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-1);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+}
+
+.mudanca svg {
+  flex-shrink: 0;
+}
+
+.melhora {
+  color: var(--sucesso);
+}
+
+.piora {
+  color: var(--erro);
+}
+
+.base {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+}
+
+.traco {
+  flex-shrink: 0;
+  width: 14px;
+  height: 0;
+  border-top: 2px dashed var(--grafico-referencia);
+}
+
+.valorBase {
+  color: var(--texto-secundario);
+}
