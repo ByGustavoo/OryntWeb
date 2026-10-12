@@ -67,6 +67,20 @@
   gap: var(--espaco-3);
 }
 
+@container formulario (min-width: 640px) {
+  .campos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: var(--espaco-4) var(--espaco-5);
+  }
+
+  .linhaAcesso {
+    grid-column: 1 / -1;
+    gap: var(--espaco-5);
+  }
+}
+
 @container formulario (max-width: 460px) {
   .linhaAcesso {
     grid-template-columns: minmax(0, 1fr);

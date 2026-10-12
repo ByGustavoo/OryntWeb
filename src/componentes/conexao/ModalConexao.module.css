@@ -4,6 +4,12 @@
   gap: var(--espaco-5);
 }
 
+.avisos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  gap: var(--espaco-3);
+}
+
 .cancelar {
   margin-right: auto;
 }

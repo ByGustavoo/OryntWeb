@@ -97,7 +97,7 @@ export function FormularioConexao({
         <CampoTexto
           {...propriedadesDoCampo('nome')}
           rotulo="Nome da conexão (opcional)"
-          dica={erros.nome ? undefined : 'Um apelido para reconhecer esta conexão no cabeçalho.'}
+          dica={erros.nome ? undefined : 'Um apelido para reconhecer esta conexão nas listas.'}
           placeholder="Loja — produção"
           autoComplete="off"
         />

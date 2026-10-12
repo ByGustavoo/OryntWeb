@@ -38,6 +38,14 @@
   margin-top: 1px;
 }
 
+.melhora {
+  color: var(--sucesso);
+}
+
+.piora {
+  color: var(--erro);
+}
+
 .ocupacao {
   display: flex;
   align-items: center;

@@ -57,6 +57,10 @@
 
   --segmento-ativo: #2a2a2a;
 
+  --notificacao-fundo: #1b1b1b;
+  --notificacao-borda: #272727;
+  --notificacao-realce: #272727;
+
   --identidade-fundo: #0f0f0f;
   --identidade-superficie: #171717;
   --identidade-borda: #262626;
@@ -118,6 +122,10 @@
   --grafico-1: #2563eb;
 
   --segmento-ativo: #ffffff;
+
+  --notificacao-fundo: #ffffff;
+  --notificacao-borda: #e4e7ec;
+  --notificacao-realce: #f1f3f6;
 
   --identidade-fundo: #eef1f6;
   --identidade-superficie: #ffffff;

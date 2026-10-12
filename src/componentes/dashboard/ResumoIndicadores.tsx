@@ -9,6 +9,7 @@ import {
   formatarVariacao,
   pluralizar,
 } from '@/utilitarios/formatacao';
+import { juntarClasses } from '@/utilitarios/juntarClasses';
 import { IndicadorNumerico } from './IndicadorNumerico';
 import estilos from './ResumoIndicadores.module.css';
 
@@ -23,14 +24,15 @@ function formatarTotal(valor: number): string {
   return valor >= LIMITE_NUMERO_COMPACTO ? formatarNumeroCompacto(valor) : formatarNumero(valor);
 }
 
-function Variacao({ valor }: { valor: number | null }) {
+function Variacao({ valor, menorMelhor = false }: { valor: number | null; menorMelhor?: boolean }) {
   if (valor === null) return <>Sem período anterior para comparar</>;
   const Icone = valor > 0 ? ArrowUpRight : valor < 0 ? ArrowDownRight : Minus;
+  const tom = menorMelhor && valor !== 0 ? (valor < 0 ? estilos.melhora : estilos.piora) : undefined;
   return (
     <span className={estilos.variacao}>
-      <Icone size={13} strokeWidth={2.25} aria-hidden="true" />
+      <Icone size={13} strokeWidth={2.25} aria-hidden="true" className={tom} />
       <span>
-        <span className="numeros">{formatarVariacao(valor)}</span> em relação ao período anterior
+        <span className={juntarClasses('numeros', tom)}>{formatarVariacao(valor)}</span> em relação ao período anterior
       </span>
     </span>
   );
@@ -80,7 +82,7 @@ export function ResumoIndicadores({ resultado }: ResumoIndicadoresProps) {
                 casasDecimais={1}
                 formatar={(valor) => formatarDecimal(valor, 1)}
                 unidade="ms"
-                contexto={<Variacao valor={indicadores.variacaoTempoMedio} />}
+                contexto={<Variacao valor={indicadores.variacaoTempoMedio} menorMelhor />}
               />
               <IndicadorNumerico
                 icone={TriangleAlert}

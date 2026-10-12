@@ -30,6 +30,7 @@ export default function ModalConexao({ aberto, aoFechar, aoConectar }: ModalCone
   const { fase, teste, enviando, descartarSenha } = fluxo;
   const conectando = fase.tipo === 'ENVIANDO' && fase.operacao === 'CONECTAR';
   const testando = fase.tipo === 'ENVIANDO' && fase.operacao === 'TESTAR';
+  const conexaoSubstituida = fase.tipo === 'SUCESSO' ? null : conexaoAtiva;
 
   useEffect(() => {
     if (fase.tipo === 'ERRO') alertaRef.current?.focus();
@@ -55,7 +56,8 @@ export default function ModalConexao({ aberto, aoFechar, aoConectar }: ModalCone
       aberto={aberto}
       aoFechar={fechar}
       titulo={primeiraConexao ? 'Conectar ao banco de dados' : 'Nova conexão'}
-      descricao="Informe os dados de acesso do seu PostgreSQL. Se preferir, cole a URL de conexão e os campos são preenchidos para você."
+      descricao="Informe os dados de acesso do seu PostgreSQL ou cole a URL de conexão para preencher os campos."
+      tamanho="xl"
       rodape={
         <>
           <Botao variante="terciario" className={estilos.cancelar} onClick={enviando ? fluxo.cancelarTentativa : fechar}>
@@ -71,18 +73,22 @@ export default function ModalConexao({ aberto, aoFechar, aoConectar }: ModalCone
       }
     >
       <div className={estilos.conteudo}>
-        {ambiente.dadosSimulados ? (
-          <Nota tom="aviso" icone={FlaskConical} titulo="Conexão simulada.">
-            Nesta versão o Orynt ainda não acessa bancos reais: qualquer dado válido conecta e o que aparece depois é
-            demonstrativo. A conexão fica salva neste navegador, sem a senha.
-          </Nota>
-        ) : null}
+        {ambiente.dadosSimulados || conexaoSubstituida ? (
+          <div className={estilos.avisos}>
+            {ambiente.dadosSimulados ? (
+              <Nota tom="aviso" icone={FlaskConical} titulo="Conexão simulada.">
+                Nesta versão o Orynt ainda não acessa bancos reais: qualquer dado válido conecta e o que aparece depois é
+                demonstrativo. A conexão fica salva neste navegador, sem a senha.
+              </Nota>
+            ) : null}
 
-        {conexaoAtiva && fase.tipo !== 'SUCESSO' ? (
-          <Nota tom="info">
-            Você está conectado a <strong>{conexaoAtiva.nome}</strong>. Ao conectar, o Orynt passa a mostrar o novo banco, e
-            a conexão atual continua salva.
-          </Nota>
+            {conexaoSubstituida ? (
+              <Nota tom="info">
+                Você está conectado a <strong>{conexaoSubstituida.nome}</strong>. Ao conectar, o Orynt passa a mostrar o
+                novo banco, e a conexão atual continua salva.
+              </Nota>
+            ) : null}
+          </div>
         ) : null}
 
         <FormularioConexao

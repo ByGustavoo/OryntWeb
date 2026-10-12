@@ -1,22 +1,15 @@
 .marca {
-  --fatia-encaixada: translate(-3.54px, 3.54px);
+  --fatia-encaixada: translate(-2px, 2px);
 
   flex-shrink: 0;
-  overflow: visible;
-}
-
-.corpo,
-.fatia {
-  fill: none;
-  stroke-width: 11;
 }
 
 .corpo {
-  stroke: var(--marca-corpo);
+  fill: var(--marca-corpo);
 }
 
 .fatia {
-  stroke: var(--marca-destaque);
+  fill: var(--marca-destaque);
   transition: transform var(--duracao-lenta) var(--curva-mola);
 }
 

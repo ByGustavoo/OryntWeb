@@ -196,7 +196,7 @@ interface TesteConexaoDTO {
 * `ultimoUsoEm` é o instante da última vez em que a conexão foi ativada.
 * Quando `nome` chega nulo, a API devolve "`banco` em `host`".
 * `simulada` e `simulado` são `true` só no simulador. A API real devolve `false`, e com isso o
-  cabeçalho troca o selo "Demonstração" por "Conectada" e os avisos de dados fictícios somem.
+  menu da conta troca o selo "Demonstração" por "Conectada" e os avisos de dados fictícios somem.
 
 ### 4.4 Dashboard
 

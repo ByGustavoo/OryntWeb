@@ -89,10 +89,3 @@
     display: inline-grid;
   }
 }
-
-@media (max-width: 420px) {
-  .marca,
-  button.configuracoes {
-    display: none;
-  }
-}

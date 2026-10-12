@@ -36,8 +36,8 @@
   gap: var(--espaco-3);
   padding: var(--espaco-3) var(--espaco-2) calc(var(--espaco-3) + 2px) var(--espaco-3);
   overflow: hidden;
-  background-color: var(--superficie-elevada);
-  border: 1px solid var(--borda);
+  background-color: var(--notificacao-fundo);
+  border: 1px solid var(--notificacao-borda);
   border-radius: var(--raio-lg);
   box-shadow: var(--sombra-sobreposicao);
   animation: entrar var(--duracao-lenta) var(--curva-mola);
@@ -144,7 +144,7 @@
   }
 
   .fechar:hover {
-    background-color: var(--superficie-suave);
+    background-color: var(--notificacao-realce);
     color: var(--texto);
   }
 }

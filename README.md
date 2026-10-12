@@ -44,7 +44,7 @@ consulta que explica.
 
 * **Fase 1 (concluída):** login fictício, conexões salvas simuladas, estrutura da aplicação e dashboard com dados demonstrativos.
 
-* **Planejado:** Consultas SQL, Usuários e permissões, Objetos do banco e Relatórios. As quatro telas existem na navegação e mostram só o que está previsto.
+* **Planejado:** Consultas SQL, Usuários e permissões, Objetos do banco e Relatórios. As quatro funcionalidades existem na navegação, nos grupos "Análise" e "Gerenciamento", cada uma com as suas telas, e mostram só o que está previsto.
 
 * **Pendente:** a API (OryntAPI). O contrato que ela precisa cumprir está em [`docs/api-contrato.md`](docs/api-contrato.md).
 
@@ -68,7 +68,7 @@ consulta que explica.
 
 * Preenchimento a partir de uma URL `postgresql://usuario:senha@host:porta/banco`
 
-* Conexões salvas: a usada por último carrega sozinha ao entrar, e a troca é feita pelo cabeçalho
+* Conexões salvas: a usada por último carrega sozinha ao entrar, e a troca é feita pelo menu da conta
 
 * Gerenciamento em Configurações: conectar, renomear e excluir
 
@@ -78,9 +78,9 @@ consulta que explica.
 
 🔹 **Aplicação**
 
-* Menu lateral recolhível, que vira gaveta em telas menores, com o botão "Sair"
+* Menu lateral recolhível, organizado em grupos com itens que abrem as suas telas, e que vira gaveta em telas menores
 
-* Cabeçalho com a conexão ativa, o seletor de conexões salvas e o selo de demonstração
+* Menu da conta no cabeçalho, com a conexão em uso, o selo de demonstração, a troca entre conexões salvas e o botão "Sair"
 
 * Tema escuro, claro ou automático
 
@@ -140,8 +140,8 @@ também aparecem na própria tela de login, com um botão que preenche os campos
 | Senha | `orynt-demo` |
 
 Qualquer outra combinação mostra "E-mail ou senha incorretos". O link "Esqueceu sua senha?" só avisa
-que a recuperação chega em uma próxima versão. Para voltar à tela de login depois de entrar, use
-"Sair", no rodapé do menu lateral.
+que a recuperação chega em uma próxima versão. Para voltar à tela de login depois de entrar, abra o
+menu da conta (o círculo com a inicial, no canto superior direito) e use "Sair".
 
 <br>
 
@@ -254,7 +254,7 @@ src
 │   ├── conexao     # Modal e formulário, URL de conexão, conexões salvas e alerta
 │   ├── configuracoes # Seções de conexão em uso, de conexões salvas, de aparência e de versões
 │   ├── dashboard   # Indicadores, gráfico de atividade e tabela de consultas
-│   ├── layout      # Menu lateral, cabeçalho e seletor de conexão
+│   ├── layout      # Menu lateral, cabeçalho e menu da conta
 │   ├── login       # Formulário de acesso e painel animado de monitoramento
 │   └── ui          # Design system
 ├── configuracoes   # Ambiente, nome da aplicação e navegação

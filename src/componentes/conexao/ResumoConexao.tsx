@@ -21,10 +21,10 @@ function comQuebrasNosSeparadores(texto: string) {
 export function ResumoConexao({ conexao, className }: ResumoConexaoProps) {
   const itens = [
     { termo: 'Nome', valor: conexao.nome, codigo: false },
-    { termo: 'Tipo de banco', valor: rotuloTipoBanco[conexao.tipoBanco], codigo: false },
-    { termo: 'Servidor', valor: `${conexao.host}:${conexao.porta}`, codigo: true },
-    { termo: 'Banco de dados', valor: conexao.banco, codigo: true },
     { termo: 'Usuário', valor: conexao.usuario, codigo: true },
+    { termo: 'Servidor', valor: `${conexao.host}:${conexao.porta}`, codigo: true },
+    { termo: 'Tipo de banco', valor: rotuloTipoBanco[conexao.tipoBanco], codigo: false },
+    { termo: 'Banco de dados', valor: conexao.banco, codigo: true },
   ];
 
   return (

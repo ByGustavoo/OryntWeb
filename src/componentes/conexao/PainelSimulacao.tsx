@@ -33,7 +33,7 @@ export default function PainelSimulacao() {
       <CampoSelecao
         id="cenario-simulacao"
         rotulo="Resultado da próxima tentativa"
-        dica="Vale para Conectar e para Testar conexão. Este painel não existe no build de produção."
+        dica="Vale para Conectar e para Testar conexão."
         opcoes={cenariosConexao.map(({ valor, rotulo, descricao }) => ({ valor, rotulo, descricao }))}
         valor={cenario}
         aoMudar={escolher}
