@@ -38,7 +38,7 @@ export const Cabecalho = forwardRef<HTMLButtonElement, CabecalhoProps>(function 
               aria-controls="menu-lateral"
             />
             <Link to={caminhos.dashboard} className={estilos.marca} aria-label={`${NOME_APLICACAO}, ir para o Dashboard`}>
-              <MarcaOrynt />
+              <MarcaOrynt tamanho={24} />
             </Link>
           </div>
         ) : null}

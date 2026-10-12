@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { ChartNoAxesColumn, FlaskConical, SearchX } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ArrowRight, ChartNoAxesColumn, FlaskConical, SearchX } from 'lucide-react';
 import { ehErroApi } from '@/api/tratamentoErros';
 import { PainelSemConexao } from '@/componentes/conexao/PainelSemConexao';
 import { GraficoAtividade } from '@/componentes/dashboard/GraficoAtividade';
@@ -23,6 +24,8 @@ import type { PeriodoDashboard } from '@/modelos/dashboard';
 import { descricaoPeriodo, periodosDashboard, rotuloPeriodo } from '@/modelos/rotulos';
 import { useConexao } from '@/provedores/ProvedorConexao';
 import type { SituacaoConexao } from '@/provedores/ProvedorConexao';
+import { granularidadeDoDashboard, ultimoPeriodoFechado, ultimoPeriodoNaFrase } from '@/regras/periodoRelatorio';
+import { caminhos } from '@/rotas/caminhos';
 import { servicoDashboard } from '@/servicos';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
 import estilos from './PaginaDashboard.module.css';
@@ -61,6 +64,8 @@ function DashboardConectado({ conexao }: { conexao: ConexaoDTO }) {
   const atividade = useDadosAssincronos((signal) => servicoDashboard.buscarAtividade(periodo, signal), [periodo]);
   const consultas = useDadosAssincronos((signal) => servicoDashboard.buscarConsultas(periodo, signal), [periodo]);
 
+  const granularidadeDoResumo = granularidadeDoDashboard[periodo];
+
   const sessaoEncerrada = [indicadores.erro, atividade.erro, consultas.erro].some((erro) => ehErroApi(erro, 'NAO_AUTORIZADO'));
 
   useEffect(() => {
@@ -89,6 +94,16 @@ function DashboardConectado({ conexao }: { conexao: ConexaoDTO }) {
           <CabecalhoPainel
             titulo={<span id="titulo-atividade">Atividade das consultas</span>}
             descricao={`Consultas executadas ${descricaoPeriodo[periodo]}`}
+            acao={
+              <Link
+                to={caminhos.relatoriosResumo}
+                state={{ periodo: ultimoPeriodoFechado(granularidadeDoResumo, new Date()) }}
+                className={estilos.atalho}
+              >
+                Ver o resumo {ultimoPeriodoNaFrase[granularidadeDoResumo]}
+                <ArrowRight size={16} strokeWidth={2} aria-hidden="true" />
+              </Link>
+            }
           />
           <div className={juntarClasses(estilos.regiao, atividade.carregando && atividade.dados !== null && estilos.atualizando)}>
             <ConteudoAssincrono

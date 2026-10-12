@@ -86,3 +86,10 @@
     padding: var(--espaco-4);
   }
 }
+
+@media print {
+  .painel {
+    box-shadow: none;
+    break-inside: avoid;
+  }
+}

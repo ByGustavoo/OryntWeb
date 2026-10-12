@@ -54,6 +54,10 @@
 
   --grafico-grade: #1f1f1f;
   --grafico-1: #3b82f6;
+  --grafico-referencia: #8f8f8f;
+  --desempenho-rapida: #0f8048;
+  --desempenho-moderada: #c08a18;
+  --desempenho-lenta: #cf3a34;
 
   --segmento-ativo: #2a2a2a;
 
@@ -120,6 +124,10 @@
 
   --grafico-grade: #e8ebf0;
   --grafico-1: #2563eb;
+  --grafico-referencia: #7b8494;
+  --desempenho-rapida: #1f9d57;
+  --desempenho-moderada: #e3a008;
+  --desempenho-lenta: #b42318;
 
   --segmento-ativo: #ffffff;
 

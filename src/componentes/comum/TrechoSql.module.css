@@ -1,0 +1,23 @@
+.sql {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--linhas-sql, 2);
+  line-clamp: var(--linhas-sql, 2);
+}
+
+.inteiro {
+  display: block;
+  overflow: visible;
+  white-space: pre-wrap;
+  -webkit-line-clamp: unset;
+  line-clamp: unset;
+}
+
+.palavraChave {
+  color: var(--destaque);
+}

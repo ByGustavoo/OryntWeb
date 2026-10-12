@@ -1,12 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import {
+  formatarComSinal,
   formatarDataOpcional,
   formatarDuracaoMs,
   formatarNumero,
   formatarPercentual,
+  formatarPontosPercentuais,
+  formatarTamanho,
   formatarTempoRelativo,
   formatarVariacao,
   formatarVersao,
+  iniciarComMaiuscula,
   pluralizar,
 } from './formatacao';
 
@@ -81,5 +85,37 @@ describe('formatarDataOpcional', () => {
 
   it('escreve dia, mês abreviado e ano', () => {
     expect(formatarDataOpcional('2026-09-29T15:00:00')).toBe('29 de set. de 2026');
+  });
+});
+
+describe('formatarTamanho', () => {
+  it('mostra bytes abaixo de 1 kB e uma casa decimal a partir dele', () => {
+    expect(formatarTamanho(812)).toBe('812 B');
+    expect(formatarTamanho(1024)).toBe('1,0 kB');
+    expect(formatarTamanho(1536)).toBe('1,5 kB');
+    expect(formatarTamanho(3 * 1024 * 1024)).toBe('3,0 MB');
+  });
+});
+
+describe('formatarComSinal', () => {
+  it('põe o sinal na frente do valor absoluto formatado', () => {
+    expect(formatarComSinal(84, formatarDuracaoMs)).toBe('+84,0 ms');
+    expect(formatarComSinal(-255, formatarDuracaoMs)).toBe('−255 ms');
+    expect(formatarComSinal(0, formatarNumero)).toBe('0');
+  });
+});
+
+describe('formatarPontosPercentuais', () => {
+  it('escreve a diferença entre dois percentuais em pontos percentuais', () => {
+    expect(formatarPontosPercentuais(1.3)).toBe('+1,3 p.p.');
+    expect(formatarPontosPercentuais(-0.4)).toBe('−0,4 p.p.');
+    expect(formatarPontosPercentuais(0)).toBe('0,0 p.p.');
+  });
+});
+
+describe('iniciarComMaiuscula', () => {
+  it('troca só a primeira letra', () => {
+    expect(iniciarComMaiuscula('setembro de 2026')).toBe('Setembro de 2026');
+    expect(iniciarComMaiuscula('28/09 a 04/10')).toBe('28/09 a 04/10');
   });
 });

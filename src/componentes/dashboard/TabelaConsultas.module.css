@@ -82,26 +82,33 @@
   max-width: 0;
 }
 
-.sql {
-  display: -webkit-box;
-  overflow: hidden;
-  color: var(--texto-secundario);
-  font-size: var(--tamanho-sm);
-  line-height: 1.5;
-  overflow-wrap: anywhere;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-}
-
-.palavraChave {
-  color: var(--destaque);
-}
-
 .celulaNumerica {
   color: var(--texto);
   text-align: right;
   white-space: nowrap;
+}
+
+.tempo {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.variacao {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+}
+
+.melhora {
+  color: var(--sucesso);
+}
+
+.piora {
+  color: var(--erro);
 }
 
 .participacao {
@@ -125,6 +132,19 @@
   height: 100%;
   border-radius: inherit;
   background-color: var(--grafico-1);
+  transform-origin: left center;
+  transition: width var(--duracao-expressiva) var(--curva-saida);
+}
+
+.entrando .preenchimento {
+  animation: preencher var(--duracao-expressiva) var(--curva-saida) backwards;
+  animation-delay: calc(min(var(--indice, 0), var(--limite-cascata)) * var(--passo-cascata) + var(--duracao-base));
+}
+
+@keyframes preencher {
+  from {
+    transform: scaleX(0);
+  }
 }
 
 @media (hover: hover) {
@@ -158,6 +178,7 @@
   }
 
   .tabela tbody tr {
+    position: relative;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: var(--espaco-3) var(--espaco-4);
@@ -195,11 +216,22 @@
     flex-direction: row;
     align-items: center;
     gap: var(--espaco-2);
+    min-height: var(--altura-controle-sm);
   }
 
-  .sql {
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
+  .tabela .acoesConsulta {
+    position: absolute;
+    right: var(--espaco-4);
+    bottom: var(--espaco-4);
+    margin-block: 0;
+  }
+
+  .tabela {
+    --linhas-sql: 3;
+  }
+
+  .tempo {
+    align-items: flex-start;
   }
 
   .participacao {
@@ -220,5 +252,11 @@
 
   .tabela td:nth-child(4) {
     grid-column: 1 / -1;
+  }
+}
+
+@media print {
+  .conteiner .ordenacaoCompacta {
+    display: none;
   }
 }

@@ -22,6 +22,7 @@ import {
   testarConexao,
 } from './manipuladores/conexoes';
 import { buscarAtividade, buscarConsultas, buscarIndicadores } from './manipuladores/dashboard';
+import { buscarResumoRelatorio } from './manipuladores/relatorios';
 import { buscarVersao } from './manipuladores/sistema';
 import { rotaInexistente, servicoIndisponivel } from './resposta';
 import { encerrarSessaoSimulada } from './sessaoSimulada';
@@ -63,6 +64,7 @@ const rotas: Rota[] = [
   { metodo: 'GET', caminho: rotasApi.dashboard.indicadores, manipulador: buscarIndicadores },
   { metodo: 'GET', caminho: rotasApi.dashboard.atividade, manipulador: buscarAtividade },
   { metodo: 'GET', caminho: rotasApi.dashboard.consultas, manipulador: buscarConsultas },
+  { metodo: 'GET', caminho: rotasApi.relatorios.resumo, manipulador: buscarResumoRelatorio },
   { metodo: 'GET', caminho: rotasApi.sistema.versao, manipulador: buscarVersao },
 ];
 

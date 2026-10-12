@@ -44,7 +44,9 @@ consulta que explica.
 
 * **Fase 1 (concluída):** login fictício, conexões salvas simuladas, estrutura da aplicação e dashboard com dados demonstrativos.
 
-* **Planejado:** Consultas SQL, Usuários e permissões, Objetos do banco e Relatórios. As quatro funcionalidades existem na navegação, nos grupos "Análise" e "Gerenciamento", cada uma com as suas telas, e mostram só o que está previsto.
+* **Relatórios (concluído):** as telas Resumo, Exportação e Comparação estão prontas, com dados demonstrativos.
+
+* **Planejado:** Consultas SQL, Usuários e permissões e Objetos do banco. As funcionalidades existem na navegação, nos grupos "Análise" e "Gerenciamento", cada uma com as suas telas, e as planejadas mostram só o que está previsto.
 
 * **Pendente:** a API (OryntAPI). O contrato que ela precisa cumprir está em [`docs/api-contrato.md`](docs/api-contrato.md).
 
@@ -92,7 +94,53 @@ consulta que explica.
 
 * Gráfico da atividade das consultas em 1 h, 24 h, 7 dias ou 30 dias
 
-* Tabela das consultas que mais pesam, com ordenação e indicação de desempenho
+* Tabela das consultas que mais pesam, com ordenação, indicação de desempenho e botões para ver a consulta inteira e copiar o SQL
+
+* Atalho para o resumo de ontem, da semana passada ou do mês passado
+
+🔹 **Relatórios › Resumo**
+
+* Resumo de um dia, uma semana ou um mês já encerrado, com setas para andar entre os períodos dos últimos 12 meses
+
+* Destaques em frases, montados a partir dos números, com botão para copiar como texto
+
+* Indicadores comparados com o período anterior: consultas executadas, tempo médio, consultas lentas e pico de conexões
+
+* Evolução do volume e do tempo médio, com o pico marcado, e divisão das execuções e do tempo do banco entre consultas rápidas, moderadas e lentas
+
+* Consultas que mais pesaram, com a variação do tempo médio de cada uma
+
+* Impressão em folha própria, sem menu nem controles e em tema claro, para salvar em PDF
+
+🔹 **Relatórios › Exportação**
+
+* O resumo de um período como arquivo: CSV (um por bloco), JSON ou Markdown
+
+* Escolha dos blocos que entram: evolução, consultas, desempenho e indicadores
+
+* CSV no padrão brasileiro ou internacional de números, pronto para abrir em planilha
+
+* Prévia das primeiras linhas, com nome, tamanho e quantidade de linhas, antes de baixar
+
+* Botão para copiar um bloco como tabela e colar direto numa planilha
+
+* Arquivos de dados demonstrativos identificados no nome e no conteúdo
+
+🔹 **Relatórios › Comparação**
+
+* Dois períodos fechados do mesmo tamanho lado a lado, com atalhos para o anterior, 7 dias, 4 semanas ou 3 meses antes, e botão para inverter
+
+* "O que mudou" em frases, com botão para copiar como texto
+
+* Indicadores com o valor de cada período e a diferença entre eles
+
+* Evolução dos dois períodos sobreposta, alinhada por hora, dia da semana ou dia do mês
+
+* Divisão das execuções e do tempo do banco por faixa de desempenho nos dois períodos
+
+* Consultas ordenadas pela maior alta do tempo médio, com filtro das que pioraram e das que melhoraram
+
+* Impressão na mesma folha do Resumo
 
 <br>
 
@@ -167,7 +215,10 @@ oryntSimulacao.falhar('/conexoes')
 // Fixa a latência em milissegundos, para ver os esqueletos (false volta ao normal)
 oryntSimulacao.latencia(8000)
 
-// Esvazia os dados do dashboard, para ver os estados vazios (esvaziar(false) restaura)
+// Com '/relatorios', o resumo, a exportação e a comparação mostram o estado de erro
+oryntSimulacao.falhar('/relatorios')
+
+// Esvazia os dados do dashboard e do resumo, para ver os estados vazios (esvaziar(false) restaura)
 oryntSimulacao.esvaziar()
 
 // Encerra a conexão simulada com o banco
@@ -256,6 +307,7 @@ src
 │   ├── dashboard   # Indicadores, gráfico de atividade e tabela de consultas
 │   ├── layout      # Menu lateral, cabeçalho e menu da conta
 │   ├── login       # Formulário de acesso e painel animado de monitoramento
+│   ├── relatorios  # Barra de período, blocos do resumo, da exportação e da comparação
 │   └── ui          # Design system
 ├── configuracoes   # Ambiente, nome da aplicação e navegação
 ├── dados
@@ -266,10 +318,10 @@ src
 ├── modelos         # DTOs, enums e rótulos
 ├── paginas         # Uma página por rota
 ├── provedores      # Tema, notificações, autenticação, conexões e modal de nova conexão
-├── regras          # Validação, URL de conexão, conexões salvas e leitura de falhas, com testes
+├── regras          # Validação, URL de conexão, conexões salvas, leitura de falhas e períodos, destaques e exportação dos relatórios, com testes
 ├── rotas           # Caminhos, tabela de rotas e guardas de acesso e de conexão
-├── servicos        # Serviços de autenticação, de conexão e de dashboard
-└── utilitarios     # Formatação, SQL e foco
+├── servicos        # Serviços de autenticação, de conexão, de dashboard e de relatórios
+└── utilitarios     # Formatação, SQL, gráficos, área de transferência, download e foco
 ```
 
 <br>
@@ -285,7 +337,7 @@ src
 
 ## ⚠️ Limitações
 
-* Nenhum banco real é acessado: a conexão é simulada e os números do dashboard são fictícios.
+* Nenhum banco real é acessado: a conexão é simulada e os números do dashboard e do resumo são fictícios.
 
 * Não há modo SSL no formulário de conexão.
 

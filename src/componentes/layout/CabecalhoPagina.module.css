@@ -38,3 +38,9 @@
     font-size: var(--tamanho-xl);
   }
 }
+
+@media print {
+  .cabecalhoPagina {
+    margin-bottom: var(--espaco-4);
+  }
+}

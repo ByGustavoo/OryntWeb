@@ -11,6 +11,7 @@ import {
   formatarNumero,
   formatarNumeroCompacto,
 } from '@/utilitarios/formatacao';
+import { marcasDoEixo, prefereMovimentoReduzido } from '@/utilitarios/graficos';
 import estilos from './GraficoAtividade.module.css';
 
 interface GraficoAtividadeProps {
@@ -25,6 +26,7 @@ interface FormatoPeriodo {
 }
 
 const ALTURA_GRAFICO_PX = 260;
+const DURACAO_TRACADO_MS = 900;
 
 const formatos: Record<PeriodoDashboard, FormatoPeriodo> = {
   ULTIMA_HORA: {
@@ -49,23 +51,6 @@ const formatos: Record<PeriodoDashboard, FormatoPeriodo> = {
     cabecalhoTabela: 'Dia',
   },
 };
-
-const INTERVALOS_DO_EIXO = 4;
-const PASSOS_REDONDOS = [1, 2, 2.5, 5, 10];
-
-function marcasDoEixo(maximo: number): number[] {
-  if (maximo <= 0) return [0, 1];
-  const passoBruto = maximo / INTERVALOS_DO_EIXO;
-  const grandeza = 10 ** Math.floor(Math.log10(passoBruto));
-  const fator = PASSOS_REDONDOS.find((candidato) => candidato * grandeza >= passoBruto) ?? 10;
-  const passo = Math.max(1, fator * grandeza);
-  const quantidade = Math.ceil(maximo / passo);
-  return Array.from({ length: quantidade + 1 }, (_, indice) => indice * passo);
-}
-
-function prefereMovimentoReduzido(): boolean {
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-}
 
 function DicaAtividade({ active, payload, formato }: TooltipProps<number, string> & { formato: FormatoPeriodo }) {
   const ponto = payload?.[0]?.payload as PontoAtividadeDTO | undefined;
@@ -148,7 +133,8 @@ export function GraficoAtividade({ pontos, periodo }: GraficoAtividadeProps) {
               className={estilos.serie}
               activeDot={{ r: 5, strokeWidth: 2, className: estilos.pontoAtivo }}
               isAnimationActive={!prefereMovimentoReduzido()}
-              animationDuration={480}
+              animationDuration={DURACAO_TRACADO_MS}
+              animationEasing="ease-out"
             />
           </AreaChart>
         </ResponsiveContainer>

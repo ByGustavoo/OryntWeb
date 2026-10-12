@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
-import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
+import type { CSSProperties } from 'react';
+import { ArrowDown, ArrowDownRight, ArrowUp, ArrowUpDown, ArrowUpRight, Minus } from 'lucide-react';
+import { ConsultaSql } from '@/componentes/comum/ConsultaSql';
 import { CampoSelecao } from '@/componentes/ui';
 import type { ConsultaResumoDTO } from '@/modelos/dashboard';
-import { formatarDuracaoMs, formatarNumero, formatarPercentual } from '@/utilitarios/formatacao';
+import { formatarDuracaoMs, formatarNumero, formatarPercentual, formatarVariacao } from '@/utilitarios/formatacao';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
-import { destacarSql } from '@/utilitarios/sql';
 import { SeloDesempenho } from './SeloDesempenho';
 import estilos from './TabelaConsultas.module.css';
 
@@ -16,8 +17,13 @@ interface Ordenacao {
   direcao: Direcao;
 }
 
+export interface ConsultaDaTabela extends ConsultaResumoDTO {
+  variacaoTempoMedio?: number | null;
+}
+
 interface TabelaConsultasProps {
-  consultas: ConsultaResumoDTO[];
+  consultas: ConsultaDaTabela[];
+  referenciaVariacao?: string;
 }
 
 const colunasOrdenaveis: { coluna: ColunaOrdenavel; rotulo: string; rotuloOrdenacao: string }[] = [
@@ -28,29 +34,27 @@ const colunasOrdenaveis: { coluna: ColunaOrdenavel; rotulo: string; rotuloOrdena
 
 const ORDENACAO_INICIAL: Ordenacao = { coluna: 'percentualTempoTotal', direcao: 'desc' };
 
-function ordenar(consultas: ConsultaResumoDTO[], { coluna, direcao }: Ordenacao): ConsultaResumoDTO[] {
+function ordenar(consultas: ConsultaDaTabela[], { coluna, direcao }: Ordenacao): ConsultaDaTabela[] {
   const sentido = direcao === 'asc' ? 1 : -1;
   return [...consultas].sort((a, b) => (a[coluna] - b[coluna]) * sentido);
 }
 
-function ConsultaSql({ sql }: { sql: string }) {
+function VariacaoTempo({ valor, referencia }: { valor: number | null; referencia: string }) {
+  if (valor === null) return <span className={estilos.variacao}>Sem comparação</span>;
+  const Icone = valor > 0 ? ArrowUpRight : valor < 0 ? ArrowDownRight : Minus;
+  const tom = valor < 0 ? estilos.melhora : valor > 0 ? estilos.piora : undefined;
   return (
-    <code className={`${estilos.sql} codigo`} title={sql}>
-      {destacarSql(sql).map((trecho, indice) =>
-        trecho.palavraChave ? (
-          <span className={estilos.palavraChave} key={indice}>
-            {trecho.texto}
-          </span>
-        ) : (
-          trecho.texto
-        ),
-      )}
-    </code>
+    <span className={juntarClasses(estilos.variacao, tom)}>
+      <Icone size={12} strokeWidth={2.25} aria-hidden="true" />
+      {formatarVariacao(valor)}
+      <span className="visualmente-oculto"> em relação {referencia}</span>
+    </span>
   );
 }
 
-export function TabelaConsultas({ consultas }: TabelaConsultasProps) {
+export function TabelaConsultas({ consultas, referenciaVariacao }: TabelaConsultasProps) {
   const [ordenacao, setOrdenacao] = useState<Ordenacao>(ORDENACAO_INICIAL);
+  const [entrando, setEntrando] = useState(true);
   const ordenadas = useMemo(() => ordenar(consultas, ordenacao), [consultas, ordenacao]);
 
   const alternar = (coluna: ColunaOrdenavel) => {
@@ -72,7 +76,9 @@ export function TabelaConsultas({ consultas }: TabelaConsultasProps) {
 
       <table className={estilos.tabela}>
         <caption className="visualmente-oculto">
-          Consultas que mais consomem tempo do banco no período. Use os cabeçalhos para mudar a ordenação.
+          Consultas que mais consomem tempo do banco no período
+          {referenciaVariacao ? `, com a variação do tempo médio em relação ${referenciaVariacao}` : ''}. Use os cabeçalhos para
+          mudar a ordenação.
         </caption>
         <thead>
           <tr>
@@ -105,14 +111,23 @@ export function TabelaConsultas({ consultas }: TabelaConsultasProps) {
             </th>
           </tr>
         </thead>
-        <tbody>
-          {ordenadas.map((consulta) => (
-            <tr key={consulta.id}>
+        <tbody className={entrando ? estilos.entrando : undefined}>
+          {ordenadas.map((consulta, indice) => (
+            <tr
+              key={consulta.id}
+              className={entrando ? 'item-em-cascata' : undefined}
+              style={{ '--indice': indice } as CSSProperties}
+            >
               <td className={estilos.celulaConsulta}>
-                <ConsultaSql sql={consulta.sql} />
+                <ConsultaSql sql={consulta.sql} classeAcoes={estilos.acoesConsulta} />
               </td>
               <td className={`${estilos.celulaNumerica} numeros`} data-rotulo="Tempo médio">
-                {formatarDuracaoMs(consulta.tempoMedioMs)}
+                <span className={estilos.tempo}>
+                  {formatarDuracaoMs(consulta.tempoMedioMs)}
+                  {referenciaVariacao ? (
+                    <VariacaoTempo valor={consulta.variacaoTempoMedio ?? null} referencia={referenciaVariacao} />
+                  ) : null}
+                </span>
               </td>
               <td className={`${estilos.celulaNumerica} numeros`} data-rotulo="Execuções">
                 {formatarNumero(consulta.quantidadeExecucoes)}
@@ -124,6 +139,7 @@ export function TabelaConsultas({ consultas }: TabelaConsultasProps) {
                     <span
                       className={estilos.preenchimento}
                       style={{ width: `${Math.min(100, consulta.percentualTempoTotal)}%` }}
+                      onAnimationEnd={indice === ordenadas.length - 1 ? () => setEntrando(false) : undefined}
                     />
                   </span>
                 </span>

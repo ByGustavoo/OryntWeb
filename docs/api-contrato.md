@@ -35,7 +35,7 @@ Set-Cookie: orynt_sessao=<token opaco>; HttpOnly; Secure; SameSite=Strict; Path=
   `Access-Control-Allow-Origin` (não `*`).
 * Sem sessão válida, as rotas protegidas respondem `401`. O front volta para a tela de login quando o
   `401` vem de `GET /autenticacao/sessao` ou de `GET /conexoes`.
-* Com sessão, mas sem conexão ativa, `GET /conexoes/atual` e as rotas do dashboard respondem `401`. O
+* Com sessão, mas sem conexão ativa, `GET /conexoes/atual` e as rotas do dashboard e dos relatórios respondem `401`. O
   front fica no dashboard: ativa a conexão salva usada por último ou, se não há nenhuma, mostra o botão que
   abre o modal de conexão.
 * Um novo login abre uma sessão nova, sem conexão ativa. As conexões salvas continuam na conta.
@@ -110,6 +110,7 @@ ajustar `PROBLEMAS_CONEXAO` em `src/modelos/conexao.ts`.
 | `GET` | `/dashboard/indicadores` | Os quatro indicadores do período | sim |
 | `GET` | `/dashboard/atividade` | Série de consultas ao longo do tempo | sim |
 | `GET` | `/dashboard/consultas` | Consultas que mais consumiram tempo | sim |
+| `GET` | `/relatorios/resumo` | Resumo de um dia, uma semana ou um mês já encerrado | sim |
 | `GET` | `/sistema/versao` | Versão publicada da API e a data de lançamento | não |
 
 ---
@@ -123,6 +124,7 @@ ajustar `PROBLEMAS_CONEXAO` em `src/modelos/conexao.ts`.
 | `TipoBanco` | `POSTGRESQL` |
 | `PeriodoDashboard` | `ULTIMA_HORA`, `ULTIMAS_24_HORAS`, `ULTIMOS_7_DIAS`, `ULTIMOS_30_DIAS` |
 | `DesempenhoConsulta` | `RAPIDA`, `MODERADA`, `LENTA` |
+| `GranularidadeRelatorio` | `DIA`, `SEMANA`, `MES` |
 
 ### 4.2 Autenticação
 
@@ -235,6 +237,44 @@ interface ConsultaResumoDTO {
 interface VersaoSistemaDTO {
   versao: string;
   dataLancamento: string | null;
+}
+```
+
+### 4.6 Relatórios
+
+```ts
+interface ResumoRelatorioDTO {
+  granularidade: GranularidadeRelatorio;
+  inicio: string;
+  fim: string;
+  indicadores: IndicadoresRelatorioDTO;
+  evolucao: PontoAtividadeDTO[];
+  desempenho: FaixaDesempenhoDTO[];
+  consultas: ConsultaRelatorioDTO[];
+}
+
+interface IndicadoresRelatorioDTO {
+  totalConsultas: number;
+  variacaoTotalConsultas: number | null;
+  tempoMedioMs: number;
+  variacaoTempoMedio: number | null;
+  consultasLentas: number;
+  consultasDistintas: number;
+  picoConexoes: number;
+  instantePicoConexoes: string | null;
+  limiteConexoes: number;
+}
+
+interface FaixaDesempenhoDTO {
+  desempenho: DesempenhoConsulta;
+  consultasDistintas: number;
+  quantidadeExecucoes: number;
+  percentualExecucoes: number;
+  percentualTempoTotal: number;
+}
+
+interface ConsultaRelatorioDTO extends ConsultaResumoDTO {
+  variacaoTempoMedio: number | null;
 }
 ```
 
@@ -400,7 +440,54 @@ está em uso.
 
 ---
 
-## 9. Pendências do contrato
+## 9. Relatórios
+
+### 9.1 `GET /relatorios/resumo`
+
+Resumo de um período de calendário já encerrado, mostrado em Relatórios › Resumo. A resposta traz o
+relatório inteiro numa só chamada, para que os blocos da tela nunca discordem entre si.
+
+Relatórios › Exportação usa esta mesma rota: os arquivos CSV, JSON e Markdown são montados no front a
+partir da resposta, e não existe rota de exportação. O JSON exportado repete os nomes de campo deste
+contrato.
+
+Relatórios › Comparação também usa esta rota, com duas chamadas (uma por período), e calcula as
+diferenças no front. Não existe rota de comparação.
+
+| Parâmetro | Regra |
+|---|---|
+| `granularidade` | `GranularidadeRelatorio`. Sem o parâmetro, vale `SEMANA`. |
+| `inicio` | Primeiro dia do período, como data sem hora (`2026-09-28`). Sem o parâmetro, vale o último período encerrado da granularidade. |
+
+* **`200`:** `ResumoRelatorioDTO`.
+* **`400`:** granularidade desconhecida, ou `inicio` que não é o primeiro dia de um período (a segunda-feira,
+  na semana; o dia 1, no mês), que ainda não terminou ou que está fora do histórico.
+* **`401`:** sem sessão ou sem conexão ativa.
+* A semana vai de segunda a domingo. `inicio` e `fim` voltam como datas sem hora, e `fim` é o último dia
+  do período, incluído.
+* O front oferece os períodos inteiros dos últimos 12 meses. Quanto histórico a API guarda é **A DEFINIR
+  NO BACKEND**.
+* As variações são percentuais em relação ao período de mesmo tamanho imediatamente anterior (`-3.9`
+  significa −3,9%). `null` quando não há dado do período anterior.
+* Cada variação é calculada com os valores como eles são devolvidos (o `tempoMedioMs` já arredondado),
+  e arredondada a uma casa. Assim a Comparação, que recalcula a diferença a partir de duas respostas,
+  chega ao mesmo número que o Resumo mostra para o período anterior.
+* `evolucao` tem um ponto por hora quando a granularidade é `DIA` (24 pontos) e um ponto por dia nas
+  outras, em ordem crescente. `indicadores.totalConsultas` é a soma dos pontos.
+* `picoConexoes` é o maior número de conexões abertas no período e `instantePicoConexoes`, o momento
+  em que ele ocorreu (`null` quando não houve atividade).
+* `desempenho` tem as três faixas, na ordem `RAPIDA`, `MODERADA`, `LENTA`. A soma de `consultasDistintas`
+  é `indicadores.consultasDistintas`, a de `quantidadeExecucoes` é `indicadores.totalConsultas`, e os
+  dois percentuais somam 100 cada. `indicadores.consultasLentas` é o `consultasDistintas` da faixa `LENTA`.
+* `consultas` segue as regras de `GET /dashboard/consultas`, com `variacaoTempoMedio` em cada item.
+* Período sem atividade: `totalConsultas` igual a `0` e as três listas vazias. A tela mostra "Nenhuma
+  atividade no período".
+
+O fuso que define onde um dia começa e termina é **A DEFINIR NO BACKEND** (o simulador usa o do navegador).
+
+---
+
+## 10. Pendências do contrato
 
 * Autenticação real: como as contas são criadas e a recuperação de senha.
 * Como a senha das conexões salvas é cifrada e onde fica a chave.
@@ -408,6 +495,7 @@ está em uso.
 * URL base, nome do cookie e duração da sessão.
 * Valores definitivos de `type` e dos status das falhas de conexão.
 * Limites de `desempenho` e se eles serão configuráveis.
-* Fuso usado para alinhar os intervalos da série.
+* Fuso usado para alinhar os intervalos da série e os períodos dos relatórios.
+* Quanto histórico fica disponível para os relatórios.
 * Quantidade de consultas devolvidas e se haverá paginação.
 * `sslmode` em `CredenciaisConexaoDTO`, quando o modo SSL entrar no formulário.

@@ -5,13 +5,13 @@ import { caminhos } from '@/rotas/caminhos';
 export interface FilhoNavegacao {
   rotulo: string;
   destino: string;
+  planejado?: boolean;
 }
 
 export interface ItemNavegacao {
   rotulo: string;
   icone: LucideIcon;
   destino: string;
-  planejado?: boolean;
   filhos?: FilhoNavegacao[];
 }
 
@@ -20,20 +20,19 @@ export interface SecaoNavegacao {
   itens: ItemNavegacao[];
 }
 
-export interface TelaPlanejada extends FilhoNavegacao {
+export interface TelaFuncionalidade extends FilhoNavegacao {
   descricao: string;
 }
 
-export interface FuncionalidadePlanejada extends ItemNavegacao {
+export interface Funcionalidade extends ItemNavegacao {
   descricao: string;
-  filhos: TelaPlanejada[];
+  filhos: TelaFuncionalidade[];
 }
 
-const relatorios: FuncionalidadePlanejada = {
+const relatorios: Funcionalidade = {
   rotulo: 'Relatórios',
   icone: FileChartColumn,
   destino: caminhos.relatorios,
-  planejado: true,
   descricao: 'Resumos periódicos para acompanhar a evolução do banco e compartilhar com o time.',
   filhos: [
     { rotulo: 'Resumo', destino: caminhos.relatoriosResumo, descricao: 'O desempenho do banco em cada período.' },
@@ -50,83 +49,89 @@ const relatorios: FuncionalidadePlanejada = {
   ],
 };
 
-const consultasSql: FuncionalidadePlanejada = {
+const consultasSql: Funcionalidade = {
   rotulo: 'Consultas SQL',
   icone: SquareTerminal,
   destino: caminhos.consultas,
-  planejado: true,
   descricao: 'O lugar para investigar cada consulta: quanto ela custa, com que frequência roda e como o banco a executa.',
   filhos: [
     {
       rotulo: 'Todas',
       destino: caminhos.consultasTodas,
       descricao: 'A lista completa das consultas, com busca e ordenação.',
+      planejado: true,
     },
     {
       rotulo: 'Histórico',
       destino: caminhos.consultasHistorico,
       descricao: 'O tempo e as execuções de cada consulta ao longo dos dias.',
+      planejado: true,
     },
     {
       rotulo: 'Planos de execução',
       destino: caminhos.consultasPlanos,
       descricao: 'Como o banco executa a consulta e onde o tempo é gasto.',
+      planejado: true,
     },
   ],
 };
 
-const objetosBanco: FuncionalidadePlanejada = {
+const objetosBanco: Funcionalidade = {
   rotulo: 'Objetos do banco',
   icone: Table2,
   destino: caminhos.objetos,
-  planejado: true,
   descricao: 'O inventário do que existe no banco e de quanto espaço cada coisa ocupa.',
   filhos: [
     {
       rotulo: 'Visões',
       destino: caminhos.objetosVisoes,
       descricao: 'Visões e visões materializadas de cada esquema.',
+      planejado: true,
     },
     {
       rotulo: 'Índices',
       destino: caminhos.objetosIndices,
       descricao: 'O tamanho e o uso de cada índice, com os pouco usados em evidência.',
+      planejado: true,
     },
     {
       rotulo: 'Tabelas',
       destino: caminhos.objetosTabelas,
       descricao: 'Tamanho em disco, quantidade de linhas e manutenção recente.',
+      planejado: true,
     },
     {
       rotulo: 'Funções',
       destino: caminhos.objetosFuncoes,
       descricao: 'Funções e procedimentos de cada esquema.',
+      planejado: true,
     },
   ],
 };
 
-const usuariosPermissoes: FuncionalidadePlanejada = {
+const usuariosPermissoes: Funcionalidade = {
   rotulo: 'Usuários e permissões',
   icone: Users,
   destino: caminhos.usuarios,
-  planejado: true,
   descricao: 'Uma visão clara de quem acessa o banco e do que cada pessoa ou serviço pode fazer.',
   filhos: [
     {
       rotulo: 'Papéis',
       destino: caminhos.usuariosPapeis,
       descricao: 'Papéis e usuários do banco, com os atributos de cada um.',
+      planejado: true,
     },
-    { rotulo: 'Sessões', destino: caminhos.usuariosSessoes, descricao: 'As sessões abertas por usuário.' },
+    { rotulo: 'Sessões', destino: caminhos.usuariosSessoes, descricao: 'As sessões abertas por usuário.', planejado: true },
     {
       rotulo: 'Permissões',
       destino: caminhos.usuariosPermissoes,
       descricao: 'O que cada papel pode fazer em cada banco, esquema e tabela.',
+      planejado: true,
     },
   ],
 };
 
-export const funcionalidadesPlanejadas: FuncionalidadePlanejada[] = [
+export const funcionalidades: Funcionalidade[] = [
   relatorios,
   consultasSql,
   objetosBanco,
@@ -162,6 +167,15 @@ export function contemCaminho(item: ItemNavegacao, caminho: string): boolean {
   return item.filhos?.some((filho) => filho.destino === caminho) ?? false;
 }
 
+export function itemPlanejado(item: ItemNavegacao): boolean {
+  const filhos = item.filhos ?? [];
+  return filhos.length > 0 && filhos.every((filho) => filho.planejado === true);
+}
+
 export function secaoPlanejada(secao: SecaoNavegacao): boolean {
-  return secao.itens.every((item) => item.planejado === true);
+  return secao.itens.every(itemPlanejado);
+}
+
+export function telasPlanejadas(funcionalidade: Funcionalidade): TelaFuncionalidade[] {
+  return funcionalidade.filhos.filter((tela) => tela.planejado === true);
 }

@@ -1,0 +1,201 @@
+.conteiner {
+  container: desempenho / inline-size;
+}
+
+.corpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--espaco-6) var(--espaco-10);
+}
+
+.grafico {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-5);
+  min-width: 0;
+}
+
+.leitura {
+  max-width: 60ch;
+  color: var(--texto);
+  line-height: var(--altura-linha-normal);
+}
+
+.barras {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+}
+
+.linha {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+}
+
+.tituloBarra {
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+}
+
+.barra {
+  display: flex;
+  gap: 2px;
+  height: 16px;
+}
+
+.segmento {
+  flex-basis: 0;
+  flex-shrink: 1;
+  min-width: 3px;
+}
+
+.segmento:first-child {
+  border-top-left-radius: var(--raio-xs);
+  border-bottom-left-radius: var(--raio-xs);
+}
+
+.segmento:last-child {
+  border-top-right-radius: var(--raio-xs);
+  border-bottom-right-radius: var(--raio-xs);
+}
+
+.rapida {
+  background-color: var(--desempenho-rapida);
+}
+
+.moderada {
+  background-color: var(--desempenho-moderada);
+}
+
+.lenta {
+  background-color: var(--desempenho-lenta);
+}
+
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--tamanho-sm);
+}
+
+.tabela th,
+.tabela td {
+  padding: var(--espaco-2) var(--espaco-3);
+  border-bottom: 1px solid var(--borda);
+  text-align: left;
+}
+
+.tabela th:first-child {
+  padding-left: 0;
+}
+
+.tabela th:last-child,
+.tabela td:last-child {
+  padding-right: 0;
+}
+
+.tabela thead th {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+}
+
+.tabela tbody th {
+  color: var(--texto);
+  font-weight: var(--peso-medio);
+}
+
+.tabela tbody tr:last-child th,
+.tabela tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.tabela .numerica {
+  color: var(--texto);
+  text-align: right;
+}
+
+.tabela thead .numerica {
+  color: var(--texto-terciario);
+}
+
+.faixa {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  white-space: nowrap;
+}
+
+.amostra {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+@container desempenho (max-width: 760px) {
+  .corpo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@container desempenho (max-width: 420px) {
+  .tabela,
+  .tabela tbody {
+    display: block;
+  }
+
+  .tabela thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .tabela tbody tr {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--espaco-2) var(--espaco-3);
+    padding-block: var(--espaco-3);
+    border-bottom: 1px solid var(--borda);
+  }
+
+  .tabela tbody tr:first-child {
+    padding-top: 0;
+  }
+
+  .tabela tbody tr:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .tabela tbody th,
+  .tabela tbody td {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 0;
+    border-bottom: none;
+    text-align: left;
+  }
+
+  .tabela tbody th {
+    grid-column: 1 / -1;
+  }
+
+  .tabela tbody .numerica {
+    text-align: left;
+  }
+
+  .tabela td[data-rotulo]::before {
+    content: attr(data-rotulo);
+    color: var(--texto-terciario);
+    font-family: var(--fonte-interface);
+    font-size: var(--tamanho-xs);
+    letter-spacing: 0;
+  }
+}

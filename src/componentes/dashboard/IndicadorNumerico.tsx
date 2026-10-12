@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { useContagem } from '@/ganchos/useContagem';
@@ -17,6 +18,8 @@ export interface IndicadorNumericoProps {
   tom?: TomIndicador;
 }
 
+const TAMANHO_ICONE = 18;
+
 export function IndicadorNumerico({
   icone: Icone,
   rotulo,
@@ -28,14 +31,19 @@ export function IndicadorNumerico({
   tom = 'destaque',
 }: IndicadorNumericoProps) {
   const exibido = useContagem(valor, casasDecimais);
+  const moldura = useRef<HTMLSpanElement>(null);
+
+  useLayoutEffect(() => {
+    moldura.current?.querySelectorAll('svg > *').forEach((traco) => traco.setAttribute('pathLength', '1'));
+  }, [Icone]);
 
   return (
     <div className={juntarClasses(estilos.indicador, estilos[tom])}>
       <dt className={estilos.rotulo}>
-        <span className={estilos.icone} aria-hidden="true">
-          <Icone size={15} strokeWidth={2.25} />
+        <span className={estilos.icone} ref={moldura} aria-hidden="true">
+          <Icone size={TAMANHO_ICONE} strokeWidth={2} />
         </span>
-        {rotulo}
+        <span className={estilos.nome}>{rotulo}</span>
       </dt>
       <dd className={`${estilos.valor} numeros`}>
         <span aria-hidden="true">{formatar(exibido)}</span>

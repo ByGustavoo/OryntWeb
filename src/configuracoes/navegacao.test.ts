@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest';
+import { caminhos } from '@/rotas/caminhos';
 import {
   contemCaminho,
   destinoInicial,
-  funcionalidadesPlanejadas,
+  funcionalidades,
+  itemPlanejado,
   navegacaoPrincipal,
   navegacaoRodape,
   secaoPlanejada,
+  telasPlanejadas,
 } from './navegacao';
 
 const itens = [...navegacaoPrincipal.flatMap((secao) => secao.itens), navegacaoRodape];
@@ -25,23 +28,23 @@ describe('navegacao', () => {
     }
   });
 
-  it('coloca todas as funcionalidades planejadas no menu, cada uma com suas telas', () => {
-    for (const funcionalidade of funcionalidadesPlanejadas) {
+  it('coloca todas as funcionalidades no menu, cada uma com suas telas', () => {
+    for (const funcionalidade of funcionalidades) {
       expect(itens).toContain(funcionalidade);
       expect(funcionalidade.filhos.length).toBeGreaterThan(0);
     }
   });
 
   it('leva o item com subitens para o primeiro deles e o item simples para o próprio destino', () => {
-    const [primeira] = funcionalidadesPlanejadas;
+    const [primeira] = funcionalidades;
 
     expect(primeira && destinoInicial(primeira)).toBe(primeira?.filhos[0]?.destino);
     expect(destinoInicial(navegacaoRodape)).toBe(navegacaoRodape.destino);
   });
 
   it('reconhece o item pelo próprio caminho e pelo caminho de qualquer subitem', () => {
-    const [primeira, segunda] = funcionalidadesPlanejadas;
-    if (!primeira || !segunda) throw new Error('Faltam funcionalidades planejadas para o teste.');
+    const [primeira, segunda] = funcionalidades;
+    if (!primeira || !segunda) throw new Error('Faltam funcionalidades para o teste.');
     const ultimoFilho = primeira.filhos[primeira.filhos.length - 1];
 
     expect(contemCaminho(primeira, primeira.destino)).toBe(true);
@@ -50,10 +53,29 @@ describe('navegacao', () => {
     expect(contemCaminho(navegacaoRodape, primeira.destino)).toBe(false);
   });
 
-  it('marca como planejada só a seção em que nenhum item está pronto', () => {
-    const [inicio, ...demais] = navegacaoPrincipal;
+  it('marca como planejada só a seção em que nenhuma tela está pronta', () => {
+    const [inicio, analise, gerenciamento] = navegacaoPrincipal;
 
     expect(inicio && secaoPlanejada(inicio)).toBe(false);
-    expect(demais.every(secaoPlanejada)).toBe(true);
+    expect(analise && secaoPlanejada(analise)).toBe(false);
+    expect(gerenciamento && secaoPlanejada(gerenciamento)).toBe(true);
+  });
+
+  it('trata como planejado só o item em que todas as telas estão planejadas', () => {
+    const [relatorios, consultas] = funcionalidades;
+    if (!relatorios || !consultas) throw new Error('Faltam funcionalidades para o teste.');
+
+    expect(itemPlanejado(relatorios)).toBe(false);
+    expect(itemPlanejado(consultas)).toBe(true);
+    expect(itemPlanejado(navegacaoRodape)).toBe(false);
+  });
+
+  it('não deixa nenhuma tela dos relatórios como planejada', () => {
+    const [relatorios] = funcionalidades;
+    if (!relatorios) throw new Error('Faltam os relatórios para o teste.');
+    const planejadas = telasPlanejadas(relatorios).map((tela) => tela.destino);
+
+    expect(planejadas).toEqual([]);
+    expect(destinoInicial(relatorios)).toBe(caminhos.relatoriosResumo);
   });
 });

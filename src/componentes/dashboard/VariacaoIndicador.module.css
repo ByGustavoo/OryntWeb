@@ -1,0 +1,33 @@
+.variacao {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: var(--espaco-1);
+}
+
+.seta {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--texto-secundario);
+}
+
+.valor {
+  color: var(--texto-secundario);
+  font-weight: var(--peso-medio);
+  white-space: nowrap;
+}
+
+.percentual {
+  margin-left: 1px;
+  font-family: var(--fonte-interface);
+  font-weight: var(--peso-forte);
+}
+
+.seta.melhora,
+.valor.melhora {
+  color: var(--sucesso);
+}
+
+.seta.piora,
+.valor.piora {
+  color: var(--erro);
+}

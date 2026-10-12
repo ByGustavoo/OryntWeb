@@ -4,6 +4,8 @@ const MS_POR_MINUTO = 60_000;
 const MINUTOS_POR_HORA = 60;
 const HORAS_POR_DIA = 24;
 const SINAL_DE_MENOS = '−';
+const LIMITE_NUMERO_COMPACTO = 1_000_000;
+const BYTES_POR_KB = 1024;
 
 const formatadorInteiro = new Intl.NumberFormat(LOCALIDADE, { maximumFractionDigits: 0 });
 const formatadorCompacto = new Intl.NumberFormat(LOCALIDADE, { notation: 'compact', maximumFractionDigits: 1 });
@@ -26,6 +28,10 @@ export function formatarNumeroCompacto(valor: number): string {
   return formatadorCompacto.format(valor);
 }
 
+export function formatarQuantidade(valor: number): string {
+  return valor >= LIMITE_NUMERO_COMPACTO ? formatarNumeroCompacto(valor) : formatarNumero(valor);
+}
+
 export function formatarDecimal(valor: number, casas = 1): string {
   return valor.toLocaleString(LOCALIDADE, { minimumFractionDigits: casas, maximumFractionDigits: casas });
 }
@@ -36,6 +42,12 @@ export function formatarDuracaoMs(milissegundos: number): string {
   return `${formatarDecimal(milissegundos, 1)} ms`;
 }
 
+export function formatarTamanho(bytes: number): string {
+  if (bytes < BYTES_POR_KB) return `${formatarNumero(bytes)} B`;
+  if (bytes < BYTES_POR_KB ** 2) return `${formatarDecimal(bytes / BYTES_POR_KB, 1)} kB`;
+  return `${formatarDecimal(bytes / BYTES_POR_KB ** 2, 1)} MB`;
+}
+
 export function formatarPercentual(valor: number): string {
   return `${formatarDecimal(valor, 1)}%`;
 }
@@ -43,6 +55,15 @@ export function formatarPercentual(valor: number): string {
 export function formatarVariacao(valor: number): string {
   const sinal = valor > 0 ? '+' : valor < 0 ? SINAL_DE_MENOS : '';
   return `${sinal}${formatarDecimal(Math.abs(valor), 1)}%`;
+}
+
+export function formatarComSinal(valor: number, formatar: (absoluto: number) => string): string {
+  const sinal = valor > 0 ? '+' : valor < 0 ? SINAL_DE_MENOS : '';
+  return `${sinal}${formatar(Math.abs(valor))}`;
+}
+
+export function formatarPontosPercentuais(valor: number): string {
+  return `${formatarComSinal(valor, (absoluto) => formatarDecimal(absoluto, 1))} p.p.`;
 }
 
 export function formatarHorario(instante: string): string {
@@ -82,4 +103,8 @@ export function formatarTempoRelativo(instante: string, agora: Date = new Date()
 
 export function pluralizar(quantidade: number, singular: string, plural: string): string {
   return quantidade === 1 ? singular : plural;
+}
+
+export function iniciarComMaiuscula(texto: string): string {
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
 }

@@ -1,0 +1,337 @@
+.painel {
+  --respiro-lateral: var(--espaco-6);
+}
+
+.cabecalho {
+  padding: var(--espaco-5) var(--respiro-lateral) 0;
+}
+
+.conteiner {
+  container: consultas-comparadas / inline-size;
+}
+
+.ordenacaoCompacta {
+  display: none;
+  padding: 0 var(--respiro-lateral) var(--espaco-4);
+}
+
+.vazio {
+  padding: var(--espaco-8) var(--respiro-lateral);
+  border-top: 1px solid var(--borda);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  text-align: center;
+}
+
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--tamanho-sm);
+}
+
+.tabela th {
+  padding: var(--espaco-2) var(--espaco-3);
+  border-bottom: 1px solid var(--borda);
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+  text-align: left;
+  vertical-align: bottom;
+  white-space: nowrap;
+}
+
+.tabela td {
+  padding: var(--espaco-3);
+  border-bottom: 1px solid var(--borda);
+  vertical-align: middle;
+}
+
+.tabela tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.tabela th:first-child,
+.tabela td:first-child {
+  padding-left: var(--respiro-lateral);
+}
+
+.tabela th:last-child,
+.tabela td:last-child {
+  padding-right: var(--respiro-lateral);
+}
+
+.tabela th.colunaNumerica {
+  text-align: right;
+}
+
+.colunaDesempenho {
+  width: 9.5rem;
+}
+
+.textosCabecalho {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  line-height: var(--altura-linha-compacta);
+}
+
+.periodoCabecalho {
+  font-weight: var(--peso-regular);
+}
+
+.ordenar {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: var(--espaco-1);
+  min-height: 28px;
+  margin: calc(var(--espaco-1) * -1) calc(var(--espaco-2) * -1) calc(var(--espaco-1) * -1) 0;
+  padding: var(--espaco-1) var(--espaco-2);
+  border-radius: var(--raio-sm);
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+  transition:
+    background-color var(--duracao-rapida) var(--curva-saida),
+    color var(--duracao-rapida) var(--curva-saida);
+}
+
+.ordenar svg {
+  flex-shrink: 0;
+  margin-bottom: 1px;
+}
+
+.ordenar:focus-visible {
+  outline: none;
+  box-shadow: var(--anel-foco);
+}
+
+.ordenarAtivo {
+  color: var(--texto);
+}
+
+.celulaConsulta {
+  width: 38%;
+  max-width: 0;
+}
+
+.celulaNumerica {
+  color: var(--texto);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.tabela td.daBase {
+  color: var(--texto-secundario);
+}
+
+.ausente {
+  color: var(--texto-terciario);
+}
+
+.semComparacao {
+  color: var(--texto-terciario);
+  font-family: var(--fonte-interface);
+  font-size: var(--tamanho-xs);
+  letter-spacing: 0;
+}
+
+.variacao,
+.empilhado {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.variacao {
+  min-width: 6rem;
+}
+
+.percentual {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--texto-secundario);
+  font-weight: var(--peso-medio);
+}
+
+.percentual.melhora {
+  color: var(--sucesso);
+}
+
+.percentual.piora {
+  color: var(--erro);
+}
+
+.trilho {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  border-radius: var(--raio-pilula);
+  background-color: var(--neutro-suave);
+}
+
+.trilho::after {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  left: 50%;
+  width: 1px;
+  background-color: var(--borda-controle);
+  content: '';
+}
+
+.preenchimento {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  min-width: 2px;
+  border-radius: var(--raio-pilula);
+  background-color: var(--texto-terciario);
+}
+
+.preenchimento.melhora {
+  background-color: var(--sucesso-grafico);
+}
+
+.preenchimento.piora {
+  background-color: var(--erro-grafico);
+}
+
+.detalhe {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+}
+
+.desempenho {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--espaco-1);
+}
+
+@media (hover: hover) {
+  .ordenar:hover {
+    background-color: var(--superficie-suave);
+    color: var(--texto);
+  }
+
+  .tabela tbody tr:hover td {
+    background-color: color-mix(in srgb, var(--superficie-suave) 60%, transparent);
+  }
+}
+
+@container consultas-comparadas (max-width: 860px) {
+  .ordenacaoCompacta {
+    display: flex;
+  }
+
+  .tabela,
+  .tabela tbody {
+    display: block;
+  }
+
+  .tabela thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .tabela tbody tr {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--espaco-3) var(--espaco-4);
+    padding: var(--espaco-4) var(--respiro-lateral);
+    border-top: 1px solid var(--borda);
+  }
+
+  .tabela td,
+  .tabela td:first-child,
+  .tabela td:last-child {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 0;
+    border-bottom: none;
+    text-align: left;
+    white-space: normal;
+  }
+
+  .tabela td[data-rotulo]::before {
+    content: attr(data-rotulo);
+    color: var(--texto-terciario);
+    font-family: var(--fonte-interface);
+    font-size: var(--tamanho-xs);
+    letter-spacing: 0;
+  }
+
+  .tabela td.celulaConsulta {
+    grid-column: 1 / -1;
+    width: auto;
+    max-width: none;
+  }
+
+  .tabela td.celulaDesempenho {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--espaco-2);
+  }
+
+  .tabela {
+    --linhas-sql: 3;
+  }
+
+  .variacao,
+  .empilhado {
+    align-items: flex-start;
+  }
+
+  .variacao {
+    min-width: 0;
+    width: 100%;
+    max-width: 8rem;
+  }
+
+  .desempenho {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--espaco-2);
+  }
+
+  .tabela tbody tr:hover td {
+    background-color: transparent;
+  }
+}
+
+@container consultas-comparadas (max-width: 460px) {
+  .tabela tbody tr {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .painel {
+    --respiro-lateral: var(--espaco-4);
+  }
+
+  .cabecalho {
+    padding-top: var(--espaco-4);
+  }
+}
+
+@media (max-width: 400px) {
+  .filtro label > span {
+    padding-inline: var(--espaco-2);
+  }
+}
+
+@media print {
+  .conteiner .ordenacaoCompacta {
+    display: none;
+  }
+}

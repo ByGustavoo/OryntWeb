@@ -232,3 +232,30 @@ legend {
   font-variant-ligatures: none;
   letter-spacing: 0;
 }
+
+@page {
+  margin: 14mm;
+}
+
+@media print {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  html {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  html,
+  body {
+    background-color: var(--superficie);
+  }
+
+  .nao-imprimir {
+    display: none !important;
+  }
+}
