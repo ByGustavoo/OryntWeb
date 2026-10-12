@@ -339,8 +339,47 @@
     border-right: none;
   }
 
+  :global([data-travessia]) .menu {
+    view-transition-name: menu-lateral;
+  }
+
+  :global([data-travessia]) .simbolo {
+    view-transition-name: marca-orynt;
+  }
+
+  :global([data-travessia]) .textosMarca {
+    view-transition-name: nome-orynt;
+  }
+
+  :global([data-travessia='chegada']) .secao,
+  :global([data-travessia='chegada']) .rodape {
+    --ordem-chegada: 0;
+
+    animation: chegarAoMenu var(--duracao-lenta) var(--curva-saida) backwards;
+    animation-delay: calc(var(--passo-cascata-pagina) * (4 + var(--ordem-chegada)));
+  }
+
+  :global([data-travessia='chegada']) .secao:nth-child(2) {
+    --ordem-chegada: 1;
+  }
+
+  :global([data-travessia='chegada']) .secao:nth-child(n + 3) {
+    --ordem-chegada: 2;
+  }
+
+  :global([data-travessia='chegada']) .rodape {
+    --ordem-chegada: 3;
+  }
+
   .navegacao {
     padding-top: calc(var(--respiro-topo-conteudo) + var(--borda-fina) + (var(--altura-titulo-pagina) - var(--altura-item-menu)) / 2);
+  }
+}
+
+@keyframes chegarAoMenu {
+  from {
+    opacity: 0;
+    transform: translateX(calc(var(--espaco-2) * -1));
   }
 }
 

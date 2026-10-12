@@ -227,14 +227,108 @@ legend {
   animation-timing-function: var(--curva-tema);
 }
 
+[data-travessia]::view-transition-group(*) {
+  animation-duration: var(--duracao-chegada);
+  animation-timing-function: var(--curva-tema);
+}
+
+[data-travessia]::view-transition-group(marca-orynt),
+[data-travessia]::view-transition-group(nome-orynt) {
+  z-index: 1;
+}
+
+[data-travessia]::view-transition-old(root) {
+  animation: orynt-apagar calc(var(--duracao-rapida) * 2) var(--curva-entrada) both;
+}
+
+[data-travessia='saida']::view-transition-old(menu-lateral) {
+  animation: orynt-chegar-menu calc(var(--duracao-rapida) * 2) var(--curva-saida) reverse both;
+}
+
+[data-travessia='saida']::view-transition-old(cabecalho-aplicacao) {
+  animation: orynt-chegar-cabecalho calc(var(--duracao-rapida) * 2) var(--curva-saida) reverse both;
+}
+
+[data-travessia='saida']::view-transition-new(root),
+[data-travessia='saida']::view-transition-new(acesso-formulario),
+[data-travessia='saida']::view-transition-new(nome-orynt):only-child {
+  animation: orynt-chegar-conteudo var(--duracao-lenta) var(--curva-saida) calc(var(--passo-cascata-pagina) * 4) both;
+}
+
+[data-travessia='saida']::view-transition-new(acesso-painel) {
+  animation: orynt-recuar var(--duracao-lenta) var(--curva-entrada) calc(var(--passo-cascata-pagina) * 4) reverse both;
+}
+
+[data-travessia='chegada']::view-transition-old(acesso-formulario) {
+  animation: orynt-recolher-formulario calc(var(--duracao-rapida) * 2) var(--curva-entrada) both;
+}
+
+[data-travessia='chegada']::view-transition-old(acesso-painel) {
+  animation: orynt-recuar calc(var(--duracao-rapida) * 2) var(--curva-entrada) var(--passo-cascata) both;
+}
+
+[data-travessia='chegada']::view-transition-old(nome-orynt):only-child {
+  animation-duration: calc(var(--duracao-rapida) * 2);
+  animation-timing-function: var(--curva-entrada);
+}
+
+[data-travessia='chegada']::view-transition-new(menu-lateral) {
+  animation: orynt-chegar-menu var(--duracao-lenta) var(--curva-saida) calc(var(--passo-cascata-pagina) * 3) both;
+}
+
+[data-travessia='chegada']::view-transition-new(cabecalho-aplicacao) {
+  animation: orynt-chegar-cabecalho var(--duracao-lenta) var(--curva-saida) calc(var(--passo-cascata-pagina) * 4) both;
+}
+
+[data-travessia='chegada']::view-transition-new(root) {
+  animation: orynt-chegar-conteudo var(--duracao-lenta) var(--curva-saida) calc(var(--passo-cascata-pagina) * 4) both;
+}
+
+@keyframes orynt-apagar {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes orynt-recolher-formulario {
+  to {
+    opacity: 0;
+    filter: blur(4px);
+    transform: translateY(calc(var(--espaco-4) * -1));
+  }
+}
+
+@keyframes orynt-recuar {
+  to {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+
+@keyframes orynt-chegar-conteudo {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes orynt-chegar-menu {
+  from {
+    opacity: 0;
+    transform: translateX(calc(var(--espaco-6) * -1));
+  }
+}
+
+@keyframes orynt-chegar-cabecalho {
+  from {
+    opacity: 0;
+    transform: translateY(calc(var(--espaco-4) * -1));
+  }
+}
+
 .codigo {
   font-family: var(--fonte-numeros);
   font-variant-ligatures: none;
   letter-spacing: 0;
-}
-
-@page {
-  margin: 14mm;
 }
 
 @media print {
@@ -255,7 +349,26 @@ legend {
     background-color: var(--superficie);
   }
 
-  .nao-imprimir {
+  .nao-imprimir,
+  .link-pular {
     display: none !important;
+  }
+}
+
+@page {
+  margin: 12mm 9mm 15mm;
+
+  @bottom-left {
+    content: 'Orynt · Toda lentidão tem uma origem.';
+    color: var(--texto-terciario);
+    font-family: var(--fonte-interface);
+    font-size: 8pt;
+  }
+
+  @bottom-right {
+    content: 'Página ' counter(page) ' de ' counter(pages);
+    color: var(--texto-terciario);
+    font-family: var(--fonte-interface);
+    font-size: 8pt;
   }
 }

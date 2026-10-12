@@ -178,6 +178,18 @@ export function titulosDaComparacao(par: ParDePeriodos): RotulosDaComparacao {
   return { principal: iniciarComMaiuscula(rotulos.principal), base: iniciarComMaiuscula(rotulos.base) };
 }
 
+function viraOAno(periodo: PeriodoRelatorio): boolean {
+  return anosDoPeriodo(periodo).length > 1;
+}
+
+export function rotulosDoSeletor({ periodo, base }: ParDePeriodos): RotulosDaComparacao {
+  const anoNasDuasPontas = viraOAno(periodo) || viraOAno(base);
+  return {
+    principal: iniciarComMaiuscula(rotuloCurtoDoPeriodo(periodo, true, anoNasDuasPontas)),
+    base: iniciarComMaiuscula(rotuloCurtoDoPeriodo(base, true, anoNasDuasPontas)),
+  };
+}
+
 export function referenciaDaBase(par: ParDePeriodos): string {
   return periodoComoReferencia(par.base, precisaDoAno(par));
 }

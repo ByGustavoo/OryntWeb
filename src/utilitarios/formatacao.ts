@@ -19,6 +19,13 @@ const formatadorInstante = new Intl.DateTimeFormat(LOCALIDADE, {
   minute: '2-digit',
 });
 const formatadorData = new Intl.DateTimeFormat(LOCALIDADE, { day: '2-digit', month: 'short', year: 'numeric' });
+const formatadorDataHoraCompleta = new Intl.DateTimeFormat(LOCALIDADE, {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+});
 
 export function formatarNumero(valor: number): string {
   return formatadorInteiro.format(valor);
@@ -80,6 +87,10 @@ export function formatarDiaSemana(instante: string): string {
 
 export function formatarInstante(instante: string): string {
   return formatadorInstante.format(new Date(instante)).replace('.', '');
+}
+
+export function formatarDataHoraCompleta(instante: Date): string {
+  return formatadorDataHoraCompleta.format(instante);
 }
 
 export function formatarDataOpcional(instante: string | null): string | null {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { MarcaOrynt } from '@/componentes/comum/MarcaOrynt';
 import { NomeOrynt } from '@/componentes/comum/NomeOrynt';
@@ -6,6 +6,7 @@ import { BotaoTema } from '@/componentes/layout/BotaoTema';
 import { PainelMonitoramento } from '@/componentes/login/PainelMonitoramento';
 import { ID_CONTEUDO_PRINCIPAL } from '@/configuracoes/aplicacao';
 import { useConsultaMidia } from '@/ganchos/useConsultaMidia';
+import { avisarDestinoMontado, travessiaEmCurso } from '@/utilitarios/travessia';
 import type { ContextoAcesso } from './contextoAcesso';
 import estilos from './LayoutAcesso.module.css';
 
@@ -17,6 +18,9 @@ export default function LayoutAcesso() {
   const [emailLembrado, setEmailLembrado] = useState('');
   const [senhaRedefinida, setSenhaRedefinida] = useState(false);
   const [entradaConcluida, setEntradaConcluida] = useState(false);
+  const [marcaPousando] = useState(() => travessiaEmCurso() === 'saida');
+
+  useLayoutEffect(avisarDestinoMontado, []);
 
   useEffect(() => {
     const temporizador = window.setTimeout(() => setEntradaConcluida(true), DURACAO_DA_ENTRADA_MS);
@@ -58,7 +62,7 @@ export default function LayoutAcesso() {
         data-ritmo={entradaConcluida ? 'troca' : 'entrada'}
       >
         <div className={estilos.coluna}>
-          <div className={estilos.marca}>
+          <div className={estilos.marca} data-pousando={marcaPousando || undefined}>
             <MarcaOrynt tamanho={32} animada />
             <NomeOrynt className={estilos.nome} />
           </div>

@@ -65,9 +65,25 @@
   animation-delay: calc(var(--entrada-inicio) + var(--entrada-passo) + 40ms);
 }
 
+.marca[data-pousando] > * {
+  animation: none;
+}
+
 .coluna > aside {
   animation: var(--animacao-emergir) var(--entrada-duracao) var(--curva-saida)
     calc(var(--entrada-inicio) + var(--entrada-passo) * 7) backwards;
+}
+
+:global([data-travessia]) .coluna {
+  view-transition-name: acesso-formulario;
+}
+
+:global([data-travessia]) .marca > svg {
+  view-transition-name: marca-orynt;
+}
+
+:global([data-travessia]) .nome {
+  view-transition-name: nome-orynt;
 }
 
 @keyframes aparecer {

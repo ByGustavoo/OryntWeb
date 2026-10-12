@@ -4,17 +4,6 @@
   gap: var(--espaco-5);
 }
 
-.identificacao {
-  display: none;
-  color: var(--texto-secundario);
-  font-size: var(--tamanho-sm);
-}
-
-.identificacao strong {
-  color: var(--texto);
-  font-weight: var(--peso-forte);
-}
-
 .conteudo {
   container: comparacao / inline-size;
 }
@@ -60,12 +49,9 @@
 }
 
 @media print {
-  .identificacao {
-    display: block;
-  }
-
   .blocos {
     gap: var(--espaco-4);
+    zoom: var(--escala-folha);
   }
 
   .atualizando {

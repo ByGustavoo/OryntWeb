@@ -152,7 +152,7 @@ Dashboard responde "como o banco está agora?"; o Resumo responde "como foi o pe
 | Q2 | Período em andamento | Fica de fora. Hoje, esta semana e este mês não têm relatório; o "agora" é do Dashboard. |
 | Q3 | Conteúdo | Seis blocos: período, destaques em frases, quatro indicadores com a variação contra o período anterior, evolução do volume e do tempo médio com o pico marcado, divisão das execuções e do tempo por faixa de desempenho e as consultas que mais pesaram, com a variação do tempo médio de cada uma. |
 | Q4 | Período na URL | O endereço é sempre `/relatorios/resumo`, sem parâmetros (o usuário pediu a URL limpa). O período aberto fica no histórico do navegador: recarregar a página o mantém; abrir o endereço de novo começa no período mais recente. |
-| S1 | Imprimir | Botão "Imprimir", que abre a impressão do navegador. A folha sai sem menu, cabeçalho e controles, em tema claro, com a conexão e o momento em que foi gerada. Aprovada. |
+| S1 | Imprimir | Botão "Imprimir", que abre a impressão do navegador. A folha sai sem menu, cabeçalho e controles, em tema claro, com a conexão e o momento em que foi gerada. Aprovada. Em 12 de outubro de 2026 o usuário pediu a folha personalizada: ela abre com a marca e o nome do Orynt, o nome da tela, o período, o período de comparação e a conexão, e cada página leva o slogan e a numeração no rodapé. A tela não muda de tema ao imprimir, e o arquivo é sugerido com o nome do relatório e do período. |
 | S2 | Atalho no Dashboard | Link no painel "Atividade das consultas" para o resumo de ontem (períodos de 1 h e 24 h), da semana passada (7 dias) ou do mês passado (30 dias). Aprovada. |
 | S3 | Copiar destaques | Botão "Copiar" no bloco de destaques, que leva as frases como texto, com o nome da conexão e o período. Aprovada. |
 
@@ -163,6 +163,8 @@ Regras:
 * **Trocar o tamanho do período:** a tela vai para o dia, a semana ou o mês que contém o último dia do período aberto, sem nunca cair num período em andamento.
 * **Comparação:** toda variação é contra o período de mesmo tamanho imediatamente anterior, que a tela nomeia ("Comparado com…").
 * **Destaques:** as frases são montadas pelo front a partir dos números do relatório. A queda do tempo médio é marcada como boa e a alta como ponto de atenção; o volume não tem juízo de valor.
+* **Indicadores:** no card "Consultas executadas", a seta e o percentual da variação ficam verdes quando o volume sobe e vermelhos quando cai, como no Dashboard (pedido pelo usuário em 12 de outubro de 2026). Nas frases de destaque o volume continua sem juízo de valor.
+* **Ações:** "Comparar", "Exportar" e "Imprimir" ficam na mesma linha do seletor de dia, semana e mês, à direita (pedido pelo usuário em 12 de outubro de 2026). Quando a linha aperta, os três botões mostram só o ícone; em telas estreitas, descem para uma linha própria.
 * **Desempenho:** a API classifica as consultas, como no Dashboard (Q3 de "Decisões"); o front só apresenta as faixas.
 * **Sem conexão:** a tela mostra o mesmo painel do Dashboard.
 * **Demonstração:** o aviso "Dados demonstrativos" aparece na tela e na folha impressa, e o texto copiado termina com "(dados demonstrativos)".
@@ -223,7 +225,8 @@ Regras:
 * **Trocar o tamanho:** os dois períodos passam para o novo tamanho e o de comparação volta a ser o anterior.
 * **Alinhamento da evolução:** hora com hora no dia, dia da semana com dia da semana na semana e dia do mês com dia do mês no mês. O mês mais curto termina antes.
 * **Meses de tamanhos diferentes:** o total aparece como é, com a variação do volume por dia ao lado, e uma frase avisa a diferença de dias.
-* **Juízo de valor:** a queda do tempo médio e das consultas lentas é marcada como boa e a alta como ponto de atenção; volume e pico de conexões não têm juízo.
+* **Juízo de valor:** a queda do tempo médio e das consultas lentas é marcada como boa e a alta como ponto de atenção; o pico de conexões não tem juízo. No card "Consultas executadas", a seta e o percentual ficam verdes quando o volume sobe e vermelhos quando cai, como no Resumo e no Dashboard (pedido pelo usuário em 12 de outubro de 2026); nas frases de "O que mudou" o volume continua sem juízo.
+* **Ações:** "Imprimir" fica na mesma linha do seletor de dia, semana e mês, à direita (pedido pelo usuário em 12 de outubro de 2026).
 * **Consultas:** entram as que aparecem em pelo menos uma das duas listas. A que falta numa delas aparece sem valor naquele lado e sem variação: a lista traz só as que mais pesaram, então a tela não a chama de nova nem de extinta.
 * **Piorou e melhorou:** a consulta cujo tempo médio subiu ou caiu. Variação menor que 0,05% conta como igual.
 * **Desempenho:** a diferença da fatia do tempo é dada em pontos percentuais.

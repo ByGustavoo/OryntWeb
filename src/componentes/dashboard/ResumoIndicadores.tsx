@@ -23,6 +23,7 @@ export function ResumoIndicadores({ resultado }: ResumoIndicadoresProps) {
         resultado={resultado}
         esqueleto={<EsqueletoIndicadores />}
         tituloErro="Não foi possível carregar os indicadores"
+        revelar={false}
       >
         {(indicadores) => (
           <GradeIndicadores>

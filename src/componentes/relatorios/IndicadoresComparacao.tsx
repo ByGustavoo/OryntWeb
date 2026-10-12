@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Activity, ArrowDownRight, ArrowUpRight, Minus, Plug, Timer, TriangleAlert } from 'lucide-react';
 import { GradeIndicadores } from '@/componentes/dashboard/GradeIndicadores';
 import { IndicadorNumerico } from '@/componentes/dashboard/IndicadorNumerico';
+import type { SentidoFavoravel } from '@/componentes/dashboard/VariacaoIndicador';
 import type { IndicadoresComparados, ValorComparado } from '@/regras/comparacaoRelatorio';
 import {
   formatarComSinal,
@@ -23,7 +24,7 @@ interface MudancaProps {
   medida: 'PERCENTUAL' | 'ABSOLUTA';
   formatarBase: (valor: number) => string;
   rotuloBase: string;
-  menorMelhor?: boolean;
+  favoravel?: SentidoFavoravel;
   children?: ReactNode;
 }
 
@@ -32,10 +33,11 @@ function descreverMudanca({ diferenca, variacao }: ValorComparado, medida: Mudan
   return variacao === null ? 'Sem comparação' : formatarVariacao(variacao);
 }
 
-function Mudanca({ valor, medida, formatarBase, rotuloBase, menorMelhor = false, children }: MudancaProps) {
+function Mudanca({ valor, medida, formatarBase, rotuloBase, favoravel, children }: MudancaProps) {
   const sentido = medida === 'ABSOLUTA' ? valor.diferenca : (valor.variacao ?? 0);
   const Icone = sentido > 0 ? ArrowUpRight : sentido < 0 ? ArrowDownRight : Minus;
-  const tom = menorMelhor && sentido !== 0 ? (sentido < 0 ? estilos.melhora : estilos.piora) : undefined;
+  const melhorou = sentido > 0 === (favoravel === 'ALTA');
+  const tom = favoravel && sentido !== 0 ? (melhorou ? estilos.melhora : estilos.piora) : undefined;
 
   return (
     <span className={estilos.contexto}>
@@ -70,7 +72,13 @@ export function IndicadoresComparacao({ indicadores, rotuloBase }: IndicadoresCo
           valor={totalConsultas.principal}
           formatar={formatarQuantidade}
           contexto={
-            <Mudanca valor={totalConsultas} medida="PERCENTUAL" formatarBase={formatarQuantidade} rotuloBase={rotuloBase}>
+            <Mudanca
+              valor={totalConsultas}
+              medida="PERCENTUAL"
+              formatarBase={formatarQuantidade}
+              rotuloBase={rotuloBase}
+              favoravel="ALTA"
+            >
               {consultasPorDia && consultasPorDia.variacao !== null ? (
                 <span>
                   Por dia: <span className="numeros">{formatarVariacao(consultasPorDia.variacao)}</span>
@@ -92,7 +100,7 @@ export function IndicadoresComparacao({ indicadores, rotuloBase }: IndicadoresCo
               medida="PERCENTUAL"
               formatarBase={(valor) => `${formatarDecimal(valor, 1)} ms`}
               rotuloBase={rotuloBase}
-              menorMelhor
+              favoravel="QUEDA"
             />
           }
         />
@@ -108,7 +116,7 @@ export function IndicadoresComparacao({ indicadores, rotuloBase }: IndicadoresCo
               medida="ABSOLUTA"
               formatarBase={formatarNumero}
               rotuloBase={rotuloBase}
-              menorMelhor
+              favoravel="QUEDA"
             />
           }
         />

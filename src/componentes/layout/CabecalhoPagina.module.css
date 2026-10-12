@@ -27,6 +27,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--espaco-2);
+  animation: var(--animacao-revelar) var(--duracao-lenta) var(--curva-saida) backwards;
 }
 
 @media (max-width: 767px) {

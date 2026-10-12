@@ -7,8 +7,15 @@
 .blocos > * {
   --bloco: 0;
 
-  animation: var(--animacao-surgir) var(--duracao-lenta) var(--curva-saida) backwards;
+  animation: assentarBloco var(--duracao-expressiva) var(--curva-saida) backwards;
   animation-delay: calc(var(--passo-cascata-pagina) * (var(--bloco) + 1));
+}
+
+@keyframes assentarBloco {
+  from {
+    opacity: 0;
+    transform: translateY(var(--espaco-4));
+  }
 }
 
 .blocos > :nth-child(2) {

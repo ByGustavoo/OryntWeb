@@ -51,6 +51,8 @@
   --respiro-topo-conteudo: var(--espaco-6);
   --altura-titulo-pagina: calc(var(--tamanho-2xl) * var(--altura-linha-justa));
 
+  --escala-folha: 0.76;
+
   --altura-controle: 38px;
   --altura-controle-sm: 32px;
   --altura-controle-lg: 48px;
@@ -70,6 +72,7 @@
   --passo-cascata: 30ms;
   --limite-cascata: 10;
   --passo-cascata-pagina: 70ms;
+  --duracao-chegada: 640ms;
   --animacao-surgir: orynt-surgir;
   --animacao-revelar: orynt-revelar;
   --animacao-emergir: orynt-emergir;

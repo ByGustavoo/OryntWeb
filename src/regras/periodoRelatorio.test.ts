@@ -178,6 +178,10 @@ describe('rótulos para comparar períodos', () => {
     expect(rotuloCurtoDoPeriodo({ granularidade: 'DIA', inicio: '2026-10-07' }, true)).toBe('07/10/2026');
     expect(rotuloCurtoDoPeriodo({ granularidade: 'SEMANA', inicio: '2026-09-28' })).toBe('28/09 a 04/10');
     expect(rotuloCurtoDoPeriodo({ granularidade: 'SEMANA', inicio: '2026-09-28' }, true)).toBe('28/09 a 04/10/2026');
+    expect(rotuloCurtoDoPeriodo({ granularidade: 'SEMANA', inicio: '2026-09-28' }, true, true)).toBe(
+      '28/09/2026 a 04/10/2026',
+    );
+    expect(rotuloCurtoDoPeriodo({ granularidade: 'SEMANA', inicio: '2026-09-28' }, false, true)).toBe('28/09 a 04/10');
     expect(rotuloCurtoDoPeriodo({ granularidade: 'MES', inicio: '2026-09-01' })).toBe('setembro');
     expect(rotuloCurtoDoPeriodo({ granularidade: 'MES', inicio: '2026-09-01' }, true)).toBe('setembro de 2026');
   });

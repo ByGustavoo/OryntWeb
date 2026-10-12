@@ -44,7 +44,15 @@
 
 @media print {
   .grade {
+    gap: 0;
+    background-color: var(--superficie);
     box-shadow: none;
     break-inside: avoid;
+  }
+
+  .grade > * {
+    margin: -1px 0 0 -1px;
+    border-top: 1px solid var(--borda);
+    border-left: 1px solid var(--borda);
   }
 }

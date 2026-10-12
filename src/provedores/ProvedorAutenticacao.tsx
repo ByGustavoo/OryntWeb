@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { ehCancelamento } from '@/api/ErroApi';
 import type { UsuarioDTO } from '@/modelos/autenticacao';
 import { servicoAutenticacao } from '@/servicos';
+import { atravessar } from '@/utilitarios/travessia';
 
 export type SituacaoAutenticacao = 'VERIFICANDO' | 'ANONIMA' | 'AUTENTICADA';
 
@@ -42,7 +43,8 @@ export function ProvedorAutenticacao({ children }: { children: ReactNode }) {
 
   const sair = useCallback(async () => {
     await servicoAutenticacao.sair();
-    setEstado(ANONIMA);
+    await Promise.allSettled([import('@/layouts/LayoutAcesso'), import('@/paginas/PaginaLogin')]);
+    atravessar('saida', () => setEstado(ANONIMA));
   }, []);
 
   const valor = useMemo<ValorContextoAutenticacao>(

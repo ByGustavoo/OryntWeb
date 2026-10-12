@@ -19,6 +19,7 @@ import {
   resumirMudancaDeDesempenho,
   resumirTendencias,
   rotulosDaComparacao,
+  rotulosDoSeletor,
   titulosDaComparacao,
   variacaoEntre,
   vizinhaDaBase,
@@ -196,6 +197,32 @@ describe('nomes dos dois períodos', () => {
     expect(titulosDaComparacao({ periodo: mes('2026-09-01'), base: mes('2026-08-01') })).toEqual({
       principal: 'Setembro',
       base: 'Agosto',
+    });
+  });
+
+  it('escreve os dois lados do seletor no mesmo formato, sempre com o ano', () => {
+    expect(rotulosDoSeletor({ periodo: semana('2026-10-05'), base: semana('2026-09-28') })).toEqual({
+      principal: '05/10 a 11/10/2026',
+      base: '28/09 a 04/10/2026',
+    });
+    expect(rotulosDoSeletor({ periodo: dia('2026-10-11'), base: dia('2026-10-10') })).toEqual({
+      principal: '11/10/2026',
+      base: '10/10/2026',
+    });
+    expect(rotulosDoSeletor({ periodo: mes('2026-09-01'), base: mes('2026-08-01') })).toEqual({
+      principal: 'Setembro de 2026',
+      base: 'Agosto de 2026',
+    });
+  });
+
+  it('põe o ano nas duas pontas dos dois lados quando uma das semanas vira o ano', () => {
+    expect(rotulosDoSeletor({ periodo: semana('2025-12-29'), base: semana('2025-12-22') })).toEqual({
+      principal: '29/12/2025 a 04/01/2026',
+      base: '22/12/2025 a 28/12/2025',
+    });
+    expect(rotulosDoSeletor({ periodo: semana('2026-01-05'), base: semana('2025-12-29') })).toEqual({
+      principal: '05/01/2026 a 11/01/2026',
+      base: '29/12/2025 a 04/01/2026',
     });
   });
 
