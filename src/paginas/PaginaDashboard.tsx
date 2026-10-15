@@ -6,22 +6,24 @@ import { ehErroApi } from '@/api/tratamentoErros';
 import { PainelSemConexao } from '@/componentes/conexao/PainelSemConexao';
 import { GraficoAtividade } from '@/componentes/dashboard/GraficoAtividade';
 import { ResumoIndicadores } from '@/componentes/dashboard/ResumoIndicadores';
-import { TabelaConsultas } from '@/componentes/dashboard/TabelaConsultas';
+import { EsqueletoTabelaConsultas, TabelaConsultas } from '@/componentes/dashboard/TabelaConsultas';
+import type { OrdenacaoDaTabela } from '@/componentes/dashboard/TabelaConsultas';
 import { CabecalhoPagina } from '@/componentes/layout/CabecalhoPagina';
 import {
   CabecalhoPainel,
   ConteudoAssincrono,
   Esqueleto,
-  EsqueletoLista,
   EstadoVazio,
   GrupoOpcoes,
   Nota,
   Painel,
 } from '@/componentes/ui';
-import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
+import { useDadosPorChave } from '@/ganchos/useDadosAssincronos';
 import type { ResultadoAssincrono } from '@/ganchos/useDadosAssincronos';
 import { esperaMaximaDaEtapa, useEntradaCoordenada } from '@/ganchos/useEntradaCoordenada';
 import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
+import { useVerHistorico } from '@/ganchos/useVerHistorico';
+import { useVerPlano } from '@/ganchos/useVerPlano';
 import type { ConexaoDTO } from '@/modelos/conexao';
 import type { PeriodoDashboard } from '@/modelos/dashboard';
 import { descricaoPeriodo, periodosDashboard, rotuloPeriodo } from '@/modelos/rotulos';
@@ -30,7 +32,6 @@ import type { SituacaoConexao } from '@/provedores/ProvedorConexao';
 import { granularidadeDoDashboard, ultimoPeriodoFechado, ultimoPeriodoNaFrase } from '@/regras/periodoRelatorio';
 import { caminhos } from '@/rotas/caminhos';
 import { servicoDashboard } from '@/servicos';
-import { juntarClasses } from '@/utilitarios/juntarClasses';
 import estilos from './PaginaDashboard.module.css';
 
 const PERIODO_INICIAL: PeriodoDashboard = 'ULTIMAS_24_HORAS';
@@ -40,9 +41,10 @@ const opcoesPeriodo = periodosDashboard.map((periodo) => ({ valor: periodo, rotu
 const ETAPA_INDICADORES = 1;
 const ETAPA_ATIVIDADE = 2;
 const ETAPA_CONSULTAS = 3;
+const LINHAS_DO_ESQUELETO = 10;
 
-function esperaDoEsqueleto(etapa: number): CSSProperties {
-  return { '--espera-esqueleto': `${esperaMaximaDaEtapa(etapa)}ms` } as CSSProperties;
+function esperaDoEsqueleto(etapa: number, imediato: boolean): CSSProperties {
+  return { '--espera-esqueleto': `${imediato ? 0 : esperaMaximaDaEtapa(etapa)}ms` } as CSSProperties;
 }
 
 function respondeu(resultado: ResultadoAssincrono<unknown>): boolean {
@@ -87,13 +89,21 @@ export default function PaginaDashboard() {
 
 function DashboardConectado({ conexao, periodo }: { conexao: ConexaoDTO; periodo: PeriodoDashboard }) {
   const { marcarDesconectada } = useConexao();
+  const verHistorico = useVerHistorico();
+  const verPlano = useVerPlano();
 
-  const respostaIndicadores = useDadosAssincronos((signal) => servicoDashboard.buscarIndicadores(periodo, signal), [periodo]);
-  const respostaAtividade = useDadosAssincronos((signal) => servicoDashboard.buscarAtividade(periodo, signal), [periodo]);
-  const respostaConsultas = useDadosAssincronos((signal) => servicoDashboard.buscarConsultas(periodo, signal), [periodo]);
+  const [periodoDeEntrada] = useState(periodo);
+  const [trocouDePeriodo, setTrocouDePeriodo] = useState(false);
+  const [ordenacao, setOrdenacao] = useState<OrdenacaoDaTabela>();
+
+  if (!trocouDePeriodo && periodo !== periodoDeEntrada) setTrocouDePeriodo(true);
+
+  const respostaIndicadores = useDadosPorChave(periodo, servicoDashboard.buscarIndicadores);
+  const respostaAtividade = useDadosPorChave(periodo, servicoDashboard.buscarAtividade);
+  const respostaConsultas = useDadosPorChave(periodo, servicoDashboard.buscarConsultas);
 
   const respostas = [respostaIndicadores, respostaAtividade, respostaConsultas];
-  const etapas = useEntradaCoordenada(respostas.every(respondeu), ETAPA_CONSULTAS);
+  const etapas = useEntradaCoordenada(respostas.every(respondeu), ETAPA_CONSULTAS, periodo);
   const indicadores = aguardarEtapa(respostaIndicadores, etapas >= ETAPA_INDICADORES);
   const atividade = aguardarEtapa(respostaAtividade, etapas >= ETAPA_ATIVIDADE);
   const consultas = aguardarEtapa(respostaConsultas, etapas >= ETAPA_CONSULTAS);
@@ -107,7 +117,7 @@ function DashboardConectado({ conexao, periodo }: { conexao: ConexaoDTO; periodo
   }, [sessaoEncerrada, marcarDesconectada]);
 
   return (
-    <div className={estilos.blocos} style={esperaDoEsqueleto(ETAPA_INDICADORES)}>
+    <div className={estilos.blocos} style={esperaDoEsqueleto(ETAPA_INDICADORES, trocouDePeriodo)}>
       {conexao.simulada ? (
         <Nota tom="aviso" icone={FlaskConical} titulo="Dados demonstrativos.">
           Os números desta tela são fictícios e não vêm do seu banco. Eles dão lugar aos dados reais quando o Orynt
@@ -132,13 +142,17 @@ function DashboardConectado({ conexao, periodo }: { conexao: ConexaoDTO; periodo
             </Link>
           }
         />
-        <div
-          className={juntarClasses(estilos.regiao, atividade.carregando && atividade.dados !== null && estilos.atualizando)}
-          style={esperaDoEsqueleto(ETAPA_ATIVIDADE)}
-        >
+        <div style={esperaDoEsqueleto(ETAPA_ATIVIDADE, trocouDePeriodo)}>
           <ConteudoAssincrono
             resultado={atividade}
-            esqueleto={<Esqueleto altura={260} raio="var(--raio-md)" />}
+            esqueleto={
+              <>
+                <span className="visualmente-oculto" role="status">
+                  Carregando a atividade…
+                </span>
+                <Esqueleto altura={260} raio="var(--raio-md)" />
+              </>
+            }
             tituloErro="Não foi possível carregar a atividade"
           >
             {(pontos) =>
@@ -161,24 +175,31 @@ function DashboardConectado({ conexao, periodo }: { conexao: ConexaoDTO; periodo
           <CabecalhoPainel
             titulo={<span id="titulo-consultas">Consultas que mais pesam</span>}
             descricao="As consultas que mais consumiram tempo do banco no período"
+            acao={
+              <Link to={caminhos.consultasTodas} state={{ lista: { periodo } }} className={estilos.atalho}>
+                Ver todas
+                <ArrowRight size={16} strokeWidth={2} aria-hidden="true" />
+              </Link>
+            }
           />
         </div>
-        <div
-          className={juntarClasses(estilos.regiao, consultas.carregando && consultas.dados !== null && estilos.atualizando)}
-          style={esperaDoEsqueleto(ETAPA_CONSULTAS)}
-        >
+        <div style={esperaDoEsqueleto(ETAPA_CONSULTAS, trocouDePeriodo)}>
           <ConteudoAssincrono
             resultado={consultas}
             esqueleto={
-              <div className={estilos.esqueletoTabela}>
-                <EsqueletoLista linhas={6} rotulo="Carregando as consultas…" />
-              </div>
+              <EsqueletoTabelaConsultas linhas={LINHAS_DO_ESQUELETO} ordenacao={ordenacao} aoOrdenar={setOrdenacao} />
             }
             tituloErro="Não foi possível carregar as consultas"
           >
             {(lista) =>
               lista.length > 0 ? (
-                <TabelaConsultas consultas={lista} />
+                <TabelaConsultas
+                  consultas={lista}
+                  ordenacao={ordenacao}
+                  aoOrdenar={setOrdenacao}
+                  aoVerHistorico={(consulta) => verHistorico(consulta.id, periodo)}
+                  aoVerPlano={(consulta) => verPlano(consulta.id)}
+                />
               ) : (
                 <EstadoVazio
                   icone={SearchX}

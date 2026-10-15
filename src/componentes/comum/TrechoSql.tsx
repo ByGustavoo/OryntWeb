@@ -1,5 +1,6 @@
 import { forwardRef } from 'react';
 import type { HTMLAttributes } from 'react';
+import { intervalosMarcados } from '@/regras/buscaConsultas';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
 import { destacarSql } from '@/utilitarios/sql';
 import estilos from './TrechoSql.module.css';
@@ -8,12 +9,17 @@ interface TrechoSqlProps extends Omit<HTMLAttributes<HTMLElement>, 'children' | 
   sql: string;
   inteiro?: boolean;
   dica?: boolean;
+  termos?: string[];
 }
 
+const SEM_TERMOS: string[] = [];
+
 export const TrechoSql = forwardRef<HTMLElement, TrechoSqlProps>(function TrechoSql(
-  { sql, inteiro = false, dica = true, className, ...resto },
+  { sql, inteiro = false, dica = true, termos = SEM_TERMOS, className, ...resto },
   ref,
 ) {
+  const marcados = termos.length > 0 ? intervalosMarcados(sql, termos) : [];
+
   return (
     <code
       ref={ref}
@@ -21,15 +27,18 @@ export const TrechoSql = forwardRef<HTMLElement, TrechoSqlProps>(function Trecho
       title={dica ? sql : undefined}
       {...resto}
     >
-      {destacarSql(sql).map((trecho, indice) =>
-        trecho.palavraChave ? (
-          <span className={estilos.palavraChave} key={indice}>
+      {destacarSql(sql, marcados).map((trecho, indice) => {
+        if (!trecho.palavraChave && !trecho.marcado) return trecho.texto;
+        const Elemento = trecho.marcado ? 'mark' : 'span';
+        return (
+          <Elemento
+            key={indice}
+            className={juntarClasses(trecho.palavraChave && estilos.palavraChave, trecho.marcado && estilos.encontrado)}
+          >
             {trecho.texto}
-          </span>
-        ) : (
-          trecho.texto
-        ),
-      )}
+          </Elemento>
+        );
+      })}
     </code>
   );
 });

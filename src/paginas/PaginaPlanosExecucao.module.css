@@ -1,0 +1,119 @@
+.blocos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-5);
+}
+
+.conteudo {
+  container: planos-execucao / inline-size;
+}
+
+.conteudo :global([role='alert']) {
+  background-color: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-lg);
+}
+
+.planos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-5);
+}
+
+.abertura {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  align-items: stretch;
+  gap: var(--espaco-5);
+}
+
+.exame {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(19rem, 1fr);
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    'arvore detalhe'
+    'extras detalhe';
+  align-items: start;
+  gap: var(--espaco-5);
+}
+
+.painelArvore {
+  grid-area: arvore;
+  overflow: hidden;
+}
+
+.cabecalhoArvore {
+  padding: var(--espaco-5) var(--espaco-6) 0;
+}
+
+.detalhe {
+  grid-area: detalhe;
+  align-self: stretch;
+  min-width: 0;
+}
+
+.fixo {
+  position: sticky;
+  top: calc(var(--altura-cabecalho) + var(--espaco-4));
+  max-height: calc(100dvh - var(--altura-cabecalho) - var(--espaco-8));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: var(--raio-lg);
+  scrollbar-width: thin;
+}
+
+.extras {
+  display: flex;
+  grid-area: extras;
+  flex-direction: column;
+  gap: var(--espaco-5);
+  min-width: 0;
+}
+
+.detalheEmEspera {
+  gap: var(--espaco-3);
+  min-height: 32rem;
+}
+
+.voltar {
+  color: var(--destaque);
+  font-weight: var(--peso-medio);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  border-radius: var(--raio-xs);
+}
+
+.voltar:focus-visible {
+  outline: none;
+  box-shadow: var(--anel-foco);
+}
+
+@container planos-execucao (max-width: 980px) {
+  .abertura {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@container planos-execucao (max-width: 900px) {
+  .exame {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+    grid-template-areas:
+      'arvore'
+      'detalhe'
+      'extras';
+  }
+
+  .fixo {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+}
+
+@media (max-width: 767px) {
+  .cabecalhoArvore {
+    padding: var(--espaco-4) var(--espaco-4) 0;
+  }
+}

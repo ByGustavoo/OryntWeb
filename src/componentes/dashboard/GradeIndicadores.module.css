@@ -30,6 +30,21 @@
   min-height: 2.25rem;
 }
 
+.esqueletoValor {
+  width: 45%;
+}
+
+.esqueletoContexto {
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 767px) {
+  .esqueleto {
+    padding: var(--espaco-4);
+  }
+}
+
 @container resumo (max-width: 900px) {
   .grade {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -39,6 +54,22 @@
 @container resumo (max-width: 420px) {
   .grade {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .esqueleto {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 4.5rem;
+    align-items: center;
+    gap: var(--espaco-2) var(--espaco-3);
+  }
+
+  .esqueletoValor {
+    width: auto;
+  }
+
+  .esqueletoContexto {
+    grid-column: 1 / -1;
+    min-height: 18px;
   }
 }
 

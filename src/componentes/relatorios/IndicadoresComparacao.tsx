@@ -125,7 +125,15 @@ export function IndicadoresComparacao({ indicadores, rotuloBase }: IndicadoresCo
           rotulo="Pico de conexões"
           valor={picoConexoes.principal}
           formatar={formatarNumero}
-          contexto={<Mudanca valor={picoConexoes} medida="ABSOLUTA" formatarBase={formatarNumero} rotuloBase={rotuloBase} />}
+          contexto={
+            <Mudanca
+              valor={picoConexoes}
+              medida="ABSOLUTA"
+              formatarBase={formatarNumero}
+              rotuloBase={rotuloBase}
+              favoravel="QUEDA"
+            />
+          }
         />
       </GradeIndicadores>
     </section>

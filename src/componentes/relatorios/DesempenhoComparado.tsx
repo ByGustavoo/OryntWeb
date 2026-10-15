@@ -6,7 +6,11 @@ import type { FaixaComparada, RotulosDaComparacao, ValorComparado } from '@/regr
 import { formatarPercentual, formatarPontosPercentuais } from '@/utilitarios/formatacao';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
 import estilosFaixas from './DistribuicaoDesempenho.module.css';
+import { DesempenhoEmEspera, PainelEmEspera } from './EsqueletoRelatorio';
 import estilos from './DesempenhoComparado.module.css';
+
+const TITULO = 'Desempenho das consultas';
+const DESCRICAO = 'A divisão das execuções e do tempo do banco entre as faixas, em cada período';
 
 interface DesempenhoComparadoProps {
   faixas: FaixaComparada[];
@@ -69,8 +73,8 @@ export function DesempenhoComparado({ faixas, rotulos, titulos, referencia }: De
   return (
     <Painel aria-labelledby="titulo-desempenho-comparado">
       <CabecalhoPainel
-        titulo={<span id="titulo-desempenho-comparado">Desempenho das consultas</span>}
-        descricao="A divisão das execuções e do tempo do banco entre as faixas, em cada período"
+        titulo={<span id="titulo-desempenho-comparado">{TITULO}</span>}
+        descricao={DESCRICAO}
       />
 
       <div className={estilos.conteiner}>
@@ -175,5 +179,13 @@ export function DesempenhoComparado({ faixas, rotulos, titulos, referencia }: De
         </div>
       </div>
     </Painel>
+  );
+}
+
+export function EsqueletoDesempenhoComparado() {
+  return (
+    <PainelEmEspera titulo={TITULO} descricao={DESCRICAO}>
+      <DesempenhoEmEspera barras={4} frases={2} alturaMinima={230} />
+    </PainelEmEspera>
   );
 }

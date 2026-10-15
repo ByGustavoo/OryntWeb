@@ -1,14 +1,17 @@
 import { useMemo, useState } from 'react';
-import { ArrowDown, ArrowDownRight, ArrowUp, ArrowUpDown, ArrowUpRight, Minus } from 'lucide-react';
+import { ArrowDown, ArrowDownRight, ArrowUp, ArrowUpDown, ArrowUpRight, History, ListTree, Minus } from 'lucide-react';
 import { TrechoSql } from '@/componentes/comum/TrechoSql';
 import { SeloDesempenho } from '@/componentes/dashboard/SeloDesempenho';
-import { CabecalhoPainel, CampoSelecao, GrupoOpcoes, Painel } from '@/componentes/ui';
+import { BotaoIcone, CabecalhoPainel, CampoSelecao, GrupoOpcoes, Painel } from '@/componentes/ui';
 import { rotuloDesempenho } from '@/modelos/rotulos';
 import { filtrarConsultas, resumirTendencias } from '@/regras/comparacaoRelatorio';
 import type { ConsultaComparada, FiltroConsultas, RotulosDaComparacao } from '@/regras/comparacaoRelatorio';
 import { formatarComSinal, formatarDuracaoMs, formatarNumero, formatarVariacao } from '@/utilitarios/formatacao';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
+import { PainelEmEspera, TabelaEmEspera } from './EsqueletoRelatorio';
 import estilos from './ConsultasComparadas.module.css';
+
+const TITULO = 'Consultas que mudaram';
 
 type ColunaOrdenavel = 'variacao' | 'tempoMedio' | 'execucoes';
 type Direcao = 'asc' | 'desc';
@@ -22,6 +25,9 @@ interface ConsultasComparadasProps {
   consultas: ConsultaComparada[];
   rotulos: RotulosDaComparacao;
   titulos: RotulosDaComparacao;
+  rotuloHistorico?: string;
+  aoVerHistorico?: (consulta: ConsultaComparada) => void;
+  aoVerPlano?: (consulta: ConsultaComparada) => void;
 }
 
 const ORDENACAO_INICIAL: Ordenacao = { coluna: 'variacao', direcao: 'desc' };
@@ -96,7 +102,14 @@ function Variacao({ consulta, maiorVariacao }: { consulta: ConsultaComparada; ma
   );
 }
 
-export function ConsultasComparadas({ consultas, rotulos, titulos }: ConsultasComparadasProps) {
+export function ConsultasComparadas({
+  consultas,
+  rotulos,
+  titulos,
+  rotuloHistorico = 'Ver o histórico da consulta',
+  aoVerHistorico,
+  aoVerPlano,
+}: ConsultasComparadasProps) {
   const [filtro, setFiltro] = useState<FiltroConsultas>('TODAS');
   const [ordenacao, setOrdenacao] = useState<Ordenacao>(ORDENACAO_INICIAL);
 
@@ -151,7 +164,7 @@ export function ConsultasComparadas({ consultas, rotulos, titulos }: ConsultasCo
     <Painel espacamento="nenhum" className={estilos.painel} aria-labelledby="titulo-consultas-comparadas">
       <div className={estilos.cabecalho}>
         <CabecalhoPainel
-          titulo={<span id="titulo-consultas-comparadas">Consultas que mudaram</span>}
+          titulo={<span id="titulo-consultas-comparadas">{TITULO}</span>}
           descricao={`Tempo médio de cada consulta em ${rotulos.principal}, em relação a ${rotulos.base}: ${tendencias}.`}
           acao={
             <GrupoOpcoes
@@ -206,6 +219,11 @@ export function ConsultasComparadas({ consultas, rotulos, titulos }: ConsultasCo
                 <th scope="col" className={estilos.colunaDesempenho}>
                   Desempenho
                 </th>
+                {aoVerHistorico || aoVerPlano ? (
+                  <th scope="col" className={estilos.colunaHistorico}>
+                    <span className="visualmente-oculto">Atalhos</span>
+                  </th>
+                ) : null}
               </tr>
             </thead>
             <tbody>
@@ -252,6 +270,28 @@ export function ConsultasComparadas({ consultas, rotulos, titulos }: ConsultasCo
                         ) : null}
                       </span>
                     </td>
+                    {aoVerHistorico || aoVerPlano ? (
+                      <td className={estilos.celulaHistorico}>
+                        <span className={estilos.atalhos}>
+                          {aoVerHistorico ? (
+                            <BotaoIcone
+                              icone={History}
+                              tamanho="sm"
+                              rotulo={rotuloHistorico}
+                              onClick={() => aoVerHistorico(consulta)}
+                            />
+                          ) : null}
+                          {aoVerPlano ? (
+                            <BotaoIcone
+                              icone={ListTree}
+                              tamanho="sm"
+                              rotulo="Ver o plano de execução da consulta"
+                              onClick={() => aoVerPlano(consulta)}
+                            />
+                          ) : null}
+                        </span>
+                      </td>
+                    ) : null}
                   </tr>
                 );
               })}
@@ -260,5 +300,19 @@ export function ConsultasComparadas({ consultas, rotulos, titulos }: ConsultasCo
         )}
       </div>
     </Painel>
+  );
+}
+
+export function EsqueletoConsultasComparadas() {
+  return (
+    <PainelEmEspera
+      espacamento="nenhum"
+      titulo={TITULO}
+      larguraDaAcao={204}
+      className={estilos.painel}
+      classeCabecalho={estilos.cabecalho}
+    >
+      <TabelaEmEspera linhas={10} alturaDaLinha={74} alturaDoCabecalho={51} />
+    </PainelEmEspera>
   );
 }

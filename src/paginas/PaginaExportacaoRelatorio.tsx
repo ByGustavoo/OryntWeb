@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
+import type { CSSProperties } from 'react';
 import { FileX2, FlaskConical } from 'lucide-react';
 import { ehErroApi } from '@/api/tratamentoErros';
 import { PainelSemConexao } from '@/componentes/conexao/PainelSemConexao';
 import { CabecalhoPagina } from '@/componentes/layout/CabecalhoPagina';
 import { BarraPeriodo } from '@/componentes/relatorios/BarraPeriodo';
 import { OpcoesExportacao } from '@/componentes/relatorios/OpcoesExportacao';
-import { PreviaExportacao } from '@/componentes/relatorios/PreviaExportacao';
-import { ConteudoAssincrono, Esqueleto, EstadoVazio, Nota, Painel } from '@/componentes/ui';
+import { EsqueletoPrevia, PreviaExportacao } from '@/componentes/relatorios/PreviaExportacao';
+import { EstadoErro, EstadoVazio, Nota, Painel } from '@/componentes/ui';
 import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
 import { usePeriodoRelatorio } from '@/ganchos/usePeriodoRelatorio';
 import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
@@ -62,6 +63,10 @@ function ExportacaoConectada({ conexao }: { conexao: ConexaoDTO }) {
 
   const resumo = useDadosAssincronos((signal) => servicoRelatorios.buscarResumo(periodo, signal), [periodo]);
   const sessaoEncerrada = ehErroApi(resumo.erro, 'NAO_AUTORIZADO');
+  const trocandoDePeriodo =
+    resumo.dados !== null &&
+    (resumo.dados.granularidade !== periodo.granularidade || resumo.dados.inicio !== periodo.inicio);
+  const esperandoDados = resumo.dados === null || trocandoDePeriodo;
 
   useEffect(() => {
     if (sessaoEncerrada) marcarDesconectada();
@@ -85,25 +90,29 @@ function ExportacaoConectada({ conexao }: { conexao: ConexaoDTO }) {
         ) : null}
 
         <div className={estilos.conteudo} aria-busy={resumo.carregando}>
-          <ConteudoAssincrono
-            resultado={resumo}
-            esqueleto={<EsqueletoExportacao />}
-            tituloErro="Não foi possível carregar o resumo para exportar"
-          >
-            {(dados) => (
-              <CorpoExportacao
-                dados={dados}
-                conexao={conexao}
-                atualizando={resumo.carregando}
-                blocos={blocos}
-                formato={formato}
-                padrao={padrao}
-                aoMudarBlocos={setBlocos}
-                aoMudarFormato={setFormato}
-                aoMudarPadrao={setPadrao}
-              />
-            )}
-          </ConteudoAssincrono>
+          {resumo.dados === null && resumo.erro ? (
+            <EstadoErro
+              compacto
+              titulo="Não foi possível carregar o resumo para exportar"
+              erro={resumo.erro}
+              aoTentarNovamente={resumo.recarregar}
+              tentando={resumo.carregando}
+            />
+          ) : (
+            <CorpoExportacao
+              dados={resumo.dados}
+              conexao={conexao}
+              esperandoDados={esperandoDados}
+              imediato={trocandoDePeriodo}
+              atualizando={resumo.carregando && !esperandoDados}
+              blocos={blocos}
+              formato={formato}
+              padrao={padrao}
+              aoMudarBlocos={setBlocos}
+              aoMudarFormato={setFormato}
+              aoMudarPadrao={setPadrao}
+            />
+          )}
         </div>
       </div>
     </>
@@ -111,8 +120,10 @@ function ExportacaoConectada({ conexao }: { conexao: ConexaoDTO }) {
 }
 
 interface CorpoExportacaoProps {
-  dados: ResumoRelatorioDTO;
+  dados: ResumoRelatorioDTO | null;
   conexao: ConexaoDTO;
+  esperandoDados: boolean;
+  imediato: boolean;
   atualizando: boolean;
   blocos: BlocoExportacao[];
   formato: FormatoExportacao;
@@ -125,6 +136,8 @@ interface CorpoExportacaoProps {
 function CorpoExportacao({
   dados,
   conexao,
+  esperandoDados,
+  imediato,
   atualizando,
   blocos,
   formato,
@@ -138,27 +151,31 @@ function CorpoExportacao({
 
   const arquivos = useMemo(
     () =>
-      gerarArquivos(dados, {
-        blocos,
-        formato,
-        padrao,
-        nomeConexao: conexao.nome,
-        simulada: conexao.simulada,
-        geradoEm: new Date().toISOString(),
-      }),
+      dados
+        ? gerarArquivos(dados, {
+            blocos,
+            formato,
+            padrao,
+            nomeConexao: conexao.nome,
+            simulada: conexao.simulada,
+            geradoEm: new Date().toISOString(),
+          })
+        : [],
     [dados, blocos, formato, padrao, conexao.nome, conexao.simulada],
   );
 
   const linhasPorBloco = useMemo(
     () =>
-      Object.fromEntries(blocosExportacao.map((bloco) => [bloco, contarLinhas(dados, bloco)])) as Record<
-        BlocoExportacao,
-        number
-      >,
+      dados
+        ? (Object.fromEntries(blocosExportacao.map((bloco) => [bloco, contarLinhas(dados, bloco)])) as Record<
+            BlocoExportacao,
+            number
+          >)
+        : null,
     [dados],
   );
 
-  if (dados.indicadores.totalConsultas <= 0) {
+  if (!esperandoDados && dados !== null && dados.indicadores.totalConsultas <= 0) {
     return (
       <Painel className={juntarClasses(estilos.regiao, atualizando && estilos.atualizando)}>
         <EstadoVazio
@@ -171,6 +188,7 @@ function CorpoExportacao({
   }
 
   const baixar = () => {
+    if (esperandoDados) return;
     void baixarArquivos(arquivos);
     const [primeiro] = arquivos;
     if (arquivos.length === 1 && primeiro) {
@@ -184,29 +202,33 @@ function CorpoExportacao({
   };
 
   return (
-    <div className={juntarClasses(estilos.colunas, estilos.regiao, atualizando && estilos.atualizando)}>
+    <div
+      className={juntarClasses(estilos.colunas, estilos.regiao, atualizando && estilos.atualizando)}
+      style={imediato ? ({ '--espera-esqueleto': '0ms' } as CSSProperties) : undefined}
+    >
       <OpcoesExportacao
         blocos={blocos}
         formato={formato}
         padrao={padrao}
         linhasPorBloco={linhasPorBloco}
         quantidadeArquivos={arquivos.length}
+        carregando={esperandoDados}
         aoMudarBlocos={aoMudarBlocos}
         aoMudarFormato={aoMudarFormato}
         aoMudarPadrao={aoMudarPadrao}
         aoBaixar={baixar}
-        textoParaColar={(bloco) => gerarTextoParaColar(dados, bloco, padrao, conexao.simulada)}
+        textoParaColar={(bloco) => (dados ? gerarTextoParaColar(dados, bloco, padrao, conexao.simulada) : '')}
       />
-      <PreviaExportacao arquivos={arquivos} nomeAberto={nomeAberto} aoAbrir={setNomeAberto} />
-    </div>
-  );
-}
-
-function EsqueletoExportacao() {
-  return (
-    <div className={estilos.colunas} role="status" aria-label="Carregando o resumo para exportar…">
-      <Esqueleto altura={520} raio="var(--raio-lg)" />
-      <Esqueleto altura={520} raio="var(--raio-lg)" />
+      {esperandoDados ? (
+        <>
+          <span className="visualmente-oculto" role="status">
+            Carregando o resumo para exportar…
+          </span>
+          <EsqueletoPrevia variosArquivos={formato === 'CSV' && blocos.length > 1} />
+        </>
+      ) : (
+        <PreviaExportacao arquivos={arquivos} nomeAberto={nomeAberto} aoAbrir={setNomeAberto} />
+      )}
     </div>
   );
 }

@@ -3,7 +3,16 @@ import type { FaixaDesempenhoDTO, PeriodoRelatorio, ResumoRelatorioDTO } from '@
 import { formatarDecimal, formatarDuracaoMs, formatarNumero, formatarPercentual, pluralizar } from '@/utilitarios/formatacao';
 import { dataPorExtenso, diaNaFrase, periodoAnteriorNaFrase, periodoNaFrase } from './periodoRelatorio';
 
-export type TipoDestaque = 'VOLUME' | 'CALENDARIO' | 'TEMPO' | 'PICO' | 'LENTAS' | 'CONSULTA' | 'PIORA' | 'MELHORA';
+export type TipoDestaque =
+  | 'VOLUME'
+  | 'CALENDARIO'
+  | 'TEMPO'
+  | 'PICO'
+  | 'LENTAS'
+  | 'LENTIDAO'
+  | 'CONSULTA'
+  | 'PIORA'
+  | 'MELHORA';
 export type TomDestaque = 'neutro' | 'positivo' | 'atencao';
 
 export interface Destaque {

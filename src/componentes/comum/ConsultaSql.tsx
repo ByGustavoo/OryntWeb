@@ -1,6 +1,6 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import type { TransitionEvent } from 'react';
-import { Check, ChevronDown, Copy } from 'lucide-react';
+import { Check, ChevronDown, Copy, History, ListTree } from 'lucide-react';
 import { BotaoIcone } from '@/componentes/ui';
 import { useNotificacoes } from '@/provedores/ProvedorNotificacoes';
 import { copiarTexto } from '@/utilitarios/areaTransferencia';
@@ -22,9 +22,18 @@ function botaoSempreVisivel(): boolean {
 interface ConsultaSqlProps {
   sql: string;
   classeAcoes?: string;
+  rotuloHistorico?: string;
+  aoVerHistorico?: () => void;
+  aoVerPlano?: () => void;
 }
 
-export function ConsultaSql({ sql, classeAcoes }: ConsultaSqlProps) {
+export function ConsultaSql({
+  sql,
+  classeAcoes,
+  rotuloHistorico = 'Ver o histórico da consulta',
+  aoVerHistorico,
+  aoVerPlano,
+}: ConsultaSqlProps) {
   const idTrecho = useId();
   const notificacoes = useNotificacoes();
   const moldura = useRef<HTMLDivElement>(null);
@@ -123,6 +132,16 @@ export function ConsultaSql({ sql, classeAcoes }: ConsultaSqlProps) {
             className={estilos.alternar}
             onClick={alternar}
           />
+        ) : null}
+        {aoVerHistorico ? (
+          <span className={estilos.discreta}>
+            <BotaoIcone icone={History} tamanho="sm" rotulo={rotuloHistorico} onClick={aoVerHistorico} />
+          </span>
+        ) : null}
+        {aoVerPlano ? (
+          <span className={estilos.discreta}>
+            <BotaoIcone icone={ListTree} tamanho="sm" rotulo="Ver o plano de execução da consulta" onClick={aoVerPlano} />
+          </span>
         ) : null}
         <span
           className={juntarClasses(estilos.copia, comConfirmacao && estilos.confirmada, confirmando && estilos.fixada)}

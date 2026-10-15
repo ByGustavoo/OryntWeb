@@ -40,6 +40,11 @@
   color: var(--aviso);
 }
 
+.piora {
+  background-color: var(--erro-suave);
+  color: var(--erro);
+}
+
 .textos {
   display: flex;
   flex-direction: column;
@@ -56,6 +61,20 @@
 
 .sql {
   --linhas-sql: 1;
+}
+
+.textosEmEspera {
+  flex: 1;
+}
+
+.fraseEmEspera {
+  display: flex;
+  flex-direction: column;
+}
+
+.sqlEmEspera {
+  font-size: var(--tamanho-sm);
+  line-height: 1.5;
 }
 
 @media print {

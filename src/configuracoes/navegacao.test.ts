@@ -65,9 +65,20 @@ describe('navegacao', () => {
     const [relatorios, consultas] = funcionalidades;
     if (!relatorios || !consultas) throw new Error('Faltam funcionalidades para o teste.');
 
+    const [, , objetos] = funcionalidades;
+
     expect(itemPlanejado(relatorios)).toBe(false);
-    expect(itemPlanejado(consultas)).toBe(true);
+    expect(itemPlanejado(consultas)).toBe(false);
+    expect(objetos && itemPlanejado(objetos)).toBe(true);
     expect(itemPlanejado(navegacaoRodape)).toBe(false);
+  });
+
+  it('não deixa nenhuma tela de Consultas SQL como planejada', () => {
+    const [, consultas] = funcionalidades;
+    if (!consultas) throw new Error('Faltam as consultas para o teste.');
+
+    expect(destinoInicial(consultas)).toBe(caminhos.consultasTodas);
+    expect(telasPlanejadas(consultas)).toEqual([]);
   });
 
   it('não deixa nenhuma tela dos relatórios como planejada', () => {

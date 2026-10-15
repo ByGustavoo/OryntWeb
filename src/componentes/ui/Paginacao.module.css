@@ -1,0 +1,26 @@
+.paginacao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-2) var(--espaco-4);
+  min-height: var(--altura-controle-sm);
+}
+
+.resumo {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-sm);
+}
+
+.controles {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  margin-left: auto;
+}
+
+.posicao {
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  white-space: nowrap;
+}

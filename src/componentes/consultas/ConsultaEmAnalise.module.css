@@ -1,0 +1,100 @@
+.painel {
+  container: consulta-em-analise / inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+}
+
+.topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-3) var(--espaco-5);
+}
+
+.seletor {
+  flex: 1 1 18rem;
+  max-width: 34rem;
+}
+
+.passos {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--espaco-1);
+}
+
+.posicao {
+  display: flex;
+  align-items: center;
+  min-height: 1lh;
+  margin-right: var(--espaco-2);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  white-space: nowrap;
+}
+
+.corpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+}
+
+.identificacao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-3);
+  min-height: var(--altura-controle-sm);
+}
+
+.acoes {
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--espaco-2);
+}
+
+.selos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-2);
+}
+
+.sql {
+  padding: var(--espaco-4);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-md);
+  background-color: var(--superficie-suave);
+  font-size: var(--tamanho-sm);
+  line-height: 1.5;
+  user-select: text;
+}
+
+.sql > code {
+  min-height: 3em;
+  color: var(--texto);
+}
+
+.linhaEmEspera {
+  display: flex;
+  align-items: center;
+  height: 1.5em;
+}
+
+@container consulta-em-analise (max-width: 560px) {
+  .seletor {
+    flex-basis: 100%;
+    max-width: none;
+  }
+
+  .passos {
+    width: 100%;
+  }
+
+  .posicao {
+    flex: 1;
+    white-space: normal;
+  }
+}

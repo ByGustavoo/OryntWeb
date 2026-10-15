@@ -21,3 +21,10 @@
 .palavraChave {
   color: var(--destaque);
 }
+
+.encontrado {
+  border-radius: var(--raio-xs);
+  background-color: var(--busca-realce);
+  box-shadow: 0 0 0 1px var(--busca-realce);
+  color: var(--texto);
+}

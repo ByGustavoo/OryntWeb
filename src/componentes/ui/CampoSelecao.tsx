@@ -33,6 +33,7 @@ const TEMPO_BUSCA_POR_DIGITACAO_MS = 600;
 
 export function CampoSelecao<T extends string>({
   rotulo,
+  rotuloOculto,
   dica,
   erro,
   sucesso,
@@ -146,6 +147,7 @@ export function CampoSelecao<T extends string>({
     <EstruturaCampo
       id={id}
       rotulo={rotulo}
+      rotuloOculto={rotuloOculto}
       dica={dica}
       erro={erro}
       sucesso={sucesso}

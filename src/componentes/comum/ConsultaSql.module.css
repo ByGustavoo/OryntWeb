@@ -30,7 +30,8 @@
   transform: rotate(180deg);
 }
 
-.copia {
+.copia,
+.discreta {
   display: flex;
 }
 
@@ -47,14 +48,18 @@
 }
 
 @media (hover: hover) {
-  .copia {
+  .copia,
+  .discreta {
     opacity: 0;
     transition: opacity var(--duracao-rapida) var(--curva-saida);
   }
 
   tr:hover .copia,
+  tr:hover .discreta,
   .consulta:hover .copia,
+  .consulta:hover .discreta,
   .consulta:has(:focus-visible) .copia,
+  .consulta:has(:focus-visible) .discreta,
   .fixada {
     opacity: 1;
   }

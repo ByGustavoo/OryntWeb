@@ -46,7 +46,9 @@ consulta que explica.
 
 * **Relatórios (concluído):** as telas Resumo, Exportação e Comparação estão prontas, com dados demonstrativos.
 
-* **Planejado:** Consultas SQL, Usuários e permissões e Objetos do banco. As funcionalidades existem na navegação, nos grupos "Análise" e "Gerenciamento", cada uma com as suas telas, e as planejadas mostram só o que está previsto.
+* **Consultas SQL:** as telas Todas, Histórico e Planos de execução estão prontas, com dados demonstrativos.
+
+* **Planejado:** Usuários e permissões e Objetos do banco. As funcionalidades existem na navegação, nos grupos "Análise" e "Gerenciamento", cada uma com as suas telas, e as planejadas mostram só o que está previsto.
 
 * **Pendente:** a API (OryntAPI). O contrato que ela precisa cumprir está em [`docs/api-contrato.md`](docs/api-contrato.md).
 
@@ -145,6 +147,58 @@ consulta que explica.
 * Consultas ordenadas pela maior alta do tempo médio, com filtro das que pioraram e das que melhoraram
 
 * Impressão na mesma folha do Resumo
+
+🔹 **Consultas SQL › Todas**
+
+* Lista completa das consultas executadas em 1 h, 24 h, 7 dias ou 30 dias, em páginas de 25
+
+* Busca no texto do SQL, com o termo em destaque e a tecla `/` como atalho, e filtros por desempenho e por tipo de comando
+
+* Ordenação por tempo médio, tempo máximo, execuções ou parte do tempo total
+
+* Modal de detalhes com o SQL inteiro, o tempo mínimo, médio e máximo, o tempo total e as linhas por execução, e setas para passar de uma consulta à outra sem fechar
+
+* Exportação da lista filtrada em CSV, no padrão brasileiro ou internacional de números
+
+* Atalhos no Dashboard: "Ver todas" e o indicador de consultas lentas, que abre a lista já filtrada
+
+🔹 **Consultas SQL › Histórico**
+
+* Uma consulta por vez em 1 h, 24 h, 7 dias ou 30 dias, abrindo na que mais pesa no período
+
+* Busca de outra consulta pelo texto do SQL, com sugestões, e setas para percorrer as consultas pela ordem de peso
+
+* Execuções, tempo médio, tempo máximo e tempo total, com a variação em relação ao período anterior
+
+* Destaques em frases, com o intervalo de maior volume e o mais lento, e botão para copiar
+
+* Gráficos de execuções e de tempo médio em cada intervalo, com o pico marcado
+
+* Tabela por intervalo, com ordenação pelos cabeçalhos e exportação em CSV no padrão brasileiro ou internacional de números
+
+* Atalho "Ver histórico" no modal de detalhes da lista Todas e nas tabelas de consultas do Dashboard, do Resumo e da Comparação
+
+🔹 **Consultas SQL › Planos de execução**
+
+* O plano registrado mais recente de uma consulta, abrindo na que mais pesa nos últimos 30 dias, com o mesmo seletor e as mesmas setas do Histórico
+
+* Árvore do plano, uma linha por etapa, com o tempo gasto na própria etapa, as linhas devolvidas e as que o planejador esperava, navegável pelo teclado
+
+* Detalhe de cada etapa: condições, linhas lidas e descartadas, blocos do cache e do disco, memória e custo estimado
+
+* Diagnóstico em frases: a etapa que mais pesa, varreduras sequenciais, filtros que descartam quase tudo, estimativas erradas e uso de disco
+
+* Índices sugeridos com o `CREATE INDEX CONCURRENTLY` pronto para copiar, sem executar nada no banco
+
+* Mudanças de plano nos últimos 30 dias, com o tempo médio de cada versão
+
+* Comparação de dois planos lado a lado: o que mudou em cada tabela, a diferença de tempo e de leitura e as duas árvores, com as etapas alteradas em destaque
+
+* Troca de plano marcada nos gráficos e na tabela do Histórico, com atalho para comparar os dois planos
+
+* Cópia do plano em texto, como o psql mostra, ou em JSON, para colar no explain.depesz.com ou no PEV2
+
+* Atalho "Ver plano" no modal de detalhes da lista Todas, no Histórico e nas tabelas de consultas do Dashboard, do Resumo e da Comparação
 
 <br>
 
@@ -324,6 +378,7 @@ src
 │   ├── comum       # Marca e tela de verificação
 │   ├── conexao     # Modal e formulário, URL de conexão, conexões salvas e alerta
 │   ├── configuracoes # Seções de conexão em uso, de conexões salvas, de aparência e de versões
+│   ├── consultas   # Filtros, tabela e modal da lista de consultas; seletor, gráficos e tabela do histórico
 │   ├── dashboard   # Indicadores, gráfico de atividade e tabela de consultas
 │   ├── layout      # Menu lateral, cabeçalho e menu da conta
 │   ├── login       # Formulário de acesso e painel animado de monitoramento

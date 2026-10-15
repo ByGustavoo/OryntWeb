@@ -1,0 +1,280 @@
+.conteiner {
+  container: intervalos-historico / inline-size;
+}
+
+.ordenacaoCompacta {
+  display: none;
+  padding: 0 var(--espaco-4) var(--espaco-4);
+}
+
+.tabela {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: var(--tamanho-sm);
+  overflow-anchor: none;
+}
+
+.tabela thead th {
+  position: sticky;
+  top: calc(env(safe-area-inset-top, 0px) + var(--altura-cabecalho));
+  z-index: 1;
+  padding: var(--espaco-1) var(--espaco-3);
+  background-color: var(--superficie);
+  border-block: 1px solid var(--borda);
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.tabela thead th.colunaNumerica {
+  text-align: right;
+}
+
+.ordenar {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-1);
+  min-height: 28px;
+  margin-left: calc(var(--espaco-2) * -1);
+  padding-inline: var(--espaco-2);
+  border-radius: var(--raio-sm);
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+  transition:
+    background-color var(--duracao-rapida) var(--curva-saida),
+    color var(--duracao-rapida) var(--curva-saida);
+}
+
+.colunaNumerica .ordenar {
+  margin-right: calc(var(--espaco-2) * -1);
+  margin-left: 0;
+}
+
+.ordenar svg {
+  flex-shrink: 0;
+  max-width: none;
+}
+
+.ordenar:focus-visible {
+  outline: none;
+  box-shadow: var(--anel-foco);
+}
+
+.ordenarAtivo {
+  color: var(--texto);
+}
+
+.tabela tbody th,
+.tabela tbody td {
+  padding: var(--espaco-2) var(--espaco-3);
+  border-bottom: 1px solid var(--borda);
+  vertical-align: middle;
+}
+
+.tabela tbody tr:last-child th,
+.tabela tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.tabela tr > :first-child {
+  padding-left: var(--espaco-6);
+}
+
+.tabela tr > :last-child {
+  padding-right: var(--espaco-6);
+}
+
+.intervalo {
+  width: 46%;
+  color: var(--texto);
+  font-weight: var(--peso-regular);
+  text-align: left;
+}
+
+.rotuloDoIntervalo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-1) var(--espaco-2);
+  min-height: 22px;
+}
+
+.celulaNumerica {
+  color: var(--texto);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.semExecucoes .intervalo,
+.semExecucoes .celulaNumerica {
+  color: var(--texto-terciario);
+}
+
+.volume {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  min-width: 7rem;
+  vertical-align: top;
+}
+
+.trilho {
+  width: 100%;
+  height: 4px;
+  overflow: hidden;
+  border-radius: var(--raio-pilula);
+  background-color: var(--neutro-suave);
+}
+
+.preenchimento {
+  display: block;
+  width: calc(var(--parte, 0) * 100%);
+  height: 100%;
+  border-radius: inherit;
+  background-color: var(--grafico-1);
+}
+
+
+.reserva {
+  position: relative;
+  display: inline-flex;
+}
+
+.reserva > button {
+  visibility: hidden;
+}
+
+.esqueletoDaReserva {
+  position: absolute;
+  inset: 0;
+}
+
+.rotuloCurto {
+  display: none;
+}
+
+.linhaEmEspera {
+  display: flex;
+  align-items: center;
+  height: 1lh;
+}
+
+.celulaNumerica .linhaEmEspera {
+  justify-content: flex-end;
+}
+
+@media (hover: hover) {
+  .ordenar:hover {
+    background-color: var(--superficie-suave);
+    color: var(--texto);
+  }
+
+  .tabela tbody tr:hover > * {
+    background-color: color-mix(in srgb, var(--superficie-suave) 60%, transparent);
+  }
+}
+
+@media (max-width: 359px) {
+  .rotuloLongo {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .rotuloCurto {
+    display: inline;
+  }
+}
+
+@container intervalos-historico (max-width: 640px) {
+  .tabela tr > :first-child {
+    padding-left: var(--espaco-4);
+  }
+
+  .tabela tr > :last-child {
+    padding-right: var(--espaco-4);
+  }
+
+  .intervalo {
+    width: auto;
+  }
+
+  .volume {
+    min-width: 4.5rem;
+  }
+}
+
+@container intervalos-historico (max-width: 480px) {
+  .ordenacaoCompacta {
+    display: flex;
+  }
+
+  .tabela,
+  .tabela tbody {
+    display: block;
+  }
+
+  .tabela thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .tabela tbody tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: var(--espaco-2) var(--espaco-4);
+    padding: var(--espaco-3) var(--espaco-4);
+    border-top: 1px solid var(--borda);
+  }
+
+  .tabela tbody th,
+  .tabela tbody td,
+  .tabela tr > :first-child,
+  .tabela tr > :last-child {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 0;
+    border-bottom: none;
+    text-align: left;
+  }
+
+  .tabela tbody th.intervalo {
+    grid-column: 1 / -1;
+    font-weight: var(--peso-medio);
+  }
+
+  .tabela td[data-rotulo]::before {
+    content: attr(data-rotulo);
+    color: var(--texto-terciario);
+    font-family: var(--fonte-interface);
+    font-size: var(--tamanho-xs);
+    letter-spacing: 0;
+  }
+
+  .volume {
+    align-items: flex-start;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .celulaNumerica .linhaEmEspera {
+    justify-content: flex-start;
+  }
+
+  .tabela tbody tr:hover > * {
+    background-color: transparent;
+  }
+}

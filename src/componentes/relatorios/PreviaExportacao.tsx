@@ -1,10 +1,14 @@
 import { FileX2 } from 'lucide-react';
-import { CabecalhoPainel, EstadoVazio, GrupoOpcoes, Painel } from '@/componentes/ui';
+import { CabecalhoPainel, Esqueleto, EstadoVazio, GrupoOpcoes, Painel } from '@/componentes/ui';
 import { blocosExportacao, previaDoArquivo, rotuloBloco } from '@/regras/exportacaoRelatorio';
 import type { ArquivoExportacao } from '@/regras/exportacaoRelatorio';
 import { medirArquivo } from '@/utilitarios/download';
 import { formatarNumero, formatarTamanho, pluralizar } from '@/utilitarios/formatacao';
+import { LinhaEmEspera, PainelEmEspera } from './EsqueletoRelatorio';
 import estilos from './PreviaExportacao.module.css';
+
+const TITULO = 'Prévia';
+const LINHAS_EM_ESPERA = 8;
 
 interface PreviaExportacaoProps {
   arquivos: ArquivoExportacao[];
@@ -25,7 +29,7 @@ export function PreviaExportacao({ arquivos: arquivosGerados, nomeAberto, aoAbri
   if (!aberto) {
     return (
       <Painel aria-labelledby="titulo-previa-exportacao" className={estilos.painel}>
-        <CabecalhoPainel titulo={<span id="titulo-previa-exportacao">Prévia</span>} descricao="As primeiras linhas do arquivo" />
+        <CabecalhoPainel titulo={<span id="titulo-previa-exportacao">{TITULO}</span>} descricao="As primeiras linhas do arquivo" />
         <EstadoVazio
           compacto
           icone={FileX2}
@@ -46,7 +50,7 @@ export function PreviaExportacao({ arquivos: arquivosGerados, nomeAberto, aoAbri
   return (
     <Painel aria-labelledby="titulo-previa-exportacao" className={estilos.painel}>
       <CabecalhoPainel
-        titulo={<span id="titulo-previa-exportacao">Prévia</span>}
+        titulo={<span id="titulo-previa-exportacao">{TITULO}</span>}
         descricao={arquivos.length > 1 ? 'As primeiras linhas de cada arquivo' : 'As primeiras linhas do arquivo'}
       />
 
@@ -79,5 +83,26 @@ export function PreviaExportacao({ arquivos: arquivosGerados, nomeAberto, aoAbri
         </p>
       ) : null}
     </Painel>
+  );
+}
+
+export function EsqueletoPrevia({ variosArquivos }: { variosArquivos: boolean }) {
+  return (
+    <PainelEmEspera
+      titulo={TITULO}
+      descricao={variosArquivos ? 'As primeiras linhas de cada arquivo' : 'As primeiras linhas do arquivo'}
+      className={estilos.painel}
+    >
+      {variosArquivos ? <Esqueleto largura="min(100%, 23.5rem)" altura={32} raio="var(--raio-md)" /> : null}
+      <p className={estilos.identificacao}>
+        <LinhaEmEspera largura="min(60%, 22rem)" className={estilos.nomeEmEspera} />
+        <LinhaEmEspera largura={88} altura={10} className={estilos.medidas} />
+      </p>
+      <div className={estilos.conteudo}>
+        {Array.from({ length: LINHAS_EM_ESPERA }, (_, indice) => (
+          <LinhaEmEspera key={indice} largura={`${indice === 0 ? 58 : 44 - ((indice * 7) % 12)}%`} altura={10} />
+        ))}
+      </div>
+    </PainelEmEspera>
   );
 }

@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
-import type { CSSProperties } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { ArrowDown, ArrowDownRight, ArrowUp, ArrowUpDown, ArrowUpRight, Minus } from 'lucide-react';
 import { ConsultaSql } from '@/componentes/comum/ConsultaSql';
-import { CampoSelecao } from '@/componentes/ui';
+import { CampoSelecao, Esqueleto } from '@/componentes/ui';
 import type { ConsultaResumoDTO } from '@/modelos/dashboard';
 import { formatarDuracaoMs, formatarNumero, formatarPercentual, formatarVariacao } from '@/utilitarios/formatacao';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
@@ -12,18 +12,37 @@ import estilos from './TabelaConsultas.module.css';
 type ColunaOrdenavel = 'percentualTempoTotal' | 'tempoMedioMs' | 'quantidadeExecucoes';
 type Direcao = 'asc' | 'desc';
 
-interface Ordenacao {
+export interface OrdenacaoDaTabela {
   coluna: ColunaOrdenavel;
   direcao: Direcao;
+}
+
+interface OrdenacaoControlada {
+  ordenacao?: OrdenacaoDaTabela;
+  aoOrdenar?: (ordenacao: OrdenacaoDaTabela) => void;
 }
 
 export interface ConsultaDaTabela extends ConsultaResumoDTO {
   variacaoTempoMedio?: number | null;
 }
 
-interface TabelaConsultasProps {
+interface TabelaConsultasProps extends OrdenacaoControlada {
   consultas: ConsultaDaTabela[];
   referenciaVariacao?: string;
+  rotuloHistorico?: string;
+  aoVerHistorico?: (consulta: ConsultaDaTabela) => void;
+  aoVerPlano?: (consulta: ConsultaDaTabela) => void;
+}
+
+interface EsqueletoTabelaConsultasProps extends OrdenacaoControlada {
+  linhas: number;
+}
+
+interface MolduraDaTabelaProps {
+  ordenacao: OrdenacaoDaTabela;
+  aoOrdenar: (ordenacao: OrdenacaoDaTabela) => void;
+  referenciaVariacao?: string;
+  children: ReactNode;
 }
 
 const colunasOrdenaveis: { coluna: ColunaOrdenavel; rotulo: string; rotuloOrdenacao: string }[] = [
@@ -32,11 +51,20 @@ const colunasOrdenaveis: { coluna: ColunaOrdenavel; rotulo: string; rotuloOrdena
   { coluna: 'percentualTempoTotal', rotulo: '% do tempo total', rotuloOrdenacao: 'Maior parte do tempo total' },
 ];
 
-const ORDENACAO_INICIAL: Ordenacao = { coluna: 'percentualTempoTotal', direcao: 'desc' };
+const ORDENACAO_INICIAL: OrdenacaoDaTabela = { coluna: 'percentualTempoTotal', direcao: 'desc' };
+const ESMAECIMENTO_DO_ESQUELETO = 0.6;
 
-function ordenar(consultas: ConsultaDaTabela[], { coluna, direcao }: Ordenacao): ConsultaDaTabela[] {
+function ordenar(consultas: ConsultaDaTabela[], { coluna, direcao }: OrdenacaoDaTabela): ConsultaDaTabela[] {
   const sentido = direcao === 'asc' ? 1 : -1;
   return [...consultas].sort((a, b) => (a[coluna] - b[coluna]) * sentido);
+}
+
+function useOrdenacao({
+  ordenacao,
+  aoOrdenar,
+}: OrdenacaoControlada): [OrdenacaoDaTabela, (ordenacao: OrdenacaoDaTabela) => void] {
+  const [propria, setPropria] = useState(ORDENACAO_INICIAL);
+  return [ordenacao ?? propria, aoOrdenar ?? setPropria];
 }
 
 function VariacaoTempo({ valor, referencia }: { valor: number | null; referencia: string }) {
@@ -52,15 +80,10 @@ function VariacaoTempo({ valor, referencia }: { valor: number | null; referencia
   );
 }
 
-export function TabelaConsultas({ consultas, referenciaVariacao }: TabelaConsultasProps) {
-  const [ordenacao, setOrdenacao] = useState<Ordenacao>(ORDENACAO_INICIAL);
-  const [entrando, setEntrando] = useState(true);
-  const ordenadas = useMemo(() => ordenar(consultas, ordenacao), [consultas, ordenacao]);
-
+function MolduraDaTabela({ ordenacao, aoOrdenar, referenciaVariacao, children }: MolduraDaTabelaProps) {
   const alternar = (coluna: ColunaOrdenavel) => {
-    setOrdenacao((atual) =>
-      atual.coluna === coluna ? { coluna, direcao: atual.direcao === 'desc' ? 'asc' : 'desc' } : { coluna, direcao: 'desc' },
-    );
+    const inverter = ordenacao.coluna === coluna && ordenacao.direcao === 'desc';
+    aoOrdenar({ coluna, direcao: inverter ? 'asc' : 'desc' });
   };
 
   return (
@@ -71,7 +94,7 @@ export function TabelaConsultas({ consultas, referenciaVariacao }: TabelaConsult
         className={estilos.ordenacaoCompacta}
         opcoes={colunasOrdenaveis.map(({ coluna, rotuloOrdenacao }) => ({ valor: coluna, rotulo: rotuloOrdenacao }))}
         valor={ordenacao.coluna}
-        aoMudar={(coluna) => coluna && setOrdenacao({ coluna, direcao: 'desc' })}
+        aoMudar={(coluna) => coluna && aoOrdenar({ coluna, direcao: 'desc' })}
       />
 
       <table className={estilos.tabela}>
@@ -111,46 +134,123 @@ export function TabelaConsultas({ consultas, referenciaVariacao }: TabelaConsult
             </th>
           </tr>
         </thead>
-        <tbody className={entrando ? estilos.entrando : undefined}>
-          {ordenadas.map((consulta, indice) => (
-            <tr
-              key={consulta.id}
-              className={entrando ? 'item-em-cascata' : undefined}
-              style={{ '--indice': indice } as CSSProperties}
-            >
+        {children}
+      </table>
+    </div>
+  );
+}
+
+export function EsqueletoTabelaConsultas({ linhas, ...controlada }: EsqueletoTabelaConsultasProps) {
+  const [ordenacao, aoOrdenar] = useOrdenacao(controlada);
+
+  return (
+    <>
+      <span className="visualmente-oculto" role="status">
+        Carregando as consultas…
+      </span>
+      <MolduraDaTabela ordenacao={ordenacao} aoOrdenar={aoOrdenar}>
+        <tbody className={estilos.emEspera} aria-hidden="true">
+          {Array.from({ length: linhas }, (_, indice) => (
+            <tr key={indice} style={{ opacity: 1 - indice * (ESMAECIMENTO_DO_ESQUELETO / linhas) }}>
               <td className={estilos.celulaConsulta}>
-                <ConsultaSql sql={consulta.sql} classeAcoes={estilos.acoesConsulta} />
-              </td>
-              <td className={`${estilos.celulaNumerica} numeros`} data-rotulo="Tempo médio">
-                <span className={estilos.tempo}>
-                  {formatarDuracaoMs(consulta.tempoMedioMs)}
-                  {referenciaVariacao ? (
-                    <VariacaoTempo valor={consulta.variacaoTempoMedio ?? null} referencia={referenciaVariacao} />
-                  ) : null}
+                <span className={estilos.linhaEmEspera}>
+                  <Esqueleto largura={`${88 - ((indice * 23) % 46)}%`} altura={12} />
+                </span>
+                <span className={juntarClasses(estilos.linhaEmEspera, estilos.segundaLinha)}>
+                  <Esqueleto largura={`${52 - ((indice * 13) % 28)}%`} altura={12} />
+                </span>
+                <span className={juntarClasses(estilos.linhaEmEspera, estilos.terceiraLinha)}>
+                  <Esqueleto largura={`${34 - ((indice * 7) % 18)}%`} altura={12} />
                 </span>
               </td>
-              <td className={`${estilos.celulaNumerica} numeros`} data-rotulo="Execuções">
-                {formatarNumero(consulta.quantidadeExecucoes)}
+              <td className={estilos.celulaNumerica} data-rotulo="Tempo médio">
+                <span className={estilos.linhaEmEspera}>
+                  <Esqueleto largura={52} altura={12} />
+                </span>
               </td>
-              <td className={`${estilos.celulaNumerica} numeros`} data-rotulo="% do tempo total">
+              <td className={estilos.celulaNumerica} data-rotulo="Execuções">
+                <span className={estilos.linhaEmEspera}>
+                  <Esqueleto largura={52} altura={12} />
+                </span>
+              </td>
+              <td className={estilos.celulaNumerica} data-rotulo="% do tempo total">
                 <span className={estilos.participacao}>
-                  {formatarPercentual(consulta.percentualTempoTotal)}
-                  <span className={estilos.trilho} aria-hidden="true">
-                    <span
-                      className={estilos.preenchimento}
-                      style={{ width: `${Math.min(100, consulta.percentualTempoTotal)}%` }}
-                      onAnimationEnd={indice === ordenadas.length - 1 ? () => setEntrando(false) : undefined}
-                    />
+                  <span className={estilos.linhaEmEspera}>
+                    <Esqueleto largura={40} altura={12} />
                   </span>
+                  <Esqueleto altura={4} raio="var(--raio-pilula)" />
                 </span>
               </td>
               <td className={estilos.celulaDesempenho} data-rotulo="Desempenho">
-                <SeloDesempenho desempenho={consulta.desempenho} />
+                <Esqueleto largura={89} altura={22} raio="var(--raio-sm)" />
               </td>
             </tr>
           ))}
         </tbody>
-      </table>
-    </div>
+      </MolduraDaTabela>
+    </>
+  );
+}
+
+export function TabelaConsultas({
+  consultas,
+  referenciaVariacao,
+  rotuloHistorico,
+  aoVerHistorico,
+  aoVerPlano,
+  ...controlada
+}: TabelaConsultasProps) {
+  const [ordenacao, aoOrdenar] = useOrdenacao(controlada);
+  const [entrando, setEntrando] = useState(true);
+  const ordenadas = useMemo(() => ordenar(consultas, ordenacao), [consultas, ordenacao]);
+
+  return (
+    <MolduraDaTabela ordenacao={ordenacao} aoOrdenar={aoOrdenar} referenciaVariacao={referenciaVariacao}>
+      <tbody className={entrando ? estilos.entrando : undefined}>
+        {ordenadas.map((consulta, indice) => (
+          <tr
+            key={consulta.id}
+            className={entrando ? 'item-em-cascata' : undefined}
+            style={{ '--indice': indice } as CSSProperties}
+          >
+            <td className={estilos.celulaConsulta}>
+              <ConsultaSql
+                sql={consulta.sql}
+                classeAcoes={estilos.acoesConsulta}
+                rotuloHistorico={rotuloHistorico}
+                aoVerHistorico={aoVerHistorico ? () => aoVerHistorico(consulta) : undefined}
+                aoVerPlano={aoVerPlano ? () => aoVerPlano(consulta) : undefined}
+              />
+            </td>
+            <td className={`${estilos.celulaNumerica} numeros`} data-rotulo="Tempo médio">
+              <span className={estilos.tempo}>
+                {formatarDuracaoMs(consulta.tempoMedioMs)}
+                {referenciaVariacao ? (
+                  <VariacaoTempo valor={consulta.variacaoTempoMedio ?? null} referencia={referenciaVariacao} />
+                ) : null}
+              </span>
+            </td>
+            <td className={`${estilos.celulaNumerica} numeros`} data-rotulo="Execuções">
+              {formatarNumero(consulta.quantidadeExecucoes)}
+            </td>
+            <td className={`${estilos.celulaNumerica} numeros`} data-rotulo="% do tempo total">
+              <span className={estilos.participacao}>
+                {formatarPercentual(consulta.percentualTempoTotal)}
+                <span className={estilos.trilho} aria-hidden="true">
+                  <span
+                    className={estilos.preenchimento}
+                    style={{ width: `${Math.min(100, consulta.percentualTempoTotal)}%` }}
+                    onAnimationEnd={indice === ordenadas.length - 1 ? () => setEntrando(false) : undefined}
+                  />
+                </span>
+              </span>
+            </td>
+            <td className={estilos.celulaDesempenho} data-rotulo="Desempenho">
+              <SeloDesempenho desempenho={consulta.desempenho} />
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </MolduraDaTabela>
   );
 }

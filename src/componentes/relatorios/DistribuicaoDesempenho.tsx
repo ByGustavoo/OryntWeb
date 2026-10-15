@@ -5,7 +5,11 @@ import { rotuloFaixaDesempenho } from '@/modelos/rotulos';
 import { resumirDesempenho } from '@/regras/destaquesRelatorio';
 import { formatarNumero, formatarPercentual } from '@/utilitarios/formatacao';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
+import { DesempenhoEmEspera, PainelEmEspera } from './EsqueletoRelatorio';
 import estilos from './DistribuicaoDesempenho.module.css';
+
+const TITULO = 'Desempenho das consultas';
+const DESCRICAO = 'Como as execuções e o tempo do banco se dividem entre consultas rápidas, moderadas e lentas';
 
 interface DistribuicaoDesempenhoProps {
   faixas: FaixaDesempenhoDTO[];
@@ -50,8 +54,8 @@ export function DistribuicaoDesempenho({ faixas }: DistribuicaoDesempenhoProps) 
   return (
     <Painel aria-labelledby="titulo-desempenho">
       <CabecalhoPainel
-        titulo={<span id="titulo-desempenho">Desempenho das consultas</span>}
-        descricao="Como as execuções e o tempo do banco se dividem entre consultas rápidas, moderadas e lentas"
+        titulo={<span id="titulo-desempenho">{TITULO}</span>}
+        descricao={DESCRICAO}
       />
 
       <div className={estilos.conteiner}>
@@ -112,5 +116,13 @@ export function DistribuicaoDesempenho({ faixas }: DistribuicaoDesempenhoProps) 
         </div>
       </div>
     </Painel>
+  );
+}
+
+export function EsqueletoDistribuicao() {
+  return (
+    <PainelEmEspera titulo={TITULO} descricao={DESCRICAO}>
+      <DesempenhoEmEspera barras={2} frases={2} alturaMinima={168} />
+    </PainelEmEspera>
   );
 }

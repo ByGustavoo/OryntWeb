@@ -1,4 +1,5 @@
 import type { TipoBanco } from './conexao';
+import type { DirecaoOrdenacao, OrdenacaoConsultas, TipoComando } from './consultas';
 import type { DesempenhoConsulta, PeriodoDashboard } from './dashboard';
 import type { GranularidadeRelatorio } from './relatorios';
 
@@ -22,6 +23,8 @@ export const descricaoPeriodo: Record<PeriodoDashboard, string> = {
   ULTIMOS_30_DIAS: 'nos últimos 30 dias',
 };
 
+export const desempenhosConsulta: DesempenhoConsulta[] = ['RAPIDA', 'MODERADA', 'LENTA'];
+
 export const rotuloDesempenho: Record<DesempenhoConsulta, string> = {
   RAPIDA: 'Rápida',
   MODERADA: 'Moderada',
@@ -33,6 +36,20 @@ export const rotuloFaixaDesempenho: Record<DesempenhoConsulta, string> = {
   MODERADA: 'Moderadas',
   LENTA: 'Lentas',
 };
+
+export const tiposComando: TipoComando[] = ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'OUTRO'];
+
+export const rotuloTipoComando: Record<TipoComando, string> = {
+  SELECT: 'SELECT',
+  INSERT: 'INSERT',
+  UPDATE: 'UPDATE',
+  DELETE: 'DELETE',
+  OUTRO: 'Outros',
+};
+
+export const ordenacoesConsultas: OrdenacaoConsultas[] = ['TEMPO_MEDIO', 'TEMPO_MAXIMO', 'EXECUCOES', 'PERCENTUAL_TEMPO_TOTAL'];
+
+export const direcoesOrdenacao: DirecaoOrdenacao[] = ['ASC', 'DESC'];
 
 export const rotuloGranularidade: Record<GranularidadeRelatorio, string> = {
   DIA: 'Dia',

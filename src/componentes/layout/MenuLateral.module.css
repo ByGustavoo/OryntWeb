@@ -131,6 +131,10 @@
   margin-inline: calc(var(--espaco-1) * -1.5);
 }
 
+.filho .marcaPlanejado {
+  margin-right: calc(var(--espaco-2) * -1);
+}
+
 .divisor {
   display: block;
   height: 1px;

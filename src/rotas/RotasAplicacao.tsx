@@ -14,6 +14,9 @@ const PaginaDashboard = lazy(() => import('@/paginas/PaginaDashboard'));
 const PaginaResumoRelatorio = lazy(() => import('@/paginas/PaginaResumoRelatorio'));
 const PaginaExportacaoRelatorio = lazy(() => import('@/paginas/PaginaExportacaoRelatorio'));
 const PaginaComparacaoRelatorio = lazy(() => import('@/paginas/PaginaComparacaoRelatorio'));
+const PaginaTodasConsultas = lazy(() => import('@/paginas/PaginaTodasConsultas'));
+const PaginaHistoricoConsulta = lazy(() => import('@/paginas/PaginaHistoricoConsulta'));
+const PaginaPlanosExecucao = lazy(() => import('@/paginas/PaginaPlanosExecucao'));
 const PaginaFuncionalidadePlanejada = lazy(() => import('@/paginas/PaginaFuncionalidadePlanejada'));
 const PaginaConfiguracoes = lazy(() => import('@/paginas/PaginaConfiguracoes'));
 const PaginaNaoEncontrada = lazy(() => import('@/paginas/PaginaNaoEncontrada'));
@@ -42,6 +45,9 @@ export function RotasAplicacao() {
             <Route path={caminhos.relatoriosResumo} element={<PaginaResumoRelatorio />} />
             <Route path={caminhos.relatoriosExportacao} element={<PaginaExportacaoRelatorio />} />
             <Route path={caminhos.relatoriosComparacao} element={<PaginaComparacaoRelatorio />} />
+            <Route path={caminhos.consultasTodas} element={<PaginaTodasConsultas />} />
+            <Route path={caminhos.consultasHistorico} element={<PaginaHistoricoConsulta />} />
+            <Route path={caminhos.consultasPlanos} element={<PaginaPlanosExecucao />} />
             {funcionalidades.map((funcionalidade) => (
               <Route
                 key={funcionalidade.destino}

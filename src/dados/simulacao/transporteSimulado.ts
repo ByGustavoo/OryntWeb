@@ -21,6 +21,7 @@ import {
   renomearConexao,
   testarConexao,
 } from './manipuladores/conexoes';
+import { buscarHistoricoDaConsulta, buscarPlanoDaConsulta, listarConsultas } from './manipuladores/consultas';
 import { buscarAtividade, buscarConsultas, buscarIndicadores } from './manipuladores/dashboard';
 import { redefinirSenha, solicitarRecuperacao, verificarCodigoRecuperacao } from './manipuladores/recuperacaoSenha';
 import { buscarResumoRelatorio } from './manipuladores/relatorios';
@@ -74,6 +75,13 @@ const rotas: Rota[] = [
   { metodo: 'GET', caminho: rotasApi.dashboard.indicadores, manipulador: buscarIndicadores },
   { metodo: 'GET', caminho: rotasApi.dashboard.atividade, manipulador: buscarAtividade },
   { metodo: 'GET', caminho: rotasApi.dashboard.consultas, manipulador: buscarConsultas },
+  { metodo: 'GET', caminho: rotasApi.consultas.lista, manipulador: listarConsultas },
+  {
+    metodo: 'GET',
+    caminho: rotasApi.consultas.historico(`${MARCA_PARAMETRO}id`),
+    manipulador: buscarHistoricoDaConsulta,
+  },
+  { metodo: 'GET', caminho: rotasApi.consultas.plano(`${MARCA_PARAMETRO}id`), manipulador: buscarPlanoDaConsulta },
   { metodo: 'GET', caminho: rotasApi.relatorios.resumo, manipulador: buscarResumoRelatorio },
   { metodo: 'GET', caminho: rotasApi.sistema.versao, manipulador: buscarVersao },
 ];

@@ -6,6 +6,7 @@ import estilos from './Campo.module.css';
 
 export interface PropriedadesMensagensCampo {
   rotulo?: string;
+  rotuloOculto?: boolean;
   dica?: string;
   erro?: string;
   sucesso?: string;
@@ -28,6 +29,7 @@ interface EstruturaCampoProps extends PropriedadesMensagensCampo {
 export function EstruturaCampo({
   id,
   rotulo,
+  rotuloOculto = false,
   dica,
   erro,
   aviso,
@@ -45,7 +47,7 @@ export function EstruturaCampo({
   return (
     <div className={juntarClasses(estilos.campo, className)}>
       {rotulo ? (
-        <label className={estilos.rotulo} htmlFor={idControle}>
+        <label className={rotuloOculto ? 'visualmente-oculto' : estilos.rotulo} htmlFor={idControle}>
           {rotulo}
           {obrigatorio ? (
             <span className={estilos.obrigatorio} aria-hidden="true">

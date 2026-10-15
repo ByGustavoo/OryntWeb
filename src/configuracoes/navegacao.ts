@@ -59,19 +59,16 @@ const consultasSql: Funcionalidade = {
       rotulo: 'Todas',
       destino: caminhos.consultasTodas,
       descricao: 'A lista completa das consultas, com busca e ordenação.',
-      planejado: true,
     },
     {
       rotulo: 'Histórico',
       destino: caminhos.consultasHistorico,
-      descricao: 'O tempo e as execuções de cada consulta ao longo dos dias.',
-      planejado: true,
+      descricao: 'O tempo e as execuções de uma consulta ao longo do período.',
     },
     {
       rotulo: 'Planos de execução',
       destino: caminhos.consultasPlanos,
       descricao: 'Como o banco executa a consulta e onde o tempo é gasto.',
-      planejado: true,
     },
   ],
 };

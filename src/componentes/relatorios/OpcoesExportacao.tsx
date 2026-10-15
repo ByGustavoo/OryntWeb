@@ -1,8 +1,14 @@
 import { useEffect, useId, useState } from 'react';
 import { Check, Copy, Download } from 'lucide-react';
-import { Botao, BotaoIcone, CabecalhoPainel, GrupoOpcoes, Painel } from '@/componentes/ui';
+import { Botao, BotaoIcone, CabecalhoPainel, Esqueleto, GrupoOpcoes, Painel } from '@/componentes/ui';
 import { useNotificacoes } from '@/provedores/ProvedorNotificacoes';
-import { blocosExportacao, formatosExportacao, padroesNumericos, rotuloBloco } from '@/regras/exportacaoRelatorio';
+import {
+  blocosExportacao,
+  descricaoPadraoNumerico,
+  formatosExportacao,
+  padroesNumericos,
+  rotuloBloco,
+} from '@/regras/exportacaoRelatorio';
 import type { BlocoExportacao, FormatoExportacao, PadraoNumerico } from '@/regras/exportacaoRelatorio';
 import { copiarTexto } from '@/utilitarios/areaTransferencia';
 import { formatarNumero, pluralizar } from '@/utilitarios/formatacao';
@@ -13,8 +19,9 @@ interface OpcoesExportacaoProps {
   blocos: BlocoExportacao[];
   formato: FormatoExportacao;
   padrao: PadraoNumerico;
-  linhasPorBloco: Record<BlocoExportacao, number>;
+  linhasPorBloco: Record<BlocoExportacao, number> | null;
   quantidadeArquivos: number;
+  carregando: boolean;
   aoMudarBlocos: (blocos: BlocoExportacao[]) => void;
   aoMudarFormato: (formato: FormatoExportacao) => void;
   aoMudarPadrao: (padrao: PadraoNumerico) => void;
@@ -48,17 +55,13 @@ const opcoesPadrao = padroesNumericos.map((padrao) => ({
   rotulo: padrao === 'BRASILEIRO' ? 'Brasil' : 'Internacional',
 }));
 
-const descricaoPadrao: Record<PadraoNumerico, string> = {
-  BRASILEIRO: 'Ponto e vírgula entre as colunas e vírgula decimal, como o Excel em português espera.',
-  INTERNACIONAL: 'Vírgula entre as colunas e ponto decimal.',
-};
-
 export function OpcoesExportacao({
   blocos,
   formato,
   padrao,
   linhasPorBloco,
   quantidadeArquivos,
+  carregando,
   aoMudarBlocos,
   aoMudarFormato,
   aoMudarPadrao,
@@ -82,6 +85,7 @@ export function OpcoesExportacao({
   };
 
   const copiar = async (bloco: BlocoExportacao) => {
+    if (carregando) return;
     if (await copiarTexto(textoParaColar(bloco))) {
       setCopiado(bloco);
       return;
@@ -103,7 +107,7 @@ export function OpcoesExportacao({
         <legend className={estilos.legenda}>Conteúdo</legend>
         <ul className={estilos.blocos}>
           {blocosExportacao.map((bloco) => {
-            const linhas = linhasPorBloco[bloco];
+            const linhas = carregando ? null : (linhasPorBloco?.[bloco] ?? null);
             const foiCopiado = copiado === bloco;
             return (
               <li className={estilos.bloco} key={bloco}>
@@ -119,13 +123,18 @@ export function OpcoesExportacao({
                     <span className={estilos.descricao}>{descricaoBloco[bloco]}</span>
                   </span>
                   <span className={`${estilos.linhas} numeros`}>
-                    {formatarNumero(linhas)} {pluralizar(linhas, 'linha', 'linhas')}
+                    {linhas === null ? (
+                      <Esqueleto largura={52} altura={10} imediato />
+                    ) : (
+                      `${formatarNumero(linhas)} ${pluralizar(linhas, 'linha', 'linhas')}`
+                    )}
                   </span>
                 </label>
                 <BotaoIcone
                   icone={foiCopiado ? Check : Copy}
                   rotulo={foiCopiado ? `${rotuloBloco[bloco]}: tabela copiada` : `Copiar ${rotuloBloco[bloco]} como tabela`}
                   tamanho="sm"
+                  aria-disabled={carregando ? true : undefined}
                   onClick={() => void copiar(bloco)}
                 />
               </li>
@@ -168,7 +177,7 @@ export function OpcoesExportacao({
         <div className={estilos.padrao}>
           <GrupoOpcoes rotulo="Padrão dos números" opcoes={opcoesPadrao} valor={padrao} aoMudar={aoMudarPadrao} tamanho="sm" />
           <p className={estilos.descricao}>
-            {descricaoPadrao[padrao]}{' '}
+            {descricaoPadraoNumerico[padrao]}{' '}
             {formato === 'CSV' ? 'Vale para o CSV e para a tabela copiada.' : 'Vale só para a tabela copiada neste formato.'}
           </p>
         </div>
@@ -178,9 +187,11 @@ export function OpcoesExportacao({
         <p className={estilos.resumo} id={idAjudaBaixar}>
           {semBlocos
             ? 'Marque ao menos um bloco para gerar o arquivo.'
-            : `${formatarNumero(quantidadeArquivos)} ${pluralizar(quantidadeArquivos, 'arquivo', 'arquivos')} ${rotuloFormato[formato]}`}
+            : quantidadeArquivos === 0
+              ? 'Carregando os dados do período…'
+              : `${formatarNumero(quantidadeArquivos)} ${pluralizar(quantidadeArquivos, 'arquivo', 'arquivos')} ${rotuloFormato[formato]}`}
         </p>
-        <Botao icone={Download} onClick={aoBaixar} disabled={semBlocos} aria-describedby={idAjudaBaixar}>
+        <Botao icone={Download} onClick={aoBaixar} disabled={semBlocos} carregando={carregando} aria-describedby={idAjudaBaixar}>
           {quantidadeArquivos > 1 ? `Baixar ${formatarNumero(quantidadeArquivos)} arquivos` : 'Baixar arquivo'}
         </Botao>
       </div>

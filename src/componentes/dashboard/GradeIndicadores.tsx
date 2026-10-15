@@ -22,8 +22,12 @@ export function EsqueletoIndicadores() {
               <Esqueleto largura={32} altura={32} raio="var(--raio-md)" />
               <Esqueleto largura="50%" altura={14} />
             </div>
-            <Esqueleto largura="45%" altura={30} raio="var(--raio-sm)" />
-            <Esqueleto largura="75%" altura={14} />
+            <span className={estilos.esqueletoValor}>
+              <Esqueleto altura={30} raio="var(--raio-sm)" />
+            </span>
+            <span className={estilos.esqueletoContexto}>
+              <Esqueleto largura="75%" altura={14} />
+            </span>
           </div>
         ))}
       </div>

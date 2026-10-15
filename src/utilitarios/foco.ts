@@ -27,6 +27,14 @@ export function manterTabDentro(evento: KeyboardEvent, conteiner: HTMLElement): 
   }
 }
 
+export function aceitaDigitacao(alvo: EventTarget | null): boolean {
+  return alvo instanceof HTMLElement && (alvo.matches('input, textarea, select') || alvo.isContentEditable);
+}
+
+export function haCamadaAberta(): boolean {
+  return document.querySelector('[role="dialog"], [role="alertdialog"], [role="listbox"]') !== null;
+}
+
 export function focarConteudoPrincipal(): void {
   document.querySelector<HTMLElement>('main')?.focus({ preventScroll: true });
 }

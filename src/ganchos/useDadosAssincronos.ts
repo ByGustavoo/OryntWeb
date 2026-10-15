@@ -43,3 +43,14 @@ export function useDadosAssincronos<T>(
 
   return { ...estado, recarregar };
 }
+
+export function useDadosPorChave<C, T>(
+  chave: C,
+  buscar: (chave: C, signal: AbortSignal) => Promise<T>,
+): ResultadoAssincrono<T> {
+  const resposta = useDadosAssincronos(async (signal) => ({ chave, valor: await buscar(chave, signal) }), [chave]);
+
+  if (resposta.dados === null) return { ...resposta, dados: null };
+  if (resposta.dados.chave !== chave) return { ...resposta, dados: null, carregando: true };
+  return { ...resposta, dados: resposta.dados.valor };
+}

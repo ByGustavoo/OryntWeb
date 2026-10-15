@@ -8,21 +8,29 @@ import { TabelaConsultas } from '@/componentes/dashboard/TabelaConsultas';
 import { CabecalhoPagina } from '@/componentes/layout/CabecalhoPagina';
 import { BarraPeriodo } from '@/componentes/relatorios/BarraPeriodo';
 import { CabecalhoImpressao } from '@/componentes/relatorios/CabecalhoImpressao';
-import { DestaquesRelatorio } from '@/componentes/relatorios/DestaquesRelatorio';
-import { DistribuicaoDesempenho } from '@/componentes/relatorios/DistribuicaoDesempenho';
+import { DestaquesRelatorio, EsqueletoDestaques } from '@/componentes/relatorios/DestaquesRelatorio';
+import { DistribuicaoDesempenho, EsqueletoDistribuicao } from '@/componentes/relatorios/DistribuicaoDesempenho';
+import {
+  GraficosEmEspera,
+  PainelEmEspera,
+  RelatorioEmEspera,
+  TabelaEmEspera,
+} from '@/componentes/relatorios/EsqueletoRelatorio';
 import { GraficoEvolucao } from '@/componentes/relatorios/GraficoEvolucao';
 import { IndicadoresRelatorio } from '@/componentes/relatorios/IndicadoresRelatorio';
-import { CabecalhoPainel, ConteudoAssincrono, Esqueleto, EstadoVazio, Nota, Painel } from '@/componentes/ui';
-import { NOME_APLICACAO } from '@/configuracoes/aplicacao';
+import { CabecalhoPainel, ConteudoAssincrono, EstadoVazio, Nota, Painel } from '@/componentes/ui';
 import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
 import { useImpressao } from '@/ganchos/useImpressao';
 import { usePeriodoRelatorio } from '@/ganchos/usePeriodoRelatorio';
 import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
+import { useVerHistorico } from '@/ganchos/useVerHistorico';
+import { useVerPlano } from '@/ganchos/useVerPlano';
 import type { ConexaoDTO } from '@/modelos/conexao';
-import type { PeriodoRelatorio, ResumoRelatorioDTO } from '@/modelos/relatorios';
+import type { GranularidadeRelatorio, PeriodoRelatorio, ResumoRelatorioDTO } from '@/modelos/relatorios';
 import { useConexao } from '@/provedores/ProvedorConexao';
 import type { SituacaoConexao } from '@/provedores/ProvedorConexao';
 import { cabecalhoDoResumo, montarDestaques } from '@/regras/destaquesRelatorio';
+import { periodoDoHistorico, rotuloVerHistorico } from '@/regras/historicoConsulta';
 import { periodoAnteriorNaFrase, periodoNaFrase, periodoVizinho, rotuloDoPeriodo } from '@/regras/periodoRelatorio';
 import { caminhos } from '@/rotas/caminhos';
 import { servicoRelatorios } from '@/servicos';
@@ -30,6 +38,19 @@ import { juntarClasses } from '@/utilitarios/juntarClasses';
 import estilos from './PaginaResumoRelatorio.module.css';
 
 const TITULO = 'Resumo';
+const TITULO_EVOLUCAO = 'Evolução no período';
+const TITULO_CONSULTAS = 'Consultas que mais pesaram';
+const LINHAS_POR_DESTAQUE = [1, 1, 1, 3];
+
+function descreverEvolucao(granularidade: GranularidadeRelatorio): string {
+  return granularidade === 'DIA'
+    ? 'Volume de consultas e tempo médio de execução em cada hora'
+    : 'Volume de consultas e tempo médio de execução em cada dia';
+}
+
+function descreverConsultas(granularidade: GranularidadeRelatorio): string {
+  return `As que mais consumiram tempo do banco, com a variação do tempo médio em relação ${periodoAnteriorNaFrase[granularidade].comparado}`;
+}
 
 function descreverSemConexao(situacao: SituacaoConexao): string {
   if (situacao === 'DESCONECTADA') return 'Conecte um banco para ver o resumo de um período.';
@@ -60,10 +81,13 @@ function ResumoConectado({ conexao }: { conexao: ConexaoDTO }) {
 
   const resumo = useDadosAssincronos((signal) => servicoRelatorios.buscarResumo(periodo, signal), [periodo]);
   const sessaoEncerrada = ehErroApi(resumo.erro, 'NAO_AUTORIZADO');
+  const trocandoDePeriodo =
+    resumo.dados !== null &&
+    (resumo.dados.granularidade !== periodo.granularidade || resumo.dados.inicio !== periodo.inicio);
   const impresso: PeriodoRelatorio = resumo.dados
     ? { granularidade: resumo.dados.granularidade, inicio: resumo.dados.inicio }
     : periodo;
-  const { imprimir, imprimindo, instante } = useImpressao(`${NOME_APLICACAO} - Resumo - ${rotuloDoPeriodo(impresso)}`);
+  const { imprimir, imprimindo, instante } = useImpressao(TITULO, rotuloDoPeriodo(impresso));
 
   useEffect(() => {
     if (sessaoEncerrada) marcarDesconectada();
@@ -116,10 +140,16 @@ function ResumoConectado({ conexao }: { conexao: ConexaoDTO }) {
         <div className={estilos.conteudo} aria-busy={resumo.carregando}>
           <ConteudoAssincrono
             resultado={resumo}
-            esqueleto={<EsqueletoResumo />}
+            esqueleto={<EsqueletoResumo granularidade={periodo.granularidade} />}
             tituloErro="Não foi possível carregar o resumo"
           >
-            {(dados) => <CorpoResumo dados={dados} conexao={conexao} atualizando={resumo.carregando} />}
+            {(dados) =>
+              trocandoDePeriodo ? (
+                <EsqueletoResumo granularidade={periodo.granularidade} imediato />
+              ) : (
+                <CorpoResumo dados={dados} conexao={conexao} atualizando={resumo.carregando} />
+              )
+            }
           </ConteudoAssincrono>
         </div>
       </div>
@@ -137,6 +167,9 @@ function CorpoResumo({ dados, conexao, atualizando }: CorpoResumoProps) {
   const periodo: PeriodoRelatorio = { granularidade: dados.granularidade, inicio: dados.inicio };
   const destaques = montarDestaques(dados);
   const anterior = periodoAnteriorNaFrase[dados.granularidade];
+  const verHistorico = useVerHistorico();
+  const verPlano = useVerPlano();
+  const periodoRecente = periodoDoHistorico[dados.granularidade];
 
   if (dados.indicadores.totalConsultas <= 0) {
     return (
@@ -162,12 +195,8 @@ function CorpoResumo({ dados, conexao, atualizando }: CorpoResumoProps) {
 
       <Painel aria-labelledby="titulo-evolucao">
         <CabecalhoPainel
-          titulo={<span id="titulo-evolucao">Evolução no período</span>}
-          descricao={
-            dados.granularidade === 'DIA'
-              ? 'Volume de consultas e tempo médio de execução em cada hora'
-              : 'Volume de consultas e tempo médio de execução em cada dia'
-          }
+          titulo={<span id="titulo-evolucao">{TITULO_EVOLUCAO}</span>}
+          descricao={descreverEvolucao(dados.granularidade)}
         />
         <GraficoEvolucao pontos={dados.evolucao} granularidade={dados.granularidade} />
       </Painel>
@@ -177,25 +206,46 @@ function CorpoResumo({ dados, conexao, atualizando }: CorpoResumoProps) {
       <Painel espacamento="nenhum" aria-labelledby="titulo-consultas-relatorio">
         <div className={estilos.cabecalhoTabela}>
           <CabecalhoPainel
-            titulo={<span id="titulo-consultas-relatorio">Consultas que mais pesaram</span>}
-            descricao={`As que mais consumiram tempo do banco, com a variação do tempo médio em relação ${anterior.comparado}`}
+            titulo={<span id="titulo-consultas-relatorio">{TITULO_CONSULTAS}</span>}
+            descricao={descreverConsultas(dados.granularidade)}
           />
         </div>
-        <TabelaConsultas consultas={dados.consultas} referenciaVariacao={anterior.comparado} />
+        <TabelaConsultas
+          consultas={dados.consultas}
+          referenciaVariacao={anterior.comparado}
+          rotuloHistorico={rotuloVerHistorico(periodoRecente)}
+          aoVerHistorico={(consulta) => verHistorico(consulta.id, periodoRecente)}
+          aoVerPlano={(consulta) => verPlano(consulta.id)}
+        />
       </Painel>
     </div>
   );
 }
 
-function EsqueletoResumo() {
+interface EsqueletoResumoProps {
+  granularidade: GranularidadeRelatorio;
+  imediato?: boolean;
+}
+
+function EsqueletoResumo({ granularidade, imediato = false }: EsqueletoResumoProps) {
   return (
-    <div className={estilos.relatorio} role="status" aria-label="Carregando o resumo…">
+    <RelatorioEmEspera rotulo="Carregando o resumo…" imediato={imediato} className={estilos.relatorio}>
       <div className={estilos.abertura}>
-        <Esqueleto altura={268} raio="var(--raio-lg)" />
+        <EsqueletoDestaques linhasPorFrase={LINHAS_POR_DESTAQUE} />
         <EsqueletoIndicadores />
       </div>
-      <Esqueleto altura={420} raio="var(--raio-lg)" />
-      <Esqueleto altura={220} raio="var(--raio-lg)" />
-    </div>
+      <PainelEmEspera titulo={TITULO_EVOLUCAO} descricao={descreverEvolucao(granularidade)}>
+        <GraficosEmEspera alturas={[190, 180]} />
+      </PainelEmEspera>
+      <EsqueletoDistribuicao />
+      <PainelEmEspera
+        espacamento="nenhum"
+        titulo={TITULO_CONSULTAS}
+        descricao={descreverConsultas(granularidade)}
+        classeCabecalho={estilos.cabecalhoTabela}
+      >
+        <TabelaEmEspera linhas={10} alturaDaLinha={66} alturaDoCabecalho={37} />
+      </PainelEmEspera>
+    </RelatorioEmEspera>
   );
 }

@@ -111,6 +111,21 @@
   color: var(--erro);
 }
 
+.linhaEmEspera {
+  display: flex;
+  align-items: center;
+  height: 1.5em;
+}
+
+.celulaNumerica .linhaEmEspera {
+  justify-content: flex-end;
+}
+
+.emEspera tr:nth-child(8) .segundaLinha,
+.terceiraLinha {
+  display: none;
+}
+
 .participacao {
   display: inline-flex;
   flex-direction: column;
@@ -155,6 +170,10 @@
 
   .tabela tbody tr:hover td {
     background-color: color-mix(in srgb, var(--superficie-suave) 60%, transparent);
+  }
+
+  .tabela .emEspera tr:hover td {
+    background-color: transparent;
   }
 }
 
@@ -234,6 +253,18 @@
     align-items: flex-start;
   }
 
+  .celulaNumerica .linhaEmEspera {
+    justify-content: flex-start;
+  }
+
+  .emEspera tr:nth-child(even) .segundaLinha {
+    display: flex;
+  }
+
+  .emEspera tr:nth-child(odd) .segundaLinha {
+    display: none;
+  }
+
   .participacao {
     align-items: flex-start;
     min-width: 0;
@@ -250,8 +281,17 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .emEspera tr:nth-child(odd) .segundaLinha,
+  .emEspera tr:nth-child(even) .terceiraLinha {
+    display: flex;
+  }
+
   .tabela td:nth-child(4) {
     grid-column: 1 / -1;
+  }
+
+  .tabela td.celulaDesempenho::before {
+    content: none;
   }
 }
 

@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
+import { NOME_APLICACAO } from '@/configuracoes/aplicacao';
 
 const ESPERA_PARA_PINTAR_MS = 50;
+const IDENTIFICACAO_DA_FOLHA = '--folha-identificacao';
 
 interface Impressao {
   imprimir: () => void;
@@ -9,23 +11,29 @@ interface Impressao {
   instante: Date;
 }
 
-export function useImpressao(nomeDoDocumento: string): Impressao {
+export function useImpressao(documento: string, assunto: string): Impressao {
   const [imprimindo, setImprimindo] = useState(false);
   const [instante, setInstante] = useState(() => new Date());
-  const nome = useRef(nomeDoDocumento);
-  nome.current = nomeDoDocumento;
+  const folha = useRef({ arquivo: '', identificacao: '' });
+  folha.current = {
+    arquivo: `${NOME_APLICACAO} - ${documento} - ${assunto}`,
+    identificacao: `${documento} · ${assunto}`,
+  };
   const temporizador = useRef(0);
 
   useEffect(() => {
+    const raiz = document.documentElement;
     let tituloDaTela: string | null = null;
     const preparar = () => {
       if (tituloDaTela === null) tituloDaTela = document.title;
-      document.title = nome.current;
+      document.title = folha.current.arquivo;
+      raiz.style.setProperty(IDENTIFICACAO_DA_FOLHA, JSON.stringify(folha.current.identificacao));
       flushSync(() => setInstante(new Date()));
     };
     const concluir = () => {
       if (tituloDaTela !== null) document.title = tituloDaTela;
       tituloDaTela = null;
+      raiz.style.removeProperty(IDENTIFICACAO_DA_FOLHA);
       setImprimindo(false);
     };
     window.addEventListener('beforeprint', preparar);

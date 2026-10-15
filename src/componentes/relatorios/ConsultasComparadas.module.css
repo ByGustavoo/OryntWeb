@@ -68,6 +68,22 @@
   width: 9.5rem;
 }
 
+.colunaHistorico {
+  width: calc(var(--altura-controle-sm) * 2 + 2px + var(--respiro-lateral));
+}
+
+.atalhos {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.tabela th.colunaHistorico,
+.tabela td.celulaHistorico {
+  padding-left: 0;
+  line-height: 0;
+  text-align: right;
+}
+
 .textosCabecalho {
   display: inline-flex;
   flex-direction: column;
@@ -275,6 +291,20 @@
     max-width: none;
   }
 
+  .tabela tbody tr:has(.celulaHistorico) {
+    position: relative;
+  }
+
+  .tabela tr:has(.celulaHistorico) td.celulaConsulta {
+    padding-right: calc(var(--altura-controle-sm) * 2 + 2px + var(--espaco-2));
+  }
+
+  .tabela td.celulaHistorico {
+    position: absolute;
+    top: calc(var(--espaco-4) + (var(--tamanho-sm) * 1.5 - var(--altura-controle-sm)) / 2);
+    right: var(--respiro-lateral);
+  }
+
   .tabela td.celulaDesempenho {
     grid-column: 1 / -1;
     flex-direction: row;
@@ -336,7 +366,9 @@
   }
 
   .conteiner .ordenacaoCompacta,
-  .ordenar:not(.ordenarAtivo) svg {
+  .ordenar:not(.ordenarAtivo) svg,
+  .tabela .colunaHistorico,
+  .tabela .celulaHistorico {
     display: none;
   }
 

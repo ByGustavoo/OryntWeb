@@ -8,8 +8,18 @@ export function esperaMaximaDaEtapa(etapa: number): number {
   return ESPERA_MAXIMA_ENTRADA_MS + (etapa - 1) * INTERVALO_ENTRE_ETAPAS_MS;
 }
 
-export function useEntradaCoordenada(pronta: boolean, quantidadeEtapas: number): number {
-  const [etapas, setEtapas] = useState(() => (prefereMovimentoReduzido() ? quantidadeEtapas : 0));
+function etapasDeSaida(quantidadeEtapas: number): number {
+  return prefereMovimentoReduzido() ? quantidadeEtapas : 0;
+}
+
+export function useEntradaCoordenada(pronta: boolean, quantidadeEtapas: number, rodada: string): number {
+  const [etapas, setEtapas] = useState(() => etapasDeSaida(quantidadeEtapas));
+  const [rodadaEmCurso, setRodadaEmCurso] = useState(rodada);
+
+  if (rodadaEmCurso !== rodada) {
+    setRodadaEmCurso(rodada);
+    setEtapas(etapasDeSaida(quantidadeEtapas));
+  }
 
   useEffect(() => {
     if (etapas >= quantidadeEtapas) return;
@@ -22,7 +32,7 @@ export function useEntradaCoordenada(pronta: boolean, quantidadeEtapas: number):
       etapas === 0 ? ESPERA_MAXIMA_ENTRADA_MS : INTERVALO_ENTRE_ETAPAS_MS,
     );
     return () => window.clearTimeout(espera);
-  }, [etapas, pronta, quantidadeEtapas]);
+  }, [etapas, pronta, quantidadeEtapas, rodadaEmCurso]);
 
   return etapas;
 }

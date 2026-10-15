@@ -1,0 +1,372 @@
+.conteiner {
+  --recuo: 20px;
+  --respiro-da-etapa: var(--espaco-3);
+  --colunas-da-etapa: minmax(0, 1fr) 13rem 8.5rem;
+  --meia-linha: calc(var(--tamanho-sm) * var(--altura-linha-justa) / 2);
+  --ponto: 7px;
+
+  container: arvore-plano / inline-size;
+}
+
+.cabecalho {
+  display: grid;
+  grid-template-columns: var(--colunas-da-etapa);
+  gap: var(--espaco-4);
+  padding: var(--espaco-2) var(--espaco-6) var(--espaco-2) calc(var(--espaco-6) + var(--recuo));
+  border-block: 1px solid var(--borda);
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+}
+
+.colunaTempo,
+.colunaLinhas {
+  text-align: right;
+}
+
+.arvore {
+  display: flex;
+  flex-direction: column;
+}
+
+.arvore:focus-within .etapa:focus-visible {
+  outline: none;
+  box-shadow: inset var(--anel-foco);
+}
+
+.etapa {
+  position: relative;
+  display: flex;
+  padding: var(--respiro-da-etapa) var(--espaco-6);
+  border-bottom: 1px solid var(--borda);
+  cursor: pointer;
+  transition: background-color var(--duracao-rapida) var(--curva-saida);
+  animation: var(--animacao-surgir) both;
+  animation-delay: calc(min(var(--ordem, 0), var(--limite-cascata)) * var(--passo-cascata));
+}
+
+.etapa:last-child {
+  border-bottom: none;
+  border-bottom-left-radius: var(--raio-lg);
+  border-bottom-right-radius: var(--raio-lg);
+}
+
+.etapa::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 2px;
+  background-color: var(--destaque);
+  opacity: 0;
+  transition: opacity var(--duracao-rapida) var(--curva-saida);
+}
+
+.selecionada {
+  background-color: var(--destaque-suave);
+}
+
+.selecionada::before {
+  opacity: 1;
+}
+
+.guias {
+  display: flex;
+  flex-shrink: 0;
+  margin-block: calc(var(--respiro-da-etapa) * -1);
+}
+
+.guia {
+  position: relative;
+  flex: 0 0 var(--recuo);
+}
+
+.guiaLinha::before,
+.guiaRamo::before,
+.guiaUltimo::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--recuo) / 2 - 0.5px);
+  border-left: 1px solid var(--borda-forte);
+}
+
+.guiaUltimo::before {
+  bottom: auto;
+  height: calc(var(--respiro-da-etapa) + var(--meia-linha));
+}
+
+.guiaRamo::after,
+.guiaUltimo::after {
+  content: '';
+  position: absolute;
+  top: calc(var(--respiro-da-etapa) + var(--meia-linha) - 0.5px);
+  left: calc(var(--recuo) / 2);
+  width: calc(var(--recuo) - var(--ponto) / 2 - 2px);
+  border-top: 1px solid var(--borda-forte);
+}
+
+.conteudo {
+  position: relative;
+  display: grid;
+  flex: 1;
+  grid-template-columns: var(--colunas-da-etapa);
+  align-items: start;
+  gap: var(--espaco-1) var(--espaco-4);
+  min-width: 0;
+  padding-left: var(--recuo);
+}
+
+.conteudo::before {
+  content: '';
+  position: absolute;
+  top: calc(var(--meia-linha) - var(--ponto) / 2);
+  left: calc(var(--recuo) / 2 - var(--ponto) / 2);
+  width: var(--ponto);
+  height: var(--ponto);
+  border: 1.5px solid var(--borda-forte);
+  border-radius: 50%;
+  background-color: var(--superficie);
+  transition:
+    background-color var(--duracao-rapida) var(--curva-saida),
+    border-color var(--duracao-rapida) var(--curva-saida);
+}
+
+.comFilhos .conteudo::after {
+  content: '';
+  position: absolute;
+  top: calc(var(--meia-linha) + var(--ponto) / 2);
+  bottom: calc(var(--respiro-da-etapa) * -1);
+  left: calc(var(--recuo) / 2 - 0.5px);
+  border-left: 1px solid var(--borda-forte);
+}
+
+.selecionada .conteudo::before {
+  border-color: var(--destaque);
+  background-color: var(--destaque);
+}
+
+.etapaEmEspera .conteudo::before,
+.etapaEmEspera .conteudo::after {
+  display: none;
+}
+
+.textos {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cabecaDaEtapa {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-1) var(--espaco-2);
+  min-height: calc(var(--meia-linha) * 2);
+}
+
+.cabecaDaEtapa .seloDaEtapa {
+  height: calc(var(--meia-linha) * 2);
+  padding-inline: 6px;
+}
+
+.nome {
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+  line-height: var(--altura-linha-justa);
+}
+
+.alvo {
+  overflow: hidden;
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-xs);
+  line-height: var(--altura-linha-compacta);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.condicao {
+  overflow: hidden;
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  line-height: var(--altura-linha-compacta);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rotuloCondicao {
+  color: var(--texto-terciario);
+}
+
+.condicao code {
+  color: var(--texto-secundario);
+  font-family: var(--fonte-numeros);
+  font-size: 0.95em;
+}
+
+.tempo {
+  display: grid;
+  grid-template-columns: minmax(2.5rem, 1fr) auto 3.25rem;
+  align-items: center;
+  gap: var(--espaco-2);
+  min-height: calc(var(--meia-linha) * 2);
+  font-size: var(--tamanho-sm);
+}
+
+.barra {
+  height: 6px;
+  overflow: hidden;
+  border-radius: var(--raio-pilula);
+  background-color: var(--superficie-suave);
+}
+
+.barra > span {
+  display: block;
+  width: max(2px, var(--parte));
+  height: 100%;
+  border-radius: inherit;
+  background-color: var(--grafico-1);
+  transform-origin: left;
+  animation: crescer var(--duracao-expressiva) var(--curva-saida) both;
+  animation-delay: calc(min(var(--ordem, 0), var(--limite-cascata)) * var(--passo-cascata) + 80ms);
+}
+
+@keyframes crescer {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.duracao {
+  color: var(--texto);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.parte {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  text-align: right;
+}
+
+.linhas {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  text-align: right;
+}
+
+.devolvidas {
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  line-height: var(--altura-linha-justa);
+  white-space: nowrap;
+}
+
+.unidade {
+  display: none;
+}
+
+.esperadas {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  line-height: var(--altura-linha-compacta);
+  white-space: nowrap;
+}
+
+.errada {
+  color: var(--texto-secundario);
+}
+
+.errada svg {
+  color: var(--aviso);
+}
+
+.etapaEmEspera {
+  cursor: default;
+  animation: none;
+}
+
+.estatica {
+  cursor: default;
+}
+
+.alterada .conteudo::before {
+  border-color: var(--info);
+}
+
+.linhaEmEspera {
+  display: flex;
+  align-items: center;
+  height: calc(var(--tamanho-xs) * var(--altura-linha-compacta));
+}
+
+.linhaEmEspera:first-child {
+  height: calc(var(--meia-linha) * 2);
+}
+
+@media (hover: hover) {
+  .etapa:not(.selecionada, .etapaEmEspera, .estatica):hover {
+    background-color: var(--superficie-suave);
+  }
+}
+
+@container arvore-plano (max-width: 620px) {
+  .conteiner {
+    --recuo: 14px;
+  }
+
+  .cabecalho {
+    display: none;
+  }
+
+  .etapa {
+    padding-inline: var(--espaco-4);
+  }
+
+  .conteudo {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--espaco-1);
+  }
+
+  .tempo {
+    display: flex;
+    gap: var(--espaco-2);
+    min-height: 0;
+  }
+
+  .barra {
+    flex: 0 1 4.5rem;
+    min-width: 2rem;
+  }
+
+  .linhas {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 var(--espaco-2);
+    text-align: left;
+  }
+
+  .devolvidas {
+    font-size: var(--tamanho-xs);
+  }
+
+  .unidade {
+    display: inline;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .etapa,
+  .barra > span {
+    animation: none;
+  }
+}

@@ -1,0 +1,124 @@
+.linha {
+  display: flex;
+  align-items: center;
+  height: 1lh;
+}
+
+.graficos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-5);
+}
+
+.legenda {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-5);
+  height: 20px;
+}
+
+.tituloDoGrafico {
+  font-size: var(--tamanho-xs);
+  line-height: 19px;
+}
+
+.tabela {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--tamanho-sm);
+  line-height: 1.5;
+}
+
+.cabecalhoDaTabela,
+.linhaDaTabela {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-6);
+  padding-inline: var(--espaco-6) var(--espaco-5);
+}
+
+.cabecalhoDaTabela {
+  border-block: 1px solid var(--borda);
+}
+
+.linhaDaTabela + .linhaDaTabela {
+  border-top: 1px solid var(--borda);
+}
+
+.textoDaLinha {
+  display: flex;
+  flex: 0 1 54%;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.medidas {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--espaco-8);
+}
+
+.desempenho {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  align-items: start;
+  gap: var(--espaco-6) var(--espaco-10);
+}
+
+.barras {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-5);
+}
+
+.frases {
+  display: flex;
+  flex-direction: column;
+  line-height: var(--altura-linha-normal);
+}
+
+.faixas {
+  display: flex;
+  flex-direction: column;
+}
+
+.faixa {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-4);
+  height: 31px;
+}
+
+.faixa + .faixa {
+  border-top: 1px solid var(--borda);
+}
+
+.faixa .medidas {
+  gap: var(--espaco-10);
+}
+
+@container (max-width: 900px) {
+  .desempenho {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@container (max-width: 640px) {
+  .cabecalhoDaTabela,
+  .linhaDaTabela {
+    padding-inline: var(--espaco-4);
+  }
+
+  .medidas {
+    gap: var(--espaco-4);
+  }
+
+  .cabecalhoDaTabela .medidas,
+  .linhaDaTabela .medidas > :not(:last-child),
+  .faixa .medidas > :first-child {
+    display: none;
+  }
+}

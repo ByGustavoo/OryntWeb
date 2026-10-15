@@ -1,0 +1,20 @@
+.trocaDePlano line,
+line.trocaDePlano {
+  stroke: var(--texto-secundario);
+  stroke-dasharray: 4 3;
+  stroke-width: 1.5px;
+}
+
+.rotuloTroca {
+  fill: var(--texto-secundario);
+  font-family: var(--fonte-interface);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+  paint-order: stroke;
+  stroke: var(--superficie);
+  stroke-width: 4px;
+}
+
+.dicaTroca {
+  color: var(--texto-secundario);
+}

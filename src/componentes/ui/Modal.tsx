@@ -25,6 +25,7 @@ export interface ModalProps {
   rodape?: ReactNode;
   papel?: 'dialog' | 'alertdialog';
   focarPrimeiroCampo?: boolean;
+  focoAoFechar?: () => HTMLElement | null;
   children?: ReactNode;
 }
 
@@ -37,12 +38,15 @@ export function Modal({
   rodape,
   papel = 'dialog',
   focarPrimeiroCampo = false,
+  focoAoFechar,
   children,
 }: ModalProps) {
   const [montado, setMontado] = useState(aberto);
   const [saindo, setSaindo] = useState(false);
   const painelRef = useRef<HTMLDivElement>(null);
   const origemRef = useRef<HTMLElement | null>(null);
+  const focoAoFecharRef = useRef(focoAoFechar);
+  focoAoFecharRef.current = focoAoFechar;
   const identificador = useRef(Symbol('modal')).current;
   const idBase = useId();
   const idTitulo = `${idBase}-titulo`;
@@ -61,7 +65,7 @@ export function Modal({
     const temporizador = window.setTimeout(() => {
       setMontado(false);
       setSaindo(false);
-      devolverFoco(origemRef.current);
+      devolverFoco(focoAoFecharRef.current?.() ?? origemRef.current);
     }, DURACAO_SAIDA_MS);
     return () => window.clearTimeout(temporizador);
   }, [aberto, montado]);

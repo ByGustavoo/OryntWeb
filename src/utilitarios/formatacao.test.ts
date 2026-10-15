@@ -3,7 +3,9 @@ import {
   formatarComSinal,
   formatarDataHoraCompleta,
   formatarDataOpcional,
+  formatarDuracaoExtensa,
   formatarDuracaoMs,
+  formatarMedia,
   formatarNumero,
   formatarPercentual,
   formatarPontosPercentuais,
@@ -12,6 +14,7 @@ import {
   formatarVariacao,
   formatarVersao,
   iniciarComMaiuscula,
+  medirDuracao,
   pluralizar,
 } from './formatacao';
 
@@ -33,6 +36,49 @@ describe('formatarDuracaoMs', () => {
 
   it('passa para segundos a partir de 1 s', () => {
     expect(formatarDuracaoMs(1840)).toBe('1,84 s');
+  });
+});
+
+describe('formatarDuracaoExtensa', () => {
+  it('segue a duração curta abaixo de um minuto', () => {
+    expect(formatarDuracaoExtensa(12.44)).toBe('12,4 ms');
+    expect(formatarDuracaoExtensa(45000)).toBe('45,00 s');
+  });
+
+  it('passa para minutos e segundos a partir de um minuto', () => {
+    expect(formatarDuracaoExtensa(59600)).toBe('1 min 0 s');
+    expect(formatarDuracaoExtensa(771000)).toBe('12 min 51 s');
+  });
+
+  it('passa para horas e minutos a partir de uma hora', () => {
+    expect(formatarDuracaoExtensa(5160879)).toBe('1 h 26 min');
+    expect(formatarDuracaoExtensa(4_000_000_000)).toBe('1.111 h 6 min');
+  });
+});
+
+describe('medirDuracao', () => {
+  it('escolhe a unidade e as casas pelo tamanho da duração', () => {
+    expect(medirDuracao(12.44)).toEqual({ valor: 12.4, casas: 1, unidade: 'ms' });
+    expect(medirDuracao(193.4)).toEqual({ valor: 193, casas: 0, unidade: 'ms' });
+    expect(medirDuracao(1270)).toEqual({ valor: 1.27, casas: 2, unidade: 's' });
+    expect(medirDuracao(771000)).toEqual({ valor: 12.9, casas: 1, unidade: 'min' });
+    expect(medirDuracao(5160879)).toEqual({ valor: 1.4, casas: 1, unidade: 'h' });
+  });
+
+  it('muda de unidade nos mesmos limites de formatarDuracaoMs', () => {
+    expect(medirDuracao(99.94).unidade).toBe('ms');
+    expect(medirDuracao(999).unidade).toBe('ms');
+    expect(medirDuracao(1000)).toEqual({ valor: 1, casas: 2, unidade: 's' });
+    expect(medirDuracao(0)).toEqual({ valor: 0, casas: 1, unidade: 'ms' });
+  });
+});
+
+describe('formatarMedia', () => {
+  it('mostra até uma casa decimal, sem zero sobrando', () => {
+    expect(formatarMedia(50)).toBe('50');
+    expect(formatarMedia(14.2)).toBe('14,2');
+    expect(formatarMedia(0.44)).toBe('0,4');
+    expect(formatarMedia(1864)).toBe('1.864');
   });
 });
 

@@ -1,6 +1,7 @@
 export { Botao } from './Botao';
 export type { BotaoProps, TamanhoBotao, VarianteBotao } from './Botao';
 export { BotaoIcone } from './BotaoIcone';
+export { CampoBusca } from './CampoBusca';
 export { CampoCodigo } from './CampoCodigo';
 export { CampoSelecao } from './CampoSelecao';
 export type { OpcaoSelecao } from './CampoSelecao';
@@ -17,6 +18,7 @@ export { IndicadorGiratorio } from './IndicadorGiratorio';
 export { Modal } from './Modal';
 export { Nota } from './Nota';
 export type { TomNota } from './Nota';
+export { Paginacao } from './Paginacao';
 export { CabecalhoPainel, Painel } from './Painel';
 export { Selo } from './Selo';
 export type { TomSelo } from './Selo';

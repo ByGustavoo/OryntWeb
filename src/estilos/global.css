@@ -358,6 +358,13 @@ legend {
 @page {
   margin: 12mm 9mm 15mm;
 
+  @top-left {
+    content: var(--folha-identificacao, '');
+    color: var(--texto-terciario);
+    font-family: var(--fonte-interface);
+    font-size: 8pt;
+  }
+
   @bottom-left {
     content: 'Orynt · Toda lentidão tem uma origem.';
     color: var(--texto-terciario);
@@ -370,5 +377,11 @@ legend {
     color: var(--texto-terciario);
     font-family: var(--fonte-interface);
     font-size: 8pt;
+  }
+}
+
+@page :first {
+  @top-left {
+    content: '';
   }
 }

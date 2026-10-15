@@ -5,20 +5,22 @@ import { PainelSemConexao } from '@/componentes/conexao/PainelSemConexao';
 import { EsqueletoIndicadores } from '@/componentes/dashboard/GradeIndicadores';
 import { CabecalhoPagina } from '@/componentes/layout/CabecalhoPagina';
 import { CabecalhoImpressao } from '@/componentes/relatorios/CabecalhoImpressao';
-import { ConsultasComparadas } from '@/componentes/relatorios/ConsultasComparadas';
-import { DesempenhoComparado } from '@/componentes/relatorios/DesempenhoComparado';
-import { DestaquesRelatorio } from '@/componentes/relatorios/DestaquesRelatorio';
+import { ConsultasComparadas, EsqueletoConsultasComparadas } from '@/componentes/relatorios/ConsultasComparadas';
+import { DesempenhoComparado, EsqueletoDesempenhoComparado } from '@/componentes/relatorios/DesempenhoComparado';
+import { DestaquesRelatorio, EsqueletoDestaques } from '@/componentes/relatorios/DestaquesRelatorio';
+import { GraficosEmEspera, PainelEmEspera, RelatorioEmEspera } from '@/componentes/relatorios/EsqueletoRelatorio';
 import { GraficoComparacao } from '@/componentes/relatorios/GraficoComparacao';
 import { IndicadoresComparacao } from '@/componentes/relatorios/IndicadoresComparacao';
 import { SeletorComparacao } from '@/componentes/relatorios/SeletorComparacao';
-import { CabecalhoPainel, ConteudoAssincrono, Esqueleto, EstadoVazio, Nota, Painel } from '@/componentes/ui';
-import { NOME_APLICACAO } from '@/configuracoes/aplicacao';
+import { CabecalhoPainel, ConteudoAssincrono, EstadoVazio, Nota, Painel } from '@/componentes/ui';
 import { useComparacaoRelatorio } from '@/ganchos/useComparacaoRelatorio';
 import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
 import { useImpressao } from '@/ganchos/useImpressao';
 import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
+import { useVerHistorico } from '@/ganchos/useVerHistorico';
+import { useVerPlano } from '@/ganchos/useVerPlano';
 import type { ConexaoDTO } from '@/modelos/conexao';
-import type { ComparacaoRelatorio } from '@/modelos/relatorios';
+import type { ComparacaoRelatorio, GranularidadeRelatorio } from '@/modelos/relatorios';
 import { useConexao } from '@/provedores/ProvedorConexao';
 import type { SituacaoConexao } from '@/provedores/ProvedorConexao';
 import {
@@ -33,6 +35,7 @@ import {
   rotulosDaComparacao,
   titulosDaComparacao,
 } from '@/regras/comparacaoRelatorio';
+import { periodoDoHistorico, rotuloVerHistorico } from '@/regras/historicoConsulta';
 import { rotuloDoPeriodo } from '@/regras/periodoRelatorio';
 import { caminhos } from '@/rotas/caminhos';
 import { servicoRelatorios } from '@/servicos';
@@ -40,6 +43,8 @@ import { juntarClasses } from '@/utilitarios/juntarClasses';
 import estilos from './PaginaComparacaoRelatorio.module.css';
 
 const TITULO = 'Comparação';
+const TITULO_EVOLUCAO = 'Evolução lado a lado';
+const LINHAS_POR_MUDANCA = [2, 2, 1, 3, 3];
 
 const textosDasMudancas = {
   titulo: 'O que mudou',
@@ -86,8 +91,14 @@ function ComparacaoConectada({ conexao }: { conexao: ConexaoDTO }) {
   );
   const sessaoEncerrada = ehErroApi(comparacao.erro, 'NAO_AUTORIZADO');
   const impresso = comparacao.dados ? periodosDaComparacao(comparacao.dados.principal, comparacao.dados.base) : par;
+  const trocandoDePeriodos =
+    comparacao.dados !== null &&
+    (impresso.periodo.granularidade !== par.periodo.granularidade ||
+      impresso.periodo.inicio !== par.periodo.inicio ||
+      impresso.base.inicio !== par.base.inicio);
   const { imprimir, imprimindo, instante } = useImpressao(
-    `${NOME_APLICACAO} - Comparação - ${rotuloDoPeriodo(impresso.periodo)} comparado com ${rotuloDoPeriodo(impresso.base)}`,
+    TITULO,
+    `${rotuloDoPeriodo(impresso.periodo)} comparado com ${rotuloDoPeriodo(impresso.base)}`,
   );
 
   useEffect(() => {
@@ -128,10 +139,16 @@ function ComparacaoConectada({ conexao }: { conexao: ConexaoDTO }) {
         <div className={estilos.conteudo} aria-busy={comparacao.carregando}>
           <ConteudoAssincrono
             resultado={comparacao}
-            esqueleto={<EsqueletoComparacao />}
+            esqueleto={<EsqueletoComparacao granularidade={par.periodo.granularidade} />}
             tituloErro="Não foi possível carregar a comparação"
           >
-            {(dados) => <CorpoComparacao dados={dados} conexao={conexao} atualizando={comparacao.carregando} />}
+            {(dados) =>
+              trocandoDePeriodos ? (
+                <EsqueletoComparacao granularidade={par.periodo.granularidade} imediato />
+              ) : (
+                <CorpoComparacao dados={dados} conexao={conexao} atualizando={comparacao.carregando} />
+              )
+            }
           </ConteudoAssincrono>
         </div>
       </div>
@@ -147,6 +164,9 @@ interface CorpoComparacaoProps {
 
 function CorpoComparacao({ dados, conexao, atualizando }: CorpoComparacaoProps) {
   const { principal, base } = dados;
+  const verHistorico = useVerHistorico();
+  const verPlano = useVerPlano();
+  const periodoRecente = periodoDoHistorico[principal.granularidade];
   const calculado = useMemo(() => {
     const par = periodosDaComparacao(principal, base);
     return {
@@ -188,7 +208,7 @@ function CorpoComparacao({ dados, conexao, atualizando }: CorpoComparacaoProps) 
 
       <Painel aria-labelledby="titulo-evolucao-comparada">
         <CabecalhoPainel
-          titulo={<span id="titulo-evolucao-comparada">Evolução lado a lado</span>}
+          titulo={<span id="titulo-evolucao-comparada">{TITULO_EVOLUCAO}</span>}
           descricao={descricaoDaEvolucao[principal.granularidade]}
         />
         <GraficoComparacao
@@ -201,20 +221,35 @@ function CorpoComparacao({ dados, conexao, atualizando }: CorpoComparacaoProps) 
 
       <DesempenhoComparado faixas={desempenho} rotulos={rotulos} titulos={titulos} referencia={referencia} />
 
-      <ConsultasComparadas consultas={consultas} rotulos={rotulos} titulos={titulos} />
+      <ConsultasComparadas
+        consultas={consultas}
+        rotulos={rotulos}
+        titulos={titulos}
+        rotuloHistorico={rotuloVerHistorico(periodoRecente)}
+        aoVerHistorico={(consulta) => verHistorico(consulta.id, periodoRecente)}
+        aoVerPlano={(consulta) => verPlano(consulta.id)}
+      />
     </div>
   );
 }
 
-function EsqueletoComparacao() {
+interface EsqueletoComparacaoProps {
+  granularidade: GranularidadeRelatorio;
+  imediato?: boolean;
+}
+
+function EsqueletoComparacao({ granularidade, imediato = false }: EsqueletoComparacaoProps) {
   return (
-    <div className={estilos.relatorio} role="status" aria-label="Carregando a comparação…">
+    <RelatorioEmEspera rotulo="Carregando a comparação…" imediato={imediato} className={estilos.relatorio}>
       <div className={estilos.abertura}>
-        <Esqueleto altura={300} raio="var(--raio-lg)" />
+        <EsqueletoDestaques linhasPorFrase={LINHAS_POR_MUDANCA} textos={textosDasMudancas} />
         <EsqueletoIndicadores />
       </div>
-      <Esqueleto altura={480} raio="var(--raio-lg)" />
-      <Esqueleto altura={240} raio="var(--raio-lg)" />
-    </div>
+      <PainelEmEspera titulo={TITULO_EVOLUCAO} descricao={descricaoDaEvolucao[granularidade]}>
+        <GraficosEmEspera alturas={[180, 200]} comLegenda />
+      </PainelEmEspera>
+      <EsqueletoDesempenhoComparado />
+      <EsqueletoConsultasComparadas />
+    </RelatorioEmEspera>
   );
 }

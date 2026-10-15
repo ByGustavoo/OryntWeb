@@ -1,0 +1,56 @@
+.conteiner {
+  container: filtros-consultas / inline-size;
+}
+
+.barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-3);
+}
+
+.busca {
+  flex: 1 1 13rem;
+}
+
+.desempenhoCompacto {
+  display: none;
+}
+
+.tipo {
+  flex: 0 0 11.5rem;
+}
+
+.exportar {
+  margin-left: auto;
+}
+
+@container filtros-consultas (max-width: 880px) {
+  .busca {
+    flex-basis: 100%;
+  }
+
+  .tipo {
+    flex: 0 1 11.5rem;
+  }
+}
+
+@container filtros-consultas (max-width: 620px) {
+  .desempenhoAmplo {
+    display: none;
+  }
+
+  .desempenhoCompacto {
+    display: flex;
+  }
+
+  .desempenhoCompacto,
+  .tipo {
+    flex: 1 1 11rem;
+  }
+
+  .exportar {
+    flex: 1 1 100%;
+    margin-left: 0;
+  }
+}

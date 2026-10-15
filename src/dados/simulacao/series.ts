@@ -134,6 +134,17 @@ function janelaAnterior(periodo: PeriodoDashboard, agora: Date): Janela {
   return gerarJanela(periodo, new Date(fimAtual.getTime() - pontos * minutosPorPonto * MS_POR_MINUTO));
 }
 
+export interface MedidasDaJanela {
+  totalConsultas: number;
+  tempoMedioMs: number;
+  fator: number;
+}
+
+export function medidasDaJanela(periodo: PeriodoDashboard, agora: Date): MedidasDaJanela {
+  const { totalConsultas, tempoMedioMs, fator } = janelaAtual(periodo, agora);
+  return { totalConsultas, tempoMedioMs, fator };
+}
+
 export function variacaoPercentual(atual: number, anterior: number): number | null {
   if (anterior <= 0) return null;
   return arredondar(((atual - anterior) / anterior) * 100);

@@ -1,0 +1,156 @@
+.detalhe {
+  container: detalhe-consulta / inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-6);
+  padding-top: var(--espaco-2);
+}
+
+.selos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-2);
+}
+
+.secao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+}
+
+.cabecalhoSecao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-3);
+  min-height: var(--altura-controle-sm);
+}
+
+.tituloSecao {
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+  letter-spacing: 0;
+}
+
+.sql {
+  padding: var(--espaco-4);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-md);
+  background-color: var(--superficie);
+  user-select: text;
+}
+
+.sql > code {
+  min-height: 3em;
+}
+
+.medidas {
+  display: grid;
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-md);
+  background-color: var(--borda);
+}
+
+.medidas[data-grupo='tempo'] {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.medidas[data-grupo='periodo'] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@container detalhe-consulta (min-width: 600px) {
+  .medidas[data-grupo='periodo'] {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.medida {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-1);
+  min-width: 0;
+  padding: var(--espaco-3) var(--espaco-4);
+  background-color: var(--superficie);
+}
+
+.rotuloMedida {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+}
+
+.valorMedida {
+  color: var(--texto);
+  font-size: var(--tamanho-md);
+  font-weight: var(--peso-medio);
+  white-space: nowrap;
+}
+
+.leitura {
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  line-height: var(--altura-linha-normal);
+}
+
+@media (max-width: 380px) {
+  .medida {
+    padding-inline: var(--espaco-3);
+  }
+
+  .valorMedida {
+    font-size: var(--tamanho-base);
+  }
+}
+
+.navegacao {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--espaco-3);
+  min-width: 0;
+}
+
+.posicao {
+  flex: 1;
+  min-width: 0;
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  white-space: nowrap;
+}
+
+.atalhos {
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--espaco-2);
+}
+
+@media (max-width: 520px) {
+  .rotuloAtalho {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 420px) {
+  .palavraDaPosicao {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+
+.passos {
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--espaco-1);
+}

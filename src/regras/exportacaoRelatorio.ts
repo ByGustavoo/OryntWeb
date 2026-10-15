@@ -15,11 +15,14 @@ export interface ColunaExportacao {
   tipo: TipoColuna;
 }
 
-export interface TabelaExportacao {
-  bloco: BlocoExportacao;
-  titulo: string;
+export interface TabelaDeDados {
   colunas: ColunaExportacao[];
   linhas: CelulaExportacao[][];
+}
+
+export interface TabelaExportacao extends TabelaDeDados {
+  bloco: BlocoExportacao;
+  titulo: string;
 }
 
 export interface ArquivoExportacao {
@@ -52,6 +55,16 @@ export const rotuloBloco: Record<BlocoExportacao, string> = {
   CONSULTAS: 'Consultas',
   DESEMPENHO: 'Desempenho',
   INDICADORES: 'Indicadores',
+};
+
+export const rotuloPadraoNumerico: Record<PadraoNumerico, string> = {
+  BRASILEIRO: 'Padrão brasileiro',
+  INTERNACIONAL: 'Padrão internacional',
+};
+
+export const descricaoPadraoNumerico: Record<PadraoNumerico, string> = {
+  BRASILEIRO: 'Ponto e vírgula entre as colunas e vírgula decimal, como o Excel em português espera.',
+  INTERNACIONAL: 'Vírgula entre as colunas e ponto decimal.',
 };
 
 const ordemNoRelatorio: BlocoExportacao[] = ['INDICADORES', 'EVOLUCAO', 'DESEMPENHO', 'CONSULTAS'];
@@ -186,7 +199,7 @@ export function montarTabela(resumo: ResumoRelatorioDTO, bloco: BlocoExportacao)
   };
 }
 
-function comOrigem(tabela: TabelaExportacao, simulada: boolean): TabelaExportacao {
+export function comOrigem<T extends TabelaDeDados>(tabela: T, simulada: boolean): T {
   if (!simulada) return tabela;
   return {
     ...tabela,
@@ -213,7 +226,7 @@ function citar(campo: string, separador: string): string {
   return precisaDeAspas ? `"${campo.replace(/"/g, '""')}"` : campo;
 }
 
-export function escreverCsv(tabela: TabelaExportacao, padrao: PadraoNumerico): string {
+export function escreverCsv(tabela: TabelaDeDados, padrao: PadraoNumerico): string {
   const separador = separadorDeCampos[padrao];
   const cabecalho = tabela.colunas.map((coluna) => citar(coluna.titulo, separador));
   const linhas = tabela.linhas.map((linha) => linha.map((celula) => citar(escreverCelula(celula, padrao), separador)));

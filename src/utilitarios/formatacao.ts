@@ -1,6 +1,8 @@
 const LOCALIDADE = 'pt-BR';
 const MS_POR_SEGUNDO = 1000;
 const MS_POR_MINUTO = 60_000;
+const MS_POR_HORA = 3_600_000;
+const SEGUNDOS_POR_MINUTO = 60;
 const MINUTOS_POR_HORA = 60;
 const HORAS_POR_DIA = 24;
 const SINAL_DE_MENOS = '−';
@@ -43,10 +45,42 @@ export function formatarDecimal(valor: number, casas = 1): string {
   return valor.toLocaleString(LOCALIDADE, { minimumFractionDigits: casas, maximumFractionDigits: casas });
 }
 
+export function formatarMedia(valor: number): string {
+  return valor.toLocaleString(LOCALIDADE, { maximumFractionDigits: 1 });
+}
+
 export function formatarDuracaoMs(milissegundos: number): string {
   if (milissegundos >= MS_POR_SEGUNDO) return `${formatarDecimal(milissegundos / MS_POR_SEGUNDO, 2)} s`;
   if (milissegundos >= 100) return `${formatarNumero(milissegundos)} ms`;
   return `${formatarDecimal(milissegundos, 1)} ms`;
+}
+
+export function formatarDuracaoExtensa(milissegundos: number): string {
+  const segundos = Math.round(milissegundos / MS_POR_SEGUNDO);
+  if (segundos < SEGUNDOS_POR_MINUTO) return formatarDuracaoMs(milissegundos);
+  const minutos = Math.floor(segundos / SEGUNDOS_POR_MINUTO);
+  if (minutos < MINUTOS_POR_HORA) return `${minutos} min ${segundos % SEGUNDOS_POR_MINUTO} s`;
+  const horas = Math.floor(minutos / MINUTOS_POR_HORA);
+  return `${formatarNumero(horas)} h ${minutos % MINUTOS_POR_HORA} min`;
+}
+
+export interface MedidaDeDuracao {
+  valor: number;
+  casas: number;
+  unidade: string;
+}
+
+function medir(valor: number, casas: number, unidade: string): MedidaDeDuracao {
+  const escala = 10 ** casas;
+  return { valor: Math.round(valor * escala) / escala, casas, unidade };
+}
+
+export function medirDuracao(milissegundos: number): MedidaDeDuracao {
+  if (milissegundos >= MS_POR_HORA) return medir(milissegundos / MS_POR_HORA, 1, 'h');
+  if (milissegundos >= MS_POR_MINUTO) return medir(milissegundos / MS_POR_MINUTO, 1, 'min');
+  if (milissegundos >= MS_POR_SEGUNDO) return medir(milissegundos / MS_POR_SEGUNDO, 2, 's');
+  if (milissegundos >= 100) return medir(milissegundos, 0, 'ms');
+  return medir(milissegundos, 1, 'ms');
 }
 
 export function formatarTamanho(bytes: number): string {

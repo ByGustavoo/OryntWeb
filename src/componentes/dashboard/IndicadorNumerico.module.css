@@ -72,6 +72,38 @@
   min-width: 0;
 }
 
+.ligacao {
+  color: inherit;
+}
+
+.ligacao::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.ligacao:focus-visible {
+  outline: none;
+}
+
+.ligacao:focus-visible::after {
+  box-shadow: inset var(--anel-foco);
+}
+
+.seta {
+  flex-shrink: 0;
+  margin-left: auto;
+  color: var(--texto-terciario);
+  transition:
+    color var(--duracao-rapida) var(--curva-saida),
+    transform var(--duracao-base) var(--curva-saida);
+}
+
+.comDestino:has(.ligacao:focus-visible) .seta {
+  color: var(--tom-texto);
+  transform: translate(2px, -2px);
+}
+
 .icone {
   --anel: 0px;
 
@@ -120,6 +152,11 @@
 
   .indicador:hover .icone {
     --anel: 4px;
+  }
+
+  .comDestino:hover .seta {
+    color: var(--tom-texto);
+    transform: translate(2px, -2px);
   }
 }
 

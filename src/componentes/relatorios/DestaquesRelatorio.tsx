@@ -7,18 +7,20 @@ import {
   CalendarDays,
   Check,
   Copy,
+  Gauge,
   SquareTerminal,
   Timer,
   TrendingUp,
   TriangleAlert,
 } from 'lucide-react';
 import { TrechoSql } from '@/componentes/comum/TrechoSql';
-import { Botao, CabecalhoPainel, Painel } from '@/componentes/ui';
+import { Botao, CabecalhoPainel, Esqueleto, Painel } from '@/componentes/ui';
 import { useNotificacoes } from '@/provedores/ProvedorNotificacoes';
 import { textoDosDestaques } from '@/regras/destaquesRelatorio';
 import type { Destaque, TipoDestaque } from '@/regras/destaquesRelatorio';
 import { copiarTexto } from '@/utilitarios/areaTransferencia';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
+import { LinhaEmEspera, PainelEmEspera } from './EsqueletoRelatorio';
 import estilos from './DestaquesRelatorio.module.css';
 
 interface TextosDosDestaques {
@@ -49,6 +51,7 @@ const icones: Record<TipoDestaque, LucideIcon> = {
   TEMPO: Timer,
   PICO: TrendingUp,
   LENTAS: TriangleAlert,
+  LENTIDAO: Gauge,
   CONSULTA: SquareTerminal,
   PIORA: ArrowUpRight,
   MELHORA: ArrowDownRight,
@@ -102,7 +105,10 @@ export function DestaquesRelatorio({ destaques, cabecalhoDaCopia, textos = texto
           const Icone = icones[destaque.tipo];
           return (
             <li className={estilos.item} key={destaque.tipo}>
-              <span className={juntarClasses(estilos.icone, estilos[destaque.tom])} aria-hidden="true">
+              <span
+                className={juntarClasses(estilos.icone, destaque.tipo === 'PIORA' ? estilos.piora : estilos[destaque.tom])}
+                aria-hidden="true"
+              >
                 <Icone size={15} strokeWidth={2.25} />
               </span>
               <div className={estilos.textos}>
@@ -114,5 +120,31 @@ export function DestaquesRelatorio({ destaques, cabecalhoDaCopia, textos = texto
         })}
       </ul>
     </Painel>
+  );
+}
+
+interface EsqueletoDestaquesProps {
+  linhasPorFrase: number[];
+  textos?: TextosDosDestaques;
+}
+
+export function EsqueletoDestaques({ linhasPorFrase, textos = textosDoResumo }: EsqueletoDestaquesProps) {
+  return (
+    <PainelEmEspera titulo={textos.titulo} descricao={textos.descricao} larguraDaAcao={90} className={estilos.painel}>
+      <ul className={estilos.lista}>
+        {linhasPorFrase.map((linhas, indice) => (
+          <li className={estilos.item} key={indice}>
+            <Esqueleto largura={26} altura={26} raio="var(--raio-sm)" />
+            <div className={juntarClasses(estilos.textos, estilos.textosEmEspera)}>
+              <span className={juntarClasses(estilos.frase, estilos.fraseEmEspera)}>
+                <LinhaEmEspera largura={`${linhas > 1 ? 96 : 78 - ((indice * 17) % 26)}%`} />
+                {linhas > 1 ? <LinhaEmEspera largura={`${linhas > 2 ? 22 : 46}%`} /> : null}
+              </span>
+              {linhas > 2 ? <LinhaEmEspera largura="58%" className={estilos.sqlEmEspera} /> : null}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </PainelEmEspera>
   );
 }
