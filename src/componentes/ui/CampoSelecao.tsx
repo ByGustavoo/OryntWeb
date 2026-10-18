@@ -24,6 +24,7 @@ export interface CampoSelecaoProps<T extends string> extends PropriedadesMensage
   valor: T | null;
   aoMudar: (valor: T | null) => void;
   textoVazio?: string;
+  textoVazioCurto?: string;
   permitirVazio?: boolean;
   desabilitado?: boolean;
   id?: string;
@@ -43,6 +44,7 @@ export function CampoSelecao<T extends string>({
   valor,
   aoMudar,
   textoVazio = 'Selecionar',
+  textoVazioCurto,
   permitirVazio = false,
   desabilitado = false,
   id,
@@ -161,7 +163,15 @@ export function CampoSelecao<T extends string>({
             id={idControle}
             type="button"
             role="combobox"
-            className={classesControle(erro, sucesso, juntarClasses(estilosCampo.gatilho, aberto && estilosCampo.gatilhoAberto))}
+            className={classesControle(
+              erro,
+              sucesso,
+              juntarClasses(
+                estilosCampo.gatilho,
+                aberto && estilosCampo.gatilhoAberto,
+                textoVazioCurto && estilosCampo.gatilhoAdaptavel,
+              ),
+            )}
             aria-haspopup="listbox"
             aria-expanded={aberto}
             aria-controls={idLista}
@@ -182,7 +192,18 @@ export function CampoSelecao<T extends string>({
                   style={{ color: selecionada?.cor, flexShrink: 0 }}
                 />
               ) : null}
-              <span className={estilosCampo.textoGatilho}>{selecionada?.rotulo ?? textoVazio}</span>
+              <span className={estilosCampo.textoGatilho}>
+                {selecionada ? (
+                  selecionada.rotulo
+                ) : textoVazioCurto ? (
+                  <>
+                    <span className={estilosCampo.textoAmplo}>{textoVazio}</span>
+                    <span className={estilosCampo.textoCurto}>{textoVazioCurto}</span>
+                  </>
+                ) : (
+                  textoVazio
+                )}
+              </span>
             </span>
             <ChevronDown className={estilosCampo.setaGatilho} size={16} strokeWidth={2} aria-hidden="true" />
           </button>

@@ -108,14 +108,14 @@ const secundarias: ConsultaSecundaria[] = [
   },
   {
     id: 'q-produtos-id',
-    sql: 'SELECT id, nome, preco, ativo FROM produtos WHERE id = $1',
+    sql: 'SELECT id, nome, preco FROM produtos_ativos WHERE id = $1',
     tempoRelativo: 0.8,
     pesoExecucoes: 46,
     linhasPorExecucao: 1,
   },
   {
     id: 'q-categorias-ativas',
-    sql: 'SELECT id, nome, slug FROM categorias WHERE ativa ORDER BY posicao',
+    sql: 'SELECT id, nome, slug FROM categorias_ativas ORDER BY posicao',
     tempoRelativo: 2.6,
     pesoExecucoes: 9,
     linhasPorExecucao: 18,
@@ -213,7 +213,7 @@ const secundarias: ConsultaSecundaria[] = [
   },
   {
     id: 'q-avaliacoes-media',
-    sql: 'SELECT avg(nota), count(*) FROM avaliacoes WHERE produto_id = $1',
+    sql: 'SELECT nota_media, total_avaliacoes FROM relatorios.resumo_avaliacoes WHERE produto_id = $1',
     tempoRelativo: 9.8,
     pesoExecucoes: 7,
     linhasPorExecucao: 1,
@@ -241,7 +241,7 @@ const secundarias: ConsultaSecundaria[] = [
   },
   {
     id: 'q-notificacoes-nao-lidas',
-    sql: 'SELECT count(*) FROM notificacoes WHERE usuario_id = $1 AND lida_em IS NULL',
+    sql: 'SELECT count(*) FROM notificacoes_nao_lidas WHERE usuario_id = $1',
     tempoRelativo: 3.3,
     pesoExecucoes: 24,
     linhasPorExecucao: 1,
@@ -276,7 +276,7 @@ const secundarias: ConsultaSecundaria[] = [
   },
   {
     id: 'q-entregas-pendentes',
-    sql: 'SELECT e.id, e.pedido_id, e.previsao FROM entregas e WHERE e.situacao = $1 ORDER BY e.previsao LIMIT $2',
+    sql: 'SELECT id, pedido_id, previsao FROM entregas_pendentes WHERE situacao = $1 ORDER BY previsao LIMIT $2',
     tempoRelativo: 24,
     pesoExecucoes: 0.9,
     linhasPorExecucao: 40,
@@ -285,7 +285,7 @@ const secundarias: ConsultaSecundaria[] = [
   { id: 'q-estatisticas-pedidos', sql: 'ANALYZE pedidos', tempoRelativo: 22, pesoExecucoes: 0.02, linhasPorExecucao: 0 },
   {
     id: 'q-visao-vendas-diarias',
-    sql: 'REFRESH MATERIALIZED VIEW CONCURRENTLY vendas_diarias',
+    sql: 'REFRESH MATERIALIZED VIEW CONCURRENTLY relatorios.vendas_diarias',
     tempoRelativo: 30,
     pesoExecucoes: 0.01,
     linhasPorExecucao: 0,

@@ -22,7 +22,7 @@ import type { PeriodoDashboard } from '@/modelos/dashboard';
 import { pontoComMaisExecucoes, pontoMaisLento, textosDoIntervalo } from '@/regras/historicoConsulta';
 import type { TextosDoIntervalo } from '@/regras/historicoConsulta';
 import { formatarDuracaoMs, formatarNumero, formatarNumeroCompacto, pluralizar } from '@/utilitarios/formatacao';
-import { marcasDoEixo, prefereMovimentoReduzido } from '@/utilitarios/graficos';
+import { marcasDoEixo, posicionarRotulo, prefereMovimentoReduzido } from '@/utilitarios/graficos';
 import trocas from './GraficoHistorico.module.css';
 
 interface GraficoHistoricoProps {
@@ -96,17 +96,39 @@ export function GraficoHistorico({ pontos, periodo, intervalosComTroca = [] }: G
       ? pontos.filter((ponto) => new Date(ponto.instante).getHours() === 0).map((ponto) => ponto.instante)
       : undefined;
 
+  const limitesDoPlano = {
+    inicio: margem.left + LARGURA_EIXO_PX,
+    fim: larguraTempo > 0 ? larguraTempo - margem.right : Number.POSITIVE_INFINITY,
+  };
+
+  const desenharRotuloDoPico = (texto: string, centro: number, meiaLarguraDaMarca: number, topo: number) => (
+    <text
+      {...posicionarRotulo(texto, centro, meiaLarguraDaMarca, limitesDoPlano)}
+      y={topo - RESPIRO_ROTULO_PX}
+      className={estilos.rotuloPico}
+    >
+      {texto}
+    </text>
+  );
+
   const rotularPicoVolume = ({ x, y, width, index }: PosicaoRotulo) =>
-    index === indicePicoVolume ? (
-      <text
-        x={Number(x) + Number(width) / 2}
-        y={Number(y) - RESPIRO_ROTULO_PX}
-        textAnchor="middle"
-        className={estilos.rotuloPico}
-      >
-        Pico: {formatarNumeroCompacto(picoVolume.quantidadeExecucoes)}
-      </text>
-    ) : null;
+    index === indicePicoVolume
+      ? desenharRotuloDoPico(
+          `Pico: ${formatarNumeroCompacto(picoVolume.quantidadeExecucoes)}`,
+          Number(x) + Number(width) / 2,
+          Number(width) / 2,
+          Number(y),
+        )
+      : null;
+
+  const textoDoPicoTempo = `Pico: ${formatarDuracaoMs(picoTempo.tempoMedioMs)}`;
+  const rotularPicoTempo = ({ viewBox }: { viewBox?: PosicaoRotulo }) =>
+    desenharRotuloDoPico(
+      textoDoPicoTempo,
+      Number(viewBox?.x) + Number(viewBox?.width) / 2,
+      RAIO_MARCADOR_PX,
+      Number(viewBox?.y),
+    );
 
   return (
     <figure className={estilos.figura} aria-describedby={idResumo}>
@@ -254,12 +276,7 @@ export function GraficoHistorico({ pontos, periodo, intervalosComTroca = [] }: G
                 r={RAIO_MARCADOR_PX}
                 strokeWidth={2}
                 className={estilos.marcador}
-                label={{
-                  value: `Pico: ${formatarDuracaoMs(picoTempo.tempoMedioMs)}`,
-                  position: 'top',
-                  offset: RESPIRO_ROTULO_PX,
-                  className: estilos.rotuloPico,
-                }}
+                label={rotularPicoTempo}
               />
             </AreaChart>
           </ResponsiveContainer>

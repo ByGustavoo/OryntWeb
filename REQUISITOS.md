@@ -40,7 +40,7 @@ silenciosa no resto.
 * **Tipo de banco:** aparece como campo já resolvido (PostgreSQL), não como lista de uma opção.
 * **Rótulos:** capitalização de frase ("Usuários e permissões", "Objetos do banco"), como nos outros projetos.
 * **Navegação em grupos e subgrupos:** pedido do usuário em 11 de outubro de 2026, no modelo do PrismaWeb. O menu tem o Dashboard, o grupo "Análise" (Relatórios e Consultas SQL) e o grupo "Gerenciamento" (Objetos do banco e Usuários e permissões); Configurações segue no rodapé. Cada item de grupo abre as suas telas: Relatórios (Resumo, Exportação, Comparação), Consultas SQL (Todas, Histórico, Planos de execução), Objetos do banco (Visões, Índices, Tabelas, Funções) e Usuários e permissões (Papéis, Sessões, Permissões). Os nomes dos grupos e das telas foram escolhidos por boa prática, a partir do que já estava previsto para cada funcionalidade.
-* **Telas planejadas:** o grupo em que nada está pronto leva o selo "Em breve" ao lado do título (antes havia um único grupo chamado "Em breve"). Num grupo que já tem tela pronta, a marca "Em breve" desce para o item em que nada está pronto (nenhum hoje) e para cada tela planejada de um item que já tem tela pronta (nenhuma hoje: Histórico saiu da lista em 12 de outubro de 2026 e Planos de execução em 14 de outubro de 2026, quando ficaram prontas, e as três telas de Relatórios estão prontas). Cada tela planejada tem a própria rota, mostra o que está previsto para a funcionalidade, com a tela aberta em evidência, e não simula nada.
+* **Telas planejadas:** o grupo em que nada está pronto leva o selo "Em breve" ao lado do título (antes havia um único grupo chamado "Em breve"). Num grupo que já tem tela pronta, a marca "Em breve" desce para cada tela planejada: Tabelas e Funções, ao lado de Visões e Índices, que ficaram prontas em 18 de outubro de 2026, e Papéis, Sessões e Permissões. O item em que nada está pronto não leva a marca ao lado do nome desde então: "Usuários e permissões" com a marca não cabia no menu e aparecia cortado; as telas dele, ao abrir o item, mostram a marca uma a uma. Cada tela planejada tem a própria rota, mostra o que está previsto para a funcionalidade, com a tela aberta em evidência, e não simula nada.
 * **Demonstração:** selo "Demonstração" no menu da conta enquanto há uma conexão simulada ativa e aviso "Dados demonstrativos" no dashboard. Sem conexão, o selo não aparece. O selo saiu do cabeçalho a pedido do usuário em 11 de outubro de 2026.
 * **Dashboard:** períodos de 1 h, 24 h, 7 dias e 30 dias; a tabela vira cartões em telas estreitas.
 * **Carregamento do Dashboard:** ao trocar o período, os indicadores, o gráfico e a tabela dão lugar na hora a um esqueleto no formato deles, com as molduras, os títulos e o cabeçalho da tabela no lugar, até a resposta chegar (pedido pelo usuário em 12 de outubro de 2026; antes os dados do período anterior ficavam na tela, esmaecidos). Os três blocos voltam em sequência, de cima para baixo, e a ordenação escolhida na tabela é mantida. Na primeira carga o esqueleto só aparece se a resposta demorar.
@@ -359,7 +359,78 @@ Regras:
 * **Sem conexão e demonstração:** o mesmo painel e o mesmo aviso "Dados demonstrativos" das outras telas.
 * **Simulação:** planos escritos à mão para as dez consultas principais, coerentes com o desempenho de cada uma (a que mais pesa faz uma varredura sequencial em `usuarios` por falta de um índice em `lower(email)`), e planos simples por índice para as 32 secundárias; COMMIT, ANALYZE e REFRESH MATERIALIZED VIEW não têm plano. O tempo de execução fica a menos de 10% do tempo médio da consulta. A consulta dos pedidos por cliente trocou de plano há três dias às 9h, o mesmo momento em que o Histórico mostra a piora dela: as execuções das duas versões somam as dos 30 dias.
 
+## Objetos do banco: Visões
+
+Pedido pelo usuário em 18 de outubro de 2026: a tela "Visões" de Objetos do banco deixa de ser planejada. É
+o inventário das visões comuns e materializadas do banco conectado e responde a três perguntas: que visões
+existem e o que cada uma faz, do que cada uma depende e quem depende dela (se dá para alterar uma tabela sem
+quebrar nada), e se as materializadas estão atualizadas e quanto custa atualizá-las.
+
+| # | Tema | Decisão |
+|---|---|---|
+| Q1 | Comuns e materializadas | Uma lista só, com filtro de tipo. |
+| Q2 | Origem dos dados | `GET /objetos/visoes` devolve a lista inteira; a busca, os filtros e a ordem são feitos no navegador. |
+| Q3 | Ações sobre o banco | Só leitura. A tela não executa `REFRESH` nem nenhum outro comando. |
+| Q4 | Clique na visão | Abre o modal centralizado com setas no rodapé, como o detalhe de Consultas SQL › Todas. |
+| Q5 | Última atualização das materializadas | A API deduz pela última execução do `REFRESH` que o Orynt coletou; sem registro nos 30 dias, a tela diz "Sem registro". |
+| Q6 | Dependências | "Depende de" e "Usada por" no detalhe. |
+| Q7 | Ligação com Consultas SQL | O detalhe lista as consultas que leem a visão, com "Ver histórico" e "Ver plano", e o `REFRESH` da materializada, com "Ver histórico". |
+| S1 | Materializadas desatualizadas | Marcadas quando a última atualização tem mais de 24 horas ou não foi registrada nos 30 dias. Aprovada; o limite de 24 horas foi o do exemplo da descoberta. |
+| S2 | Visões sem leitura | Destacadas quando nenhuma consulta as leu nos últimos 30 dias, nem diretamente nem por outra visão. Aprovada. |
+| S3 | Exportar CSV | Recusada. |
+| S4 | Diagrama de dependências | Fica para uma fase futura. |
+
+Regras:
+
+* **Dados:** uma rota nova, `GET /objetos/visoes`, devolve numa resposta só todas as visões fora dos esquemas do sistema, cada uma com o dono, a descrição (o `COMMENT` do banco), a definição, as colunas, as dependências nos dois sentidos, as consultas que a leem com os números dos últimos 30 dias (os mesmos de `GET /consultas`) e, nas materializadas, se tem dados, o tamanho, as linhas, a última atualização e o comando `REFRESH` com os números dele. A resposta traz o instante em que foi gerada, e a tela mede a idade da atualização a partir dele.
+* **Lista:** nome com o esquema, descrição (ou "Sem descrição no banco"), tipo, leituras nos 30 dias, tamanho e última atualização. Ordem inicial por esquema e nome; dá para ordenar pelo nome, pelas leituras (mais lidas primeiro), pelo tamanho (maiores primeiro) e pela última atualização (mais antigas primeiro); as visões comuns ficam no fim quando a ordem é por tamanho ou por atualização. A tabela vira cartões em telas estreitas.
+* **Situação das materializadas:** "Sem dados" quando a visão foi criada ou atualizada com `WITH NO DATA`, "Desatualizada" acima de 24 horas ou sem registro e "Atualizada" no resto.
+* **Sem leitura:** uma visão é lida quando uma consulta dos últimos 30 dias a cita, quando uma visão que depende dela é lida ou quando uma materializada que depende dela foi atualizada no período (o `REFRESH` lê a visão). A atualização da própria materializada não conta como leitura dela.
+* **Pontos de atenção:** painel acima da lista, pedido pelo usuário no mesmo dia, com uma frase por visão que pede atenção, do mais urgente ao menos urgente: a materializada desatualizada que ainda é lida (quem a lê recebe dado antigo), a materializada sem dados, a materializada atualizada que ninguém lê (com o custo das atualizações) e a visão sem leitura. "Abrir" leva ao detalhe da visão. A partir de três visões do mesmo caso (duas, nas sem leitura), elas viram uma frase só, com os três primeiros nomes, e "Ver na lista" aplica o filtro de situação. Sem nenhum ponto, o painel não aparece.
+* **Atalhos de atenção:** ao lado da contagem, "1 sem dados", "1 desatualizada" e "4 sem leitura em 30 dias" aplicam o filtro de situação com um clique e o tiram no segundo.
+* **Detalhe:** nome, descrição, tipo, situação e os avisos em frases (desatualizada, sem dados, sem leitura com o custo das atualizações); os dados guardados e o comando que atualiza a materializada; a definição com "Copiar"; as colunas e os tipos; as dependências, em que cada visão citada abre o próprio detalhe; e as consultas que leem a visão. O texto copiado é só a definição, sem aviso de demonstração.
+* **URL:** sempre `/objetos/visoes`, sem parâmetros. A busca, os filtros e a ordem ficam no histórico do navegador, como nas outras telas.
+* **Sem conexão e demonstração:** o mesmo painel e o mesmo aviso "Dados demonstrativos" das outras telas.
+* **Simulação:** nove visões em três esquemas (`public`, `relatorios` e `auditoria`), sobre as tabelas que as consultas fictícias já usam. Para que as consultas leiam visões, cinco consultas secundárias passaram a citá-las no texto (`produtos_ativos`, `categorias_ativas`, `notificacoes_nao_lidas`, `entregas_pendentes` e `relatorios.resumo_avaliacoes`), sem mudar nenhum número, e o `REFRESH` passou a citar `relatorios.vendas_diarias`. `vendas_diarias` é atualizada e ninguém a lê, `resumo_avaliacoes` é lida e não é atualizada há mais de 30 dias e `estoque_por_categoria` está sem dados.
+
+## Objetos do banco: Índices
+
+Pedido pelo usuário em 18 de outubro de 2026: a tela "Índices" de Objetos do banco deixa de ser planejada. É o
+inventário dos índices do banco conectado e responde a três perguntas: que índices existem e quanto espaço
+ocupam, quais são lidos pelas consultas e quais só custam (ocupam disco e atrasam as gravações), e quais pedem
+uma ação (os inválidos, os duplicados ou redundantes e os sem uso). As decisões foram as recomendadas na
+descoberta, e as quatro sugestões foram aprovadas.
+
+| # | Tema | Decisão |
+|---|---|---|
+| Q1 | Origem dos dados | `GET /objetos/indices` devolve a lista inteira; a busca, os filtros e a ordem são feitos no navegador, como em Visões. |
+| Q2 | Janela do uso | As leituras dos últimos 30 dias: a API amostra os contadores do PostgreSQL, que só dão o acumulado desde o último reset. |
+| Q3 | Chave primária e restrição única | Aparecem na lista com o selo da restrição e nunca são marcadas como sem uso nem recebem comando de remoção. Vale também para o índice único sem restrição. |
+| Q4 | Ações sobre o banco | Só leitura. A tela mostra o comando pronto para copiar: `DROP INDEX CONCURRENTLY` para o sem uso, o duplicado e o redundante, e `REINDEX INDEX CONCURRENTLY` para o inválido. |
+| Q5 | Situações apontadas | Sem uso em 30 dias, duplicado ou redundante e inválido. O inchaço estimado ficou de fora, porque sem `pgstattuple` a estimativa não é confiável. |
+| Q6 | Clique no índice | Abre o modal centralizado com setas no rodapé, como em Visões. |
+| Q7 | Organização da lista | Uma lista só, com a coluna da tabela e um filtro por tabela. |
+| S1 | Custo de manter | As frases e o detalhe dizem quanto o índice ocupa e quantas gravações recebeu em 30 dias: as inserções e as atualizações que não são HOT na tabela dele. Aprovada. |
+| S2 | Consultas que usam o índice | O detalhe lista as consultas cujo plano registrado lê o índice, com "Ver plano" e "Ver histórico"; uma consulta que o usava num plano anterior oferece "Comparar planos". Aprovada. |
+| S3 | Índices sugeridos | Os índices que os planos de execução sugerem aparecem num bloco abaixo da lista, com o comando para copiar e a consulta que os pediu. Aprovada. |
+| S4 | Data das estatísticas | A tela diz desde quando o uso é medido, e um índice com menos de 30 dias de coleta fica "Em observação" em vez de "Sem uso". Aprovada. |
+
+Regras:
+
+* **Dados:** uma rota nova, `GET /objetos/indices`, devolve numa resposta só todos os índices fora dos esquemas do sistema, cada um com a tabela (tamanho, linhas, inserções, atualizações e atualizações HOT dos 30 dias), o método, as colunas, as colunas incluídas, a condição, se é único, a restrição que sustenta, se é válido, a definição, o tamanho, as leituras e as linhas lidas dos 30 dias, desde quando a API o vê e as consultas cujo plano o lê; e os índices sugeridos pelos planos atuais. A resposta traz o instante em que foi gerada e desde quando a API coleta as estatísticas do banco.
+* **Situação de cada índice**, nesta ordem: "Inválido" quando o `CREATE INDEX CONCURRENTLY` ou o `REINDEX CONCURRENTLY` não terminou; "Duplicado" quando outro índice válido da mesma tabela tem o mesmo método, as mesmas colunas e a mesma condição (fica marcado o índice comum, nunca o que garante unicidade; entre dois comuns, o menos lido); "Redundante" quando as colunas de um índice B-tree comum são o começo das de outro índice da mesma tabela, com a mesma condição; "Em uso" quando foi lido nos 30 dias; "Garante unicidade" quando não foi lido mas sustenta uma chave primária, uma restrição única ou é único; "Em observação" quando não foi lido e tem menos de 30 dias de coleta; "Sem uso" no resto.
+* **Lista:** nome com o esquema e, embaixo, a tabela e as colunas; tipo (o método e, embaixo, chave primária, restrição única, único ou parcial); situação; tamanho; leituras em 30 dias. Ordem inicial por esquema, tabela e nome; dá para ordenar por tabela e nome, pelo tamanho (maiores primeiro) e pelas leituras (menos lidos primeiro). A tabela vira cartões em telas estreitas.
+* **Pontos de atenção:** painel acima da lista, com uma frase por índice que pede atenção, do mais urgente ao menos urgente: inválido, duplicado, redundante e sem uso, cada caso do maior índice para o menor. Cada frase diz o espaço ocupado e as gravações recebidas em 30 dias. A partir de três índices do mesmo caso, eles viram uma frase só, com o espaço e as gravações somados, e "Ver na lista" aplica o filtro de situação. A última linha conta os índices sugeridos pelos planos e leva ao bloco deles. Sem nenhum ponto, o painel não aparece.
+* **Atalhos de atenção:** ao lado da contagem, "1 inválido", "2 duplicados" (duplicados e redundantes) e "3 sem uso em 30 dias" aplicam o filtro de situação com um clique e o tiram no segundo. Ao lado da contagem também aparece "Uso medido desde 1 de setembro"; com menos de 30 dias de coleta, a frase explica que nenhum índice é marcado sem uso antes disso.
+* **Comandos em lote:** pedido pelo usuário no mesmo dia. Com um filtro de situação aplicado, "Copiar os 3 comandos" copia de uma vez o comando de cada índice da lista filtrada, um por linha, só os comandos, sem aviso de demonstração.
+* **Filtros em telas estreitas:** pedido pelo usuário no mesmo dia. Esquema e tabela dividem uma linha quando a barra tem até 560px, e cada um passa a dizer só "Esquema" e "Tabela" quando "Qualquer esquema" não cabe.
+* **Detalhe:** nome, tabela, selos do método, da restrição e da situação; o aviso em frase; o comando que refaz ou remove o índice, com "Copiar" e o cuidado que ele pede; tamanho, leituras, linhas lidas e gravações dos 30 dias; a definição, com "Copiar"; as colunas na ordem do índice, as incluídas e a condição; as consultas cujo plano lê o índice; e os outros índices da mesma tabela, que abrem o próprio detalhe. O texto copiado é só o comando ou a definição, sem aviso de demonstração.
+* **Índices sugeridos:** bloco abaixo da lista, só quando há sugestão, com a tabela e as colunas, o `CREATE INDEX CONCURRENTLY` com "Copiar", a extensão que ele precisa, quando precisa, e as consultas cujo plano o pede, com "Ver plano" e "Ver histórico".
+* **URL:** sempre `/objetos/indices`, sem parâmetros. A busca, os filtros e a ordem ficam no histórico do navegador, como nas outras telas.
+* **Sem conexão e demonstração:** o mesmo painel e o mesmo aviso "Dados demonstrativos" das outras telas.
+* **Simulação:** 40 índices nas tabelas que as consultas fictícias já usam e nas duas materializadas de Visões. As leituras de cada índice saem dos planos simulados (as execuções da versão atual do plano de cada consulta vezes os laços da etapa que lê o índice), e as gravações saem das consultas `INSERT` e `UPDATE` de cada tabela, para as telas contarem a mesma história. `pedidos_cliente_id_idx` está inválido desde o instante em que a consulta dos pedidos por cliente trocou de plano, há três dias às 9h, e passou a ler a tabela inteira; `usuarios_email_idx` repete `usuarios_email_key`; `avaliacoes_produto_id_idx` é o começo de `avaliacoes_produto_id_criado_em_idx`; `pedidos_atualizado_em_idx`, `sessoes_usuario_id_idx` e `auditoria_alvo_idx` não são lidos; `cupons_valido_ate_idx` foi visto pela primeira vez há cinco dias. A coleta começou há 47 dias.
+
 ## Fora desta fase
 
-Backend, coleta de métricas reais, as telas de
-Usuários e permissões e de Objetos do banco, modo SSL, Docker, CI e vídeo de apresentação.
+Backend, coleta de métricas reais, as telas de Usuários e permissões, as telas Tabelas e Funções de Objetos
+do banco, modo SSL, Docker, CI e vídeo de apresentação.

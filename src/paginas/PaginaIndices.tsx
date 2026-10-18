@@ -1,0 +1,399 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { LucideIcon } from 'lucide-react';
+import { Clock, CopyMinus, CopyX, EyeOff, FlaskConical, Lightbulb, OctagonAlert, SearchX, Waypoints } from 'lucide-react';
+import { ehErroApi } from '@/api/tratamentoErros';
+import { PainelSemConexao } from '@/componentes/conexao/PainelSemConexao';
+import { CabecalhoPagina } from '@/componentes/layout/CabecalhoPagina';
+import { BarraFiltrosIndices } from '@/componentes/objetos/BarraFiltrosIndices';
+import { CopiarComandos } from '@/componentes/objetos/CopiarComandos';
+import { DetalheIndice } from '@/componentes/objetos/DetalheIndice';
+import { EsqueletoPontosDeAtencao, PontosDeAtencao } from '@/componentes/objetos/PontosDeAtencao';
+import type { ItemDeAtencao } from '@/componentes/objetos/PontosDeAtencao';
+import { ResumoDaLista } from '@/componentes/objetos/ResumoDaLista';
+import type { AtalhoDaLista } from '@/componentes/objetos/ResumoDaLista';
+import { SugestoesDeIndices } from '@/componentes/objetos/SugestoesDeIndices';
+import { EsqueletoIndices, TabelaIndices } from '@/componentes/objetos/TabelaIndices';
+import { Botao, ConteudoAssincrono, EstadoVazio, Nota, Painel } from '@/componentes/ui';
+import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
+import { useFiltrosIndices } from '@/ganchos/useFiltrosIndices';
+import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
+import { useVerHistorico } from '@/ganchos/useVerHistorico';
+import { useVerPlano } from '@/ganchos/useVerPlano';
+import type { FiltroSituacaoIndice, FiltrosIndices, IndiceDTO, OrdenacaoIndices, UsoDoIndiceDTO } from '@/modelos/objetos';
+import { useConexao } from '@/provedores/ProvedorConexao';
+import type { SituacaoConexao } from '@/provedores/ProvedorConexao';
+import { limparBusca } from '@/regras/buscaConsultas';
+import type { SentidoDoPasso } from '@/regras/filtrosConsultas';
+import {
+  PERIODO_DO_USO,
+  alternarOrdenacaoIndices,
+  contarPorFiltro,
+  descreverFiltrosIndices,
+  direcaoInicialDaOrdenacaoIndices,
+  esquemasDosIndices,
+  filtrarIndices,
+  loteDeComandos,
+  pontosDeAtencaoIndices,
+  resumirIndices,
+  rotuloFiltroSituacaoIndice,
+  semFiltrosIndices,
+  sobreposicoesDosIndices,
+  tabelasDosIndices,
+  temFiltroAtivoIndices,
+  textoDaColeta,
+} from '@/regras/indices';
+import type {
+  AlvoDoPontoIndice,
+  ContextoDosIndices,
+  PontoDeAtencaoIndice,
+  TipoPontoDeAtencaoIndice,
+} from '@/regras/indices';
+import { idDoObjeto } from '@/regras/visoes';
+import { caminhos } from '@/rotas/caminhos';
+import { servicoObjetos } from '@/servicos';
+import { formatarNumero, pluralizar } from '@/utilitarios/formatacao';
+import { prefereMovimentoReduzido } from '@/utilitarios/graficos';
+import { juntarClasses } from '@/utilitarios/juntarClasses';
+import estilos from './PaginaObjetos.module.css';
+
+const ESPERA_DA_BUSCA_MS = 250;
+const LINHAS_DO_ESQUELETO = 8;
+const DESCRICAO_DOS_PONTOS = 'O que merece um olhar nos índices deste banco, do mais urgente ao menos urgente';
+const LINHAS_POR_FRASE_EM_ESPERA = [3, 2, 2, 2, 2];
+
+const iconesDosPontos: Record<TipoPontoDeAtencaoIndice, LucideIcon> = {
+  INVALIDO: OctagonAlert,
+  DUPLICADO: CopyX,
+  REDUNDANTE: CopyMinus,
+  SEM_USO: EyeOff,
+  SUGERIDOS: Lightbulb,
+};
+
+function descreverSemConexao(situacao: SituacaoConexao): string {
+  if (situacao === 'DESCONECTADA') return 'Conecte um banco para ver os índices que ele tem.';
+  if (situacao === 'INDISPONIVEL') return 'O Orynt não conseguiu confirmar a conexão com o banco.';
+  return 'Preparando a conexão com o banco.';
+}
+
+function chaveDoPonto(ponto: PontoDeAtencaoIndice): string {
+  if (ponto.alvo.tipo === 'INDICE') return ponto.alvo.id;
+  if (ponto.alvo.tipo === 'FILTRO') return `${ponto.tipo}-${ponto.alvo.situacao}`;
+  return ponto.tipo;
+}
+
+function acaoDoPonto(ponto: PontoDeAtencaoIndice): { acao: string; rotulo: string } {
+  if (ponto.alvo.tipo === 'FILTRO') {
+    return {
+      acao: 'Ver na lista',
+      rotulo: `Filtrar a lista pelos índices ${rotuloFiltroSituacaoIndice[ponto.alvo.situacao].toLowerCase()}`,
+    };
+  }
+  if (ponto.alvo.tipo === 'SUGESTOES') return { acao: 'Ver sugestões', rotulo: 'Ir para os índices sugeridos pelos planos' };
+  return { acao: 'Abrir', rotulo: `Abrir ${ponto.indice ? idDoObjeto(ponto.indice) : 'o índice'}` };
+}
+
+export default function PaginaIndices() {
+  useTituloDocumento('Objetos do banco: Índices');
+  const { situacao, conexao } = useConexao();
+  const { filtros, mudarFiltros } = useFiltrosIndices(caminhos.objetosIndices);
+
+  return (
+    <>
+      <CabecalhoPagina
+        titulo="Índices"
+        descricao={
+          conexao
+            ? 'Os índices do banco, com o espaço que ocupam, o quanto são lidos e o que custa mantê-los.'
+            : descreverSemConexao(situacao)
+        }
+      />
+      {conexao ? (
+        <ListaConectada key={conexao.id} simulada={conexao.simulada} filtros={filtros} mudarFiltros={mudarFiltros} />
+      ) : (
+        <PainelSemConexao />
+      )}
+    </>
+  );
+}
+
+interface ListaConectadaProps {
+  simulada: boolean;
+  filtros: FiltrosIndices;
+  mudarFiltros: (mudanca: Partial<FiltrosIndices>) => void;
+}
+
+function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps) {
+  const { marcarDesconectada } = useConexao();
+  const irParaOHistorico = useVerHistorico();
+  const irParaOPlano = useVerPlano();
+  const regiao = useRef<HTMLDivElement>(null);
+  const topo = useRef<HTMLDivElement>(null);
+  const ancoraDasSugestoes = useRef<HTMLDivElement>(null);
+  const ultimoAberto = useRef<string | null>(null);
+  const [busca, setBusca] = useState(filtros.busca);
+  const [aberto, setAberto] = useState<IndiceDTO | null>(null);
+  const [abertoPeloPainel, setAbertoPeloPainel] = useState(false);
+
+  const lista = useDadosAssincronos((signal) => servicoObjetos.listarIndices(signal), []);
+  const sessaoEncerrada = ehErroApi(lista.erro, 'NAO_AUTORIZADO');
+  const indices = useMemo(() => lista.dados?.indices ?? [], [lista.dados]);
+  const sugestoes = useMemo(() => lista.dados?.sugestoes ?? [], [lista.dados]);
+  const contexto = useMemo<ContextoDosIndices>(() => {
+    const agora = new Date().toISOString();
+    return {
+      geradoEm: lista.dados?.geradoEm ?? agora,
+      coletaDesde: lista.dados?.coletaDesde ?? agora,
+      sobreposicoes: sobreposicoesDosIndices(indices),
+    };
+  }, [lista.dados, indices]);
+  const esquemas = useMemo(() => esquemasDosIndices(indices), [indices]);
+  const tabelas = useMemo(() => tabelasDosIndices(indices, filtros.esquema), [indices, filtros.esquema]);
+  const filtrados = useMemo(() => filtrarIndices(indices, filtros, contexto), [indices, filtros, contexto]);
+  const pontos = useMemo(() => pontosDeAtencaoIndices(indices, sugestoes, contexto), [indices, sugestoes, contexto]);
+  const contagens = useMemo(() => contarPorFiltro(indices, contexto), [indices, contexto]);
+  const lote = useMemo(
+    () => (filtros.situacao === null ? null : loteDeComandos(filtrados, contexto)),
+    [filtros.situacao, filtrados, contexto],
+  );
+  const buscaDigitada = limparBusca(busca);
+  const carregado = lista.dados !== null;
+  const esquemaInexistente = carregado && filtros.esquema !== null && !esquemas.includes(filtros.esquema);
+  const tabelaInexistente = carregado && filtros.tabela !== null && !tabelas.includes(filtros.tabela);
+  const indiceAberto = aberto ? filtrados.findIndex((indice) => indice.id === aberto.id) : -1;
+
+  useEffect(() => {
+    if (sessaoEncerrada) marcarDesconectada();
+  }, [sessaoEncerrada, marcarDesconectada]);
+
+  useEffect(() => {
+    if (buscaDigitada === filtros.busca) return;
+    const temporizador = window.setTimeout(() => mudarFiltros({ busca: buscaDigitada }), ESPERA_DA_BUSCA_MS);
+    return () => window.clearTimeout(temporizador);
+  }, [buscaDigitada, filtros.busca, mudarFiltros]);
+
+  useEffect(() => {
+    if (esquemaInexistente) mudarFiltros({ esquema: null });
+    else if (tabelaInexistente) mudarFiltros({ tabela: null });
+  }, [esquemaInexistente, tabelaInexistente, mudarFiltros]);
+
+  const rolarAte = (elemento: HTMLElement | null) =>
+    elemento?.scrollIntoView({ block: 'start', behavior: prefereMovimentoReduzido() ? 'auto' : 'smooth' });
+
+  const abrir = (indice: IndiceDTO) => {
+    ultimoAberto.current = indice.id;
+    setAberto(indice);
+  };
+
+  const abrirIndice = (id: string) => {
+    const indice = indices.find((candidato) => candidato.id === id);
+    if (indice) abrir(indice);
+  };
+
+  const abrirPelaTabela = (indice: IndiceDTO) => {
+    setAbertoPeloPainel(false);
+    abrir(indice);
+  };
+
+  const seguirPonto = (alvo: AlvoDoPontoIndice) => {
+    if (alvo.tipo === 'INDICE') {
+      setAbertoPeloPainel(true);
+      abrirIndice(alvo.id);
+      return;
+    }
+    if (alvo.tipo === 'SUGESTOES') {
+      ancoraDasSugestoes.current?.focus({ preventScroll: true });
+      rolarAte(ancoraDasSugestoes.current);
+      return;
+    }
+    setBusca('');
+    mudarFiltros({ ...semFiltrosIndices(), situacao: alvo.situacao });
+    rolarAte(topo.current);
+  };
+
+  const percorrer = (sentido: SentidoDoPasso) => {
+    const vizinho = filtrados[indiceAberto + sentido];
+    if (indiceAberto >= 0 && vizinho) abrir(vizinho);
+  };
+
+  const limparFiltros = () => {
+    setBusca('');
+    mudarFiltros(semFiltrosIndices());
+  };
+
+  const linhaDoUltimoAberto = () => {
+    const id = ultimoAberto.current;
+    if (id === null || abertoPeloPainel) return null;
+    return regiao.current?.querySelector<HTMLElement>(`tr[data-indice="${CSS.escape(id)}"] button`) ?? null;
+  };
+
+  const alternarSituacao = (situacao: FiltroSituacaoIndice) =>
+    mudarFiltros({ situacao: filtros.situacao === situacao ? null : situacao });
+
+  const atalho = (
+    situacao: FiltroSituacaoIndice,
+    icone: LucideIcon,
+    singular: string,
+    plural: string,
+    tom: AtalhoDaLista['tom'] = 'aviso',
+  ): AtalhoDaLista => ({
+    chave: situacao,
+    icone,
+    tom,
+    quantidade: contagens[situacao],
+    texto: pluralizar(contagens[situacao], singular, plural),
+    ativo: filtros.situacao === situacao,
+    aoAlternar: () => alternarSituacao(situacao),
+  });
+
+  const ordenacaoDaTabela = {
+    ordenacao: filtros.ordenacao,
+    direcao: filtros.direcao,
+    aoAlternarOrdenacao: (ordenacao: OrdenacaoIndices) => mudarFiltros(alternarOrdenacaoIndices(filtros, ordenacao)),
+    aoEscolherOrdenacao: (ordenacao: OrdenacaoIndices) =>
+      mudarFiltros({ ordenacao, direcao: direcaoInicialDaOrdenacaoIndices[ordenacao] }),
+  };
+
+  const verHistorico = (consulta: { id: string }) => irParaOHistorico(consulta.id, PERIODO_DO_USO);
+  const coleta = textoDaColeta(contexto);
+
+  return (
+    <div className={estilos.blocos}>
+      {simulada ? (
+        <Nota tom="aviso" icone={FlaskConical} titulo="Dados demonstrativos.">
+          Os índices e os números desta tela são fictícios e não vêm do seu banco. Eles dão lugar aos dados reais quando o Orynt
+          estiver ligado à API.
+        </Nota>
+      ) : null}
+
+      {lista.dados === null && lista.carregando ? (
+        <EsqueletoPontosDeAtencao descricao={DESCRICAO_DOS_PONTOS} linhasPorFrase={LINHAS_POR_FRASE_EM_ESPERA} />
+      ) : null}
+      {carregado && pontos.length > 0 ? (
+        <PontosDeAtencao
+          descricao={DESCRICAO_DOS_PONTOS}
+          itens={pontos.map((ponto): ItemDeAtencao => {
+            const { acao, rotulo } = acaoDoPonto(ponto);
+            return {
+              chave: chaveDoPonto(ponto),
+              tom: ponto.tom,
+              icone: iconesDosPontos[ponto.tipo],
+              objeto: ponto.indice,
+              titulo: ponto.titulo,
+              texto: ponto.texto,
+              acao,
+              rotuloDaAcao: rotulo,
+              aoSeguir: () => seguirPonto(ponto.alvo),
+            };
+          })}
+        />
+      ) : null}
+
+      <Painel espacamento="nenhum" aria-labelledby="titulo-lista-indices" aria-busy={lista.carregando}>
+        <div className={estilos.topo} ref={topo}>
+          <h2 className="visualmente-oculto" id="titulo-lista-indices">
+            Lista de índices
+          </h2>
+          <BarraFiltrosIndices
+            busca={busca}
+            filtros={filtros}
+            esquemas={esquemas}
+            tabelas={tabelas}
+            aoDigitarBusca={setBusca}
+            aoConfirmarBusca={() => mudarFiltros({ busca: buscaDigitada })}
+            aoMudar={mudarFiltros}
+          />
+          <ResumoDaLista
+            contagem={carregado ? resumirIndices(indices, filtrados.length, filtros) : ''}
+            complemento={
+              carregado && indices.length > 0 ? (
+                <p
+                  className={juntarClasses(estilos.coleta, coleta.incompleta && estilos.coletaIncompleta)}
+                  title={coleta.completo}
+                >
+                  <Clock size={14} strokeWidth={2} aria-hidden="true" />
+                  {coleta.incompleta ? coleta.completo : coleta.curto}
+                </p>
+              ) : null
+            }
+            emEspera={lista.dados === null && lista.carregando}
+            rotuloDosAtalhos="Índices que pedem atenção"
+            atalhos={[
+              atalho('INVALIDOS', OctagonAlert, 'inválido', 'inválidos', 'erro'),
+              atalho('DUPLICADOS', CopyX, 'duplicado', 'duplicados'),
+              atalho('SEM_USO', EyeOff, 'sem uso em 30 dias', 'sem uso em 30 dias'),
+            ]}
+            acao={lote ? <CopiarComandos key={lote.comandos.join(' ')} lote={lote} /> : null}
+            mostrarLimpar={temFiltroAtivoIndices(filtros) && filtrados.length > 0}
+            aoLimpar={limparFiltros}
+          />
+        </div>
+
+        <div ref={regiao}>
+          <ConteudoAssincrono
+            resultado={lista}
+            esqueleto={<EsqueletoIndices linhas={LINHAS_DO_ESQUELETO} {...ordenacaoDaTabela} />}
+            tituloErro="Não foi possível carregar os índices"
+          >
+            {() =>
+              indices.length === 0 ? (
+                <EstadoVazio
+                  icone={Waypoints}
+                  titulo="O banco não tem índices"
+                  descricao="Os índices aparecem aqui assim que o banco tiver ao menos uma tabela com índice fora dos esquemas do sistema."
+                />
+              ) : filtrados.length === 0 ? (
+                <EstadoVazio
+                  icone={SearchX}
+                  titulo="Nenhum índice encontrado"
+                  descricao={`Nenhum dos ${formatarNumero(indices.length)} índices corresponde aos filtros (${descreverFiltrosIndices(filtros).join(', ')}).`}
+                  acao={
+                    <Botao variante="secundario" onClick={limparFiltros}>
+                      Limpar filtros
+                    </Botao>
+                  }
+                />
+              ) : (
+                <TabelaIndices
+                  indices={filtrados}
+                  contexto={contexto}
+                  idAberto={aberto?.id ?? null}
+                  rolarAteAberto={!abertoPeloPainel}
+                  aoAbrir={abrirPelaTabela}
+                  {...ordenacaoDaTabela}
+                />
+              )
+            }
+          </ConteudoAssincrono>
+        </div>
+      </Painel>
+
+      {carregado && sugestoes.length > 0 ? (
+        <div ref={ancoraDasSugestoes} className={estilos.ancora} tabIndex={-1}>
+          <SugestoesDeIndices
+            sugestoes={sugestoes}
+            aoVerPlano={(consulta) => irParaOPlano(consulta.id)}
+            aoVerHistorico={verHistorico}
+          />
+        </div>
+      ) : null}
+
+      <DetalheIndice
+        indice={aberto}
+        indices={indices}
+        contexto={contexto}
+        simulada={simulada}
+        posicao={indiceAberto >= 0 ? indiceAberto + 1 : null}
+        total={filtrados.length}
+        aoPercorrer={percorrer}
+        aoAbrirIndice={abrirIndice}
+        aoVerHistorico={(uso: UsoDoIndiceDTO) => verHistorico(uso.consulta)}
+        aoVerPlano={(uso: UsoDoIndiceDTO) =>
+          irParaOPlano(uso.consulta.id, uso.versao === uso.versaoAtual ? null : uso.versao)
+        }
+        aoCompararPlanos={(uso: UsoDoIndiceDTO) => irParaOPlano(uso.consulta.id, uso.versaoAtual, uso.versao)}
+        aoFechar={() => setAberto(null)}
+        focoAoFechar={linhaDoUltimoAberto}
+      />
+    </div>
+  );
+}

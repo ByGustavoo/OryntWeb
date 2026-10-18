@@ -86,7 +86,8 @@ export function medirDuracao(milissegundos: number): MedidaDeDuracao {
 export function formatarTamanho(bytes: number): string {
   if (bytes < BYTES_POR_KB) return `${formatarNumero(bytes)} B`;
   if (bytes < BYTES_POR_KB ** 2) return `${formatarDecimal(bytes / BYTES_POR_KB, 1)} kB`;
-  return `${formatarDecimal(bytes / BYTES_POR_KB ** 2, 1)} MB`;
+  if (bytes < BYTES_POR_KB ** 3) return `${formatarDecimal(bytes / BYTES_POR_KB ** 2, 1)} MB`;
+  return `${formatarDecimal(bytes / BYTES_POR_KB ** 3, 1)} GB`;
 }
 
 export function formatarPercentual(valor: number): string {

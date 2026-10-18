@@ -25,7 +25,7 @@ import {
   formatarNumero,
   formatarNumeroCompacto,
 } from '@/utilitarios/formatacao';
-import { marcasDoEixo, prefereMovimentoReduzido } from '@/utilitarios/graficos';
+import { marcasDoEixo, posicionarRotulo, prefereMovimentoReduzido } from '@/utilitarios/graficos';
 import estilos from './GraficoEvolucao.module.css';
 
 interface GraficoEvolucaoProps {
@@ -121,17 +121,38 @@ export function GraficoEvolucao({ pontos, granularidade }: GraficoEvolucaoProps)
   const larguraDoPlano = Math.max(0, larguraTempo - LARGURA_EIXO_PX - margem.left - margem.right);
   const meiaFaixa = larguraDoPlano / pontos.length / 2;
 
+  const limitesDoPlano = {
+    inicio: margem.left + LARGURA_EIXO_PX,
+    fim: larguraTempo > 0 ? larguraTempo - margem.right : Number.POSITIVE_INFINITY,
+  };
+
+  const desenharRotuloDoPico = (texto: string, centro: number, meiaLarguraDaMarca: number, topo: number) => (
+    <text
+      {...posicionarRotulo(texto, centro, meiaLarguraDaMarca, limitesDoPlano)}
+      y={topo - RESPIRO_ROTULO_PX}
+      className={estilos.rotuloPico}
+    >
+      {texto}
+    </text>
+  );
+
   const rotularPicoVolume = ({ x, y, width, index }: PosicaoRotulo) =>
-    index === indicePicoVolume ? (
-      <text
-        x={Number(x) + Number(width) / 2}
-        y={Number(y) - RESPIRO_ROTULO_PX}
-        textAnchor="middle"
-        className={estilos.rotuloPico}
-      >
-        Pico: {formatarNumeroCompacto(picoVolume.consultas)}
-      </text>
-    ) : null;
+    index === indicePicoVolume
+      ? desenharRotuloDoPico(
+          `Pico: ${formatarNumeroCompacto(picoVolume.consultas)}`,
+          Number(x) + Number(width) / 2,
+          Number(width) / 2,
+          Number(y),
+        )
+      : null;
+
+  const rotularPicoTempo = ({ viewBox }: { viewBox?: PosicaoRotulo }) =>
+    desenharRotuloDoPico(
+      `Pico: ${formatarDuracaoMs(picoTempo.tempoMedioMs)}`,
+      Number(viewBox?.x) + Number(viewBox?.width) / 2,
+      RAIO_MARCADOR_PX,
+      Number(viewBox?.y),
+    );
 
   return (
     <figure className={estilos.figura} aria-describedby={idResumo}>
@@ -250,12 +271,7 @@ export function GraficoEvolucao({ pontos, granularidade }: GraficoEvolucaoProps)
                 r={RAIO_MARCADOR_PX}
                 strokeWidth={2}
                 className={estilos.marcador}
-                label={{
-                  value: `Pico: ${formatarDuracaoMs(picoTempo.tempoMedioMs)}`,
-                  position: 'top',
-                  offset: RESPIRO_ROTULO_PX,
-                  className: estilos.rotuloPico,
-                }}
+                label={rotularPicoTempo}
               />
             </AreaChart>
           </ResponsiveContainer>

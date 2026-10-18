@@ -118,6 +118,8 @@ ajustar `PROBLEMAS_CONEXAO` em `src/modelos/conexao.ts`.
 | `GET` | `/consultas` | Lista completa das consultas do período, com busca, filtros, ordenação e paginação | sim |
 | `GET` | `/consultas/{id}/historico` | Uma consulta ao longo do período: os números dela e cada intervalo | sim |
 | `GET` | `/consultas/{id}/plano` | O plano de execução registrado de uma consulta, as versões dele nos últimos 30 dias e os índices sugeridos | sim |
+| `GET` | `/objetos/visoes` | As visões comuns e materializadas do banco, com as dependências e as consultas que as leem | sim |
+| `GET` | `/objetos/indices` | Os índices do banco, com o tamanho, as leituras e as gravações dos últimos 30 dias, as consultas cujo plano os lê e os índices sugeridos pelos planos | sim |
 | `GET` | `/sistema/versao` | Versão publicada da API e a data de lançamento | não |
 
 ---
@@ -135,6 +137,8 @@ ajustar `PROBLEMAS_CONEXAO` em `src/modelos/conexao.ts`.
 | `TipoComando` | `SELECT`, `INSERT`, `UPDATE`, `DELETE`, `OUTRO` |
 | `OrdenacaoConsultas` | `PERCENTUAL_TEMPO_TOTAL`, `TEMPO_MEDIO`, `TEMPO_MAXIMO`, `EXECUCOES` |
 | `DirecaoOrdenacao` | `ASC`, `DESC` |
+| `TipoVisao` | `COMUM`, `MATERIALIZADA` |
+| `TipoObjetoBanco` | `TABELA`, `VISAO`, `VISAO_MATERIALIZADA` |
 
 ### 4.2 Autenticação
 
@@ -425,6 +429,108 @@ interface PlanosConsultaDTO {
   idSeguinte: string | null;
   versoes: VersaoPlanoDTO[];
   plano: PlanoExecucaoDTO | null;
+}
+```
+
+### 4.8 Objetos do banco
+
+```ts
+interface ReferenciaObjetoDTO {
+  tipo: TipoObjetoBanco;
+  esquema: string;
+  nome: string;
+}
+
+interface ColunaVisaoDTO {
+  nome: string;
+  tipo: string;
+}
+
+interface MaterializacaoDTO {
+  populada: boolean;
+  tamanhoBytes: number;
+  linhas: number;
+  ultimaAtualizacao: string | null;
+  atualizacao: ConsultaDetalhadaDTO | null;
+}
+
+interface VisaoDTO {
+  id: string;
+  tipo: TipoVisao;
+  esquema: string;
+  nome: string;
+  dono: string;
+  descricao: string | null;
+  definicao: string;
+  colunas: ColunaVisaoDTO[];
+  dependeDe: ReferenciaObjetoDTO[];
+  usadaPor: ReferenciaObjetoDTO[];
+  consultas: ConsultaDetalhadaDTO[];
+  materializacao: MaterializacaoDTO | null;
+}
+
+interface ListaVisoesDTO {
+  geradoEm: string;
+  visoes: VisaoDTO[];
+}
+
+type MetodoIndice = 'BTREE' | 'HASH' | 'GIN' | 'GIST' | 'SPGIST' | 'BRIN';
+
+type RestricaoIndice = 'CHAVE_PRIMARIA' | 'UNICA' | 'EXCLUSAO';
+
+interface TabelaDoIndiceDTO {
+  tipo: 'TABELA' | 'VISAO_MATERIALIZADA';
+  esquema: string;
+  nome: string;
+  tamanhoBytes: number;
+  linhas: number;
+  insercoes: number;
+  atualizacoes: number;
+  atualizacoesHot: number;
+}
+
+interface UsoDoIndiceDTO {
+  consulta: ConsultaDetalhadaDTO;
+  etapa: string;
+  leiturasPorExecucao: number;
+  versao: string;
+  versaoAtual: string;
+  usadoAte: string | null;
+}
+
+interface IndiceDTO {
+  id: string;
+  esquema: string;
+  nome: string;
+  tabela: TabelaDoIndiceDTO;
+  metodo: MetodoIndice;
+  colunas: string[];
+  incluidas: string[];
+  predicado: string | null;
+  unico: boolean;
+  restricao: RestricaoIndice | null;
+  valido: boolean;
+  definicao: string;
+  tamanhoBytes: number;
+  leituras: number;
+  linhasLidas: number;
+  observadoDesde: string;
+  usos: UsoDoIndiceDTO[];
+}
+
+interface SugestaoDeIndiceDTO {
+  tabela: string;
+  colunas: string[];
+  comando: string;
+  extensao: string | null;
+  consultas: ConsultaDetalhadaDTO[];
+}
+
+interface ListaIndicesDTO {
+  geradoEm: string;
+  coletaDesde: string;
+  indices: IndiceDTO[];
+  sugestoes: SugestaoDeIndiceDTO[];
 }
 ```
 
@@ -904,7 +1010,72 @@ nunca pede que o banco execute nada.
 
 ---
 
-## 11. Pendências do contrato
+## 11. Objetos do banco
+
+### 11.1 `GET /objetos/visoes`
+
+Sem parâmetros. Devolve `200` com `ListaVisoesDTO`: todas as visões comuns (`pg_views`) e materializadas
+(`pg_matviews`) da conexão ativa, fora de `pg_catalog`, `information_schema` e dos esquemas `pg_toast` e
+`pg_temp_*`. A lista vem inteira, sem paginação: a tela busca, filtra e ordena no navegador. `geradoEm` é o
+instante da resposta; a tela mede a idade da última atualização a partir dele, não do relógio do navegador.
+
+* `id` é `esquema.nome`, como o PostgreSQL escreve o nome qualificado.
+* `descricao` é o `COMMENT ON VIEW` (ou `null`) e `definicao` é o texto de `pg_get_viewdef`, com o espaço que
+  o PostgreSQL põe no começo das linhas; a tela tira esse recuo para mostrar e para copiar.
+* `colunas` seguem a ordem de `pg_attribute.attnum`, com o tipo escrito por `format_type`.
+* `dependeDe` e `usadaPor` vêm de `pg_depend` e `pg_rewrite`: as tabelas, visões e materializadas que a
+  definição lê, e as visões e materializadas cuja definição lê esta. Os dois sentidos são coerentes: se `A`
+  está em `dependeDe` de `B`, `B` está em `usadaPor` de `A`.
+* `consultas` são as consultas dos últimos 30 dias cujo texto cita a visão, com os mesmos números que
+  `GET /consultas?periodo=ULTIMOS_30_DIAS` devolve para elas, da que mais pesa para a que menos pesa. Um
+  `REFRESH` da visão não entra nesta lista.
+* `materializacao` é `null` numa visão comum. Numa materializada, `populada` é o `ispopulated` de
+  `pg_matviews`, `tamanhoBytes` é `pg_total_relation_size` e `linhas` é o `reltuples` mais recente.
+  `atualizacao` é o `REFRESH MATERIALIZED VIEW` desta visão na lista de consultas dos 30 dias, ou `null`
+  quando ele não aparece, e `ultimaAtualizacao` é o fim da última execução dele que a API coletou, ou `null`.
+
+`401` sem conexão ativa, como as outras rotas de dados.
+
+### 11.2 `GET /objetos/indices`
+
+Sem parâmetros. Devolve `200` com `ListaIndicesDTO`: todos os índices das tabelas e visões materializadas da
+conexão ativa, fora dos mesmos esquemas do sistema de `GET /objetos/visoes`. A lista vem inteira, sem
+paginação: a tela busca, filtra e ordena no navegador, e é ela que decide se um índice está sem uso, duplicado
+ou redundante, a partir dos campos abaixo. `geradoEm` é o instante da resposta e `coletaDesde` é quando a API
+começou a coletar as estatísticas deste banco; a tela só marca um índice como sem uso depois de 30 dias de
+coleta, contados a partir do mais recente entre `coletaDesde` e `observadoDesde`.
+
+* `id` é `esquema.nome`; o esquema de um índice é sempre o da sua tabela.
+* `metodo` é o `amname` de `pg_am`. `colunas` são as expressões da chave na ordem do índice, como
+  `pg_get_indexdef(indexrelid, n, true)` as escreve, com `DESC`, `NULLS FIRST` e a classe de operador quando não
+  são as padrão (`criado_em DESC`, `lower(email)`, `nome gin_trgm_ops`). `incluidas` são as colunas do `INCLUDE`,
+  e `predicado` é a condição de um índice parcial, como `pg_get_expr(indpred, indrelid)` a escreve, ou `null`.
+* `unico` é o `indisunique`, `restricao` diz se o índice sustenta uma chave primária, uma restrição única ou
+  de exclusão (`pg_constraint.conindid`), ou `null`, e `valido` é o `indisvalid`. Um `CREATE INDEX
+  CONCURRENTLY` ou `REINDEX CONCURRENTLY` que não terminou deixa o índice com `valido: false`.
+* `definicao` é o texto de `pg_get_indexdef`, sem o ponto e vírgula; a tela o acrescenta ao copiar.
+* `tamanhoBytes` é `pg_relation_size` do índice. `leituras` é quanto o `idx_scan` de
+  `pg_stat_user_indexes` cresceu nos últimos 30 dias, e `linhasLidas` é o mesmo para `idx_tup_read`: a API guarda
+  amostras dos contadores, porque o PostgreSQL só dá o acumulado desde o último reset.
+* `observadoDesde` é a primeira amostra em que a API viu o índice (o PostgreSQL não guarda quando ele foi
+  criado). Um índice recriado é outro objeto e começa do zero.
+* `tabela` traz o tamanho (`pg_relation_size`), as linhas (`reltuples`) e quanto `n_tup_ins`, `n_tup_upd` e
+  `n_tup_hot_upd` de `pg_stat_user_tables` cresceram nos 30 dias. Cada inserção e cada atualização que não é
+  HOT grava em todos os índices da tabela; é com isso que a tela mostra o custo de manter um índice.
+* `usos` são as consultas dos 30 dias cujo plano registrado (`GET /consultas/{id}/plano`) tem uma etapa que lê
+  o índice, com os números que `GET /consultas?periodo=ULTIMOS_30_DIAS` devolve para elas. `etapa` é o `Node
+  Type` dessa etapa, `leiturasPorExecucao` são os `Actual Loops` dela, `versao` é a versão do plano que a contém
+  e `versaoAtual` é a versão atual da consulta. `usadoAte` é `null` quando a versão é a atual; numa versão
+  anterior, é o último registro dela.
+* `sugestoes` são os índices sugeridos pelos planos atuais das consultas dos 30 dias (os `sugestoes` de
+  `PlanoExecucaoDTO`), um por comando, com a tabela qualificada (`esquema.nome`) e as consultas cujo plano o
+  pede.
+
+`401` sem conexão ativa, como as outras rotas de dados.
+
+---
+
+## 12. Pendências do contrato
 
 * Autenticação real: como as contas são criadas.
 * Recuperação de senha: o serviço de envio de e-mail, o texto da mensagem, o limite de pedidos por origem e o prazo do token de redefinição.
@@ -920,4 +1091,8 @@ nunca pede que o banco execute nada.
 * Quanto tempo de histórico por consulta a API guarda e com que frequência ela coleta os intervalos (`pg_stat_statements` só dá o acumulado).
 * Formato definitivo do `id` da consulta (o `queryid` do PostgreSQL é um inteiro de 64 bits).
 * `sslmode` em `CredenciaisConexaoDTO`, quando o modo SSL entrar no formulário.
+* Visões: como a API liga uma consulta à visão que ela lê (análise do texto ou do plano), se guarda a última
+  atualização das materializadas além dos 30 dias e se as visões de extensões entram na lista.
+* Índices: com que frequência a API amostra `pg_stat_user_indexes` e `pg_stat_user_tables`, o que faz depois de um
+  `pg_stat_reset` e se os índices das tabelas de extensões entram na lista.
 * Planos de execução: como a API captura os planos (`auto_explain` com amostragem, `log_min_duration`), quantos guarda por consulta, como decide que dois planos são a mesma versão e se os valores dos parâmetros (`$1`) entram no plano guardado, o que exigiria cuidado com dados pessoais.

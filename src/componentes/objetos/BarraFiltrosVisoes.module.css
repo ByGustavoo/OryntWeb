@@ -1,0 +1,47 @@
+.conteiner {
+  container: filtros-visoes / inline-size;
+}
+
+.barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-3);
+}
+
+.busca {
+  flex: 1 1 15rem;
+}
+
+.tipoCompacto {
+  display: none;
+}
+
+.selecao {
+  flex: 0 0 11.5rem;
+}
+
+@container filtros-visoes (max-width: 940px) {
+  .busca {
+    flex-basis: 100%;
+  }
+
+  .selecao {
+    flex: 0 1 11.5rem;
+  }
+}
+
+@container filtros-visoes (max-width: 620px) {
+  .tipoAmplo {
+    display: none;
+  }
+
+  .tipoCompacto {
+    display: flex;
+  }
+
+  .tipoCompacto,
+  .selecao {
+    flex: 1 1 11rem;
+  }
+}

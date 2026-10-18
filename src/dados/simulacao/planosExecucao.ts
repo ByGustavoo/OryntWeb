@@ -533,7 +533,7 @@ const planos: Record<string, ModeloPlano> = {
       porIndice('produtos', 'produtos_pkey', '(id = i.produto_id)', { apelido: 'p', lacos: 3, largura: 32, parte: 0.46 }),
     ],
   }),
-  'q-produtos-id': simples(porIndice('produtos', 'produtos_pkey', '(id = $1)', { largura: 41 })),
+  'q-produtos-id': simples(porIndice('produtos', 'produtos_pkey', '(id = $1)', { filtro: 'ativo', largura: 37 })),
   'q-categorias-ativas': simples({
     tipo: 'Sort',
     custo: [1.42, 1.47],
@@ -647,23 +647,9 @@ const planos: Record<string, ModeloPlano> = {
       },
     ],
   }),
-  'q-avaliacoes-media': simples({
-    tipo: 'Aggregate',
-    estrategia: 'SIMPLES',
-    custo: [52.9, 52.91],
-    estimadas: 1,
-    largura: 40,
-    linhas: 1,
-    parte: 0.18,
-    filhos: [
-      porIndice('avaliacoes', 'avaliacoes_produto_id_criado_em_idx', '(produto_id = $1)', {
-        linhas: 46,
-        estimadas: 46,
-        largura: 4,
-        parte: 0.79,
-      }),
-    ],
-  }),
+  'q-avaliacoes-media': simples(
+    porIndice('resumo_avaliacoes', 'resumo_avaliacoes_produto_id_key', '(produto_id = $1)', { largura: 16 }),
+  ),
   'q-avaliacao-nova': insercao('avaliacoes', 76),
   'q-favoritos-usuario': simples(
     porIndice('favoritos', 'favoritos_pkey', '(usuario_id = $1)', { tipo: 'Index Only Scan', linhas: 6, largura: 8 }),
@@ -710,7 +696,7 @@ const planos: Record<string, ModeloPlano> = {
     parte: 0.02,
     filhos: [
       porIndice('entregas', 'entregas_situacao_previsao_idx', '(situacao = $1)', {
-        apelido: 'e',
+        filtro: '(entregue_em IS NULL)',
         linhas: 40,
         estimadas: 52,
         largura: 24,

@@ -1,0 +1,44 @@
+.lista {
+  display: flex;
+  flex-direction: column;
+}
+
+.sugestao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+  padding-block: var(--espaco-5);
+  border-top: 1px solid var(--borda);
+}
+
+.sugestao:first-child {
+  padding-top: 0;
+  border-top: none;
+}
+
+.sugestao:last-child {
+  padding-bottom: 0;
+}
+
+.alvo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--espaco-2);
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.colunas {
+  color: var(--texto-secundario);
+  font-weight: var(--peso-regular);
+}
+
+.consultas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+}
