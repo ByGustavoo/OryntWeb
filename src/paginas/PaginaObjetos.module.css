@@ -16,8 +16,9 @@
   scroll-margin-top: calc(var(--altura-cabecalho) + var(--espaco-4));
 }
 
-.ancora:focus {
-  outline: none;
+.paginacao {
+  padding: var(--espaco-3) var(--espaco-5) var(--espaco-3) var(--espaco-6);
+  border-top: 1px solid var(--borda);
 }
 
 .coleta {
@@ -46,5 +47,9 @@
 @media (max-width: 767px) {
   .topo {
     padding: var(--espaco-4) var(--espaco-4) var(--espaco-3);
+  }
+
+  .paginacao {
+    padding: var(--espaco-3) var(--espaco-4);
   }
 }

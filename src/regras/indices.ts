@@ -1,6 +1,7 @@
 import type { DirecaoOrdenacao } from '@/modelos/consultas';
 import type { PeriodoDashboard } from '@/modelos/dashboard';
 import type {
+  AbaIndices,
   FiltroSituacaoIndice,
   FiltrosIndices,
   IndiceDTO,
@@ -18,6 +19,7 @@ import {
   pluralizar,
 } from '@/utilitarios/formatacao';
 import { correspondeABusca, limparBusca, termosDaBusca } from './buscaConsultas';
+import { lerPagina, paginaAposMudanca } from './paginacaoLocal';
 import { idDoObjeto, lerEsquema } from './visoes';
 import type { TomDoAviso } from './visoes';
 
@@ -32,6 +34,8 @@ const NOMES_NA_FRASE = 3;
 export const filtrosSituacaoIndice: FiltroSituacaoIndice[] = ['INVALIDOS', 'DUPLICADOS', 'SEM_USO'];
 
 export const ordenacoesIndices: OrdenacaoIndices[] = ['NOME', 'TAMANHO', 'LEITURAS'];
+
+export const abasIndices: AbaIndices[] = ['EXISTENTES', 'SUGERIDOS'];
 
 export const rotuloMetodoIndice: Record<MetodoIndice, string> = {
   BTREE: 'B-tree',
@@ -77,6 +81,8 @@ export const filtrosIndicesIniciais: FiltrosIndices = {
   situacao: null,
   ordenacao: 'NOME',
   direcao: 'ASC',
+  pagina: 1,
+  aba: 'EXISTENTES',
 };
 
 export type TipoSobreposicao = 'DUPLICADO' | 'REDUNDANTE';
@@ -156,7 +162,13 @@ export function lerFiltrosIndices(valor: unknown): FiltrosIndices {
     ordenacao,
     direcao:
       lerDaLista<DirecaoOrdenacao>(['ASC', 'DESC'], guardado.direcao) ?? direcaoInicialDaOrdenacaoIndices[ordenacao],
+    pagina: lerPagina(guardado.pagina),
+    aba: lerDaLista(abasIndices, guardado.aba) ?? filtrosIndicesIniciais.aba,
   };
+}
+
+export function aplicarMudancaIndices(filtros: FiltrosIndices, mudanca: Partial<FiltrosIndices>): FiltrosIndices {
+  return lerFiltrosIndices({ ...filtros, ...mudanca, pagina: paginaAposMudanca(filtros, mudanca, ['pagina', 'aba']) });
 }
 
 export function alternarOrdenacaoIndices(
@@ -468,7 +480,7 @@ function pontoDasSugestoes(sugestoes: SugestaoDeIndiceDTO[]): PontoDeAtencaoIndi
       indice: null,
       titulo:
         sugestoes.length === 1 ? 'Um índice sugerido pelos planos' : `${quantidade} índices sugeridos pelos planos`,
-      texto: `Os planos de execução de ${formatarNumero(consultas)} ${pluralizar(consultas, 'consulta lê', 'consultas leem')} tabelas inteiras para achar poucas linhas. O comando de cada índice está pronto para copiar, abaixo da lista.`,
+      texto: `Os planos de execução de ${formatarNumero(consultas)} ${pluralizar(consultas, 'consulta lê', 'consultas leem')} tabelas inteiras para achar poucas linhas. O comando de cada índice está pronto para copiar na aba Sugeridos pelos planos.`,
       alvo: { tipo: 'SUGESTOES' },
     },
   ];

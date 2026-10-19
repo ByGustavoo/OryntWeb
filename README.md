@@ -206,7 +206,7 @@ consulta que explica.
 
 * Inventário das visões comuns e materializadas de cada esquema, com busca pelo nome ou pela descrição e filtros de tipo, esquema e situação
 
-* Leituras nos últimos 30 dias, tamanho e última atualização de cada visão, com ordenação pelas colunas
+* Leituras nos últimos 30 dias, tamanho e última atualização de cada visão, com ordenação pelas colunas e 15 visões por página
 
 * Materializadas desatualizadas (mais de 24 horas sem atualizar) e sem dados marcadas na lista, e visões que nenhuma consulta leu em 30 dias em destaque, com atalhos que filtram cada caso
 
@@ -220,7 +220,7 @@ consulta que explica.
 
 * Inventário dos índices de cada tabela, com busca pelo nome, pela tabela ou pelas colunas e filtros de esquema, tabela e situação
 
-* Método, chave primária, restrição única ou condição de cada índice, com o tamanho e as leituras dos últimos 30 dias, e ordenação pelas colunas
+* Método, chave primária, restrição única ou condição de cada índice, com o tamanho e as leituras dos últimos 30 dias, ordenação pelas colunas e 15 índices por página
 
 * Índices inválidos, duplicados, redundantes e sem uso em 30 dias em destaque, com atalhos que filtram cada caso; chaves primárias e índices únicos nunca entram como sem uso
 
@@ -230,7 +230,7 @@ consulta que explica.
 
 * Com um filtro de situação, os comandos de todos os índices da lista copiados de uma vez, um por linha
 
-* Índices sugeridos pelos planos de execução, com o comando de cada um e a consulta que o pediu
+* Índices sugeridos pelos planos de execução numa aba ao lado da lista, com o comando de cada um e a consulta que o pediu
 
 * Data desde quando o uso é medido, e índices com menos de 30 dias de coleta em observação, para um índice novo não ser tomado por esquecido
 

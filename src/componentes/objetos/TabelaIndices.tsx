@@ -184,7 +184,7 @@ export function TabelaIndices({
   useEffect(() => {
     if (idAberto === null || !rolarAteAberto) return;
     corpo.current?.querySelector('[aria-current="true"]')?.scrollIntoView({ block: 'nearest' });
-  }, [idAberto, rolarAteAberto]);
+  }, [idAberto, rolarAteAberto, indices]);
 
   const abrir = (evento: MouseEvent<HTMLTableRowElement>, indice: IndiceDTO) => {
     evento.currentTarget.querySelector('button')?.focus({ preventScroll: true });

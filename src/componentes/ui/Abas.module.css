@@ -1,0 +1,112 @@
+.abas {
+  --abas-recuo: var(--espaco-6);
+  container: abas / inline-size;
+  border-bottom: 1px solid var(--borda);
+}
+
+.lista {
+  display: flex;
+  gap: var(--espaco-1);
+  padding-inline: calc(var(--abas-recuo) - var(--espaco-3));
+}
+
+.aba {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  min-height: 46px;
+  padding: 0 var(--espaco-3);
+  border: none;
+  border-radius: var(--raio-sm) var(--raio-sm) 0 0;
+  background: none;
+  color: var(--texto-secundario);
+  font: inherit;
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--duracao-rapida) var(--curva-saida);
+}
+
+.aba::after {
+  content: '';
+  position: absolute;
+  right: var(--espaco-3);
+  bottom: -1px;
+  left: var(--espaco-3);
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background-color: var(--destaque);
+  transform: scaleX(0);
+  transition: transform var(--duracao-base) var(--curva-saida);
+}
+
+.aba[aria-selected='true'] {
+  color: var(--texto);
+}
+
+.aba[aria-selected='true']::after {
+  transform: scaleX(1);
+}
+
+.aba:focus-visible {
+  outline: none;
+  box-shadow: inset var(--anel-foco);
+}
+
+.quantidade {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding-inline: 6px;
+  border-radius: var(--raio-pilula);
+  background-color: var(--superficie-suave);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+}
+
+.aba[aria-selected='true'] .quantidade {
+  background-color: var(--destaque-suave);
+  color: var(--destaque);
+}
+
+.rotuloCurto {
+  display: none;
+}
+
+@media (hover: hover) {
+  .aba[aria-selected='false']:hover {
+    color: var(--texto);
+  }
+}
+
+@media (max-width: 767px) {
+  .abas {
+    --abas-recuo: var(--espaco-4);
+  }
+}
+
+@container abas (max-width: 419px) {
+  .rotuloLongo {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .rotuloCurto {
+    display: inline;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aba::after {
+    transition: none;
+  }
+}

@@ -56,6 +56,7 @@ export interface FiltrosVisoes {
   situacao: FiltroSituacaoVisao | null;
   ordenacao: OrdenacaoVisoes;
   direcao: DirecaoOrdenacao;
+  pagina: number;
 }
 
 export type MetodoIndice = 'BTREE' | 'HASH' | 'GIN' | 'GIST' | 'SPGIST' | 'BRIN';
@@ -130,6 +131,8 @@ export type FiltroSituacaoIndice = 'INVALIDOS' | 'DUPLICADOS' | 'SEM_USO';
 
 export type OrdenacaoIndices = 'NOME' | 'TAMANHO' | 'LEITURAS';
 
+export type AbaIndices = 'EXISTENTES' | 'SUGERIDOS';
+
 export interface FiltrosIndices {
   busca: string;
   esquema: string | null;
@@ -137,4 +140,6 @@ export interface FiltrosIndices {
   situacao: FiltroSituacaoIndice | null;
   ordenacao: OrdenacaoIndices;
   direcao: DirecaoOrdenacao;
+  pagina: number;
+  aba: AbaIndices;
 }

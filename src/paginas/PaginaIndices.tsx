@@ -11,15 +11,23 @@ import { EsqueletoPontosDeAtencao, PontosDeAtencao } from '@/componentes/objetos
 import type { ItemDeAtencao } from '@/componentes/objetos/PontosDeAtencao';
 import { ResumoDaLista } from '@/componentes/objetos/ResumoDaLista';
 import type { AtalhoDaLista } from '@/componentes/objetos/ResumoDaLista';
-import { SugestoesDeIndices } from '@/componentes/objetos/SugestoesDeIndices';
+import { EsqueletoSugestoesDeIndices, SugestoesDeIndices } from '@/componentes/objetos/SugestoesDeIndices';
 import { EsqueletoIndices, TabelaIndices } from '@/componentes/objetos/TabelaIndices';
-import { Botao, ConteudoAssincrono, EstadoVazio, Nota, Painel } from '@/componentes/ui';
+import { Abas, Botao, ConteudoAssincrono, EstadoVazio, Nota, Paginacao, Painel, PainelDaAba, idDaAba } from '@/componentes/ui';
+import type { Aba } from '@/componentes/ui';
 import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
 import { useFiltrosIndices } from '@/ganchos/useFiltrosIndices';
 import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
 import { useVerHistorico } from '@/ganchos/useVerHistorico';
 import { useVerPlano } from '@/ganchos/useVerPlano';
-import type { FiltroSituacaoIndice, FiltrosIndices, IndiceDTO, OrdenacaoIndices, UsoDoIndiceDTO } from '@/modelos/objetos';
+import type {
+  AbaIndices,
+  FiltroSituacaoIndice,
+  FiltrosIndices,
+  IndiceDTO,
+  OrdenacaoIndices,
+  UsoDoIndiceDTO,
+} from '@/modelos/objetos';
 import { useConexao } from '@/provedores/ProvedorConexao';
 import type { SituacaoConexao } from '@/provedores/ProvedorConexao';
 import { limparBusca } from '@/regras/buscaConsultas';
@@ -42,6 +50,7 @@ import {
   temFiltroAtivoIndices,
   textoDaColeta,
 } from '@/regras/indices';
+import { paginaDaPosicao, paginarLista } from '@/regras/paginacaoLocal';
 import type {
   AlvoDoPontoIndice,
   ContextoDosIndices,
@@ -60,6 +69,7 @@ const ESPERA_DA_BUSCA_MS = 250;
 const LINHAS_DO_ESQUELETO = 8;
 const DESCRICAO_DOS_PONTOS = 'O que merece um olhar nos índices deste banco, do mais urgente ao menos urgente';
 const LINHAS_POR_FRASE_EM_ESPERA = [3, 2, 2, 2, 2];
+const ID_DAS_ABAS = 'indices';
 
 const iconesDosPontos: Record<TipoPontoDeAtencaoIndice, LucideIcon> = {
   INVALIDO: OctagonAlert,
@@ -88,7 +98,7 @@ function acaoDoPonto(ponto: PontoDeAtencaoIndice): { acao: string; rotulo: strin
       rotulo: `Filtrar a lista pelos índices ${rotuloFiltroSituacaoIndice[ponto.alvo.situacao].toLowerCase()}`,
     };
   }
-  if (ponto.alvo.tipo === 'SUGESTOES') return { acao: 'Ver sugestões', rotulo: 'Ir para os índices sugeridos pelos planos' };
+  if (ponto.alvo.tipo === 'SUGESTOES') return { acao: 'Ver sugestões', rotulo: 'Abrir a aba dos índices sugeridos pelos planos' };
   return { acao: 'Abrir', rotulo: `Abrir ${ponto.indice ? idDoObjeto(ponto.indice) : 'o índice'}` };
 }
 
@@ -127,8 +137,7 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
   const irParaOHistorico = useVerHistorico();
   const irParaOPlano = useVerPlano();
   const regiao = useRef<HTMLDivElement>(null);
-  const topo = useRef<HTMLDivElement>(null);
-  const ancoraDasSugestoes = useRef<HTMLDivElement>(null);
+  const inicio = useRef<HTMLDivElement>(null);
   const ultimoAberto = useRef<string | null>(null);
   const [busca, setBusca] = useState(filtros.busca);
   const [aberto, setAberto] = useState<IndiceDTO | null>(null);
@@ -160,6 +169,8 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
   const esquemaInexistente = carregado && filtros.esquema !== null && !esquemas.includes(filtros.esquema);
   const tabelaInexistente = carregado && filtros.tabela !== null && !tabelas.includes(filtros.tabela);
   const indiceAberto = aberto ? filtrados.findIndex((indice) => indice.id === aberto.id) : -1;
+  const paginaAtual = useMemo(() => paginarLista(filtrados, filtros.pagina), [filtrados, filtros.pagina]);
+  const paginaForaDaLista = carregado && paginaAtual.pagina !== filtros.pagina;
 
   useEffect(() => {
     if (sessaoEncerrada) marcarDesconectada();
@@ -175,6 +186,10 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
     if (esquemaInexistente) mudarFiltros({ esquema: null });
     else if (tabelaInexistente) mudarFiltros({ tabela: null });
   }, [esquemaInexistente, tabelaInexistente, mudarFiltros]);
+
+  useEffect(() => {
+    if (paginaForaDaLista) mudarFiltros({ pagina: paginaAtual.pagina });
+  }, [paginaForaDaLista, paginaAtual.pagina, mudarFiltros]);
 
   const rolarAte = (elemento: HTMLElement | null) =>
     elemento?.scrollIntoView({ block: 'start', behavior: prefereMovimentoReduzido() ? 'auto' : 'smooth' });
@@ -201,18 +216,32 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
       return;
     }
     if (alvo.tipo === 'SUGESTOES') {
-      ancoraDasSugestoes.current?.focus({ preventScroll: true });
-      rolarAte(ancoraDasSugestoes.current);
+      mudarAba('SUGERIDOS');
+      document.getElementById(idDaAba(ID_DAS_ABAS, 'SUGERIDOS'))?.focus({ preventScroll: true });
+      rolarAte(inicio.current);
       return;
     }
     setBusca('');
-    mudarFiltros({ ...semFiltrosIndices(), situacao: alvo.situacao });
-    rolarAte(topo.current);
+    mudarFiltros({ ...semFiltrosIndices(), situacao: alvo.situacao, aba: 'EXISTENTES' });
+    rolarAte(inicio.current);
+  };
+
+  const mudarAba = (aba: AbaIndices) => {
+    if (aba !== filtros.aba) mudarFiltros({ aba });
+  };
+
+  const mudarPagina = (pagina: number) => {
+    mudarFiltros({ pagina });
+    inicio.current?.scrollIntoView({ block: 'start', behavior: 'instant' });
   };
 
   const percorrer = (sentido: SentidoDoPasso) => {
-    const vizinho = filtrados[indiceAberto + sentido];
-    if (indiceAberto >= 0 && vizinho) abrir(vizinho);
+    const posicao = indiceAberto + sentido;
+    const vizinho = filtrados[posicao];
+    if (indiceAberto < 0 || !vizinho) return;
+    abrir(vizinho);
+    const pagina = paginaDaPosicao(posicao);
+    if (pagina !== paginaAtual.pagina) mudarFiltros({ pagina });
   };
 
   const limparFiltros = () => {
@@ -254,6 +283,10 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
   };
 
   const verHistorico = (consulta: { id: string }) => irParaOHistorico(consulta.id, PERIODO_DO_USO);
+  const abas: Aba<AbaIndices>[] = [
+    { valor: 'EXISTENTES', rotulo: 'Índices existentes', rotuloCurto: 'Existentes', quantidade: carregado ? indices.length : null },
+    { valor: 'SUGERIDOS', rotulo: 'Sugeridos pelos planos', rotuloCurto: 'Sugeridos', quantidade: carregado ? sugestoes.length : null },
+  ];
   const coleta = textoDaColeta(contexto);
 
   return (
@@ -288,94 +321,130 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
         />
       ) : null}
 
-      <Painel espacamento="nenhum" aria-labelledby="titulo-lista-indices" aria-busy={lista.carregando}>
-        <div className={estilos.topo} ref={topo}>
-          <h2 className="visualmente-oculto" id="titulo-lista-indices">
-            Lista de índices
-          </h2>
-          <BarraFiltrosIndices
-            busca={busca}
-            filtros={filtros}
-            esquemas={esquemas}
-            tabelas={tabelas}
-            aoDigitarBusca={setBusca}
-            aoConfirmarBusca={() => mudarFiltros({ busca: buscaDigitada })}
-            aoMudar={mudarFiltros}
+      <div ref={inicio} className={estilos.ancora}>
+        <Painel como="div" espacamento="nenhum" aria-busy={lista.carregando}>
+          <Abas
+            id={ID_DAS_ABAS}
+            rotulo="Índices do banco"
+            abas={abas}
+            valor={filtros.aba}
+            aoMudar={mudarAba}
           />
-          <ResumoDaLista
-            contagem={carregado ? resumirIndices(indices, filtrados.length, filtros) : ''}
-            complemento={
-              carregado && indices.length > 0 ? (
-                <p
-                  className={juntarClasses(estilos.coleta, coleta.incompleta && estilos.coletaIncompleta)}
-                  title={coleta.completo}
-                >
-                  <Clock size={14} strokeWidth={2} aria-hidden="true" />
-                  {coleta.incompleta ? coleta.completo : coleta.curto}
-                </p>
-              ) : null
-            }
-            emEspera={lista.dados === null && lista.carregando}
-            rotuloDosAtalhos="Índices que pedem atenção"
-            atalhos={[
-              atalho('INVALIDOS', OctagonAlert, 'inválido', 'inválidos', 'erro'),
-              atalho('DUPLICADOS', CopyX, 'duplicado', 'duplicados'),
-              atalho('SEM_USO', EyeOff, 'sem uso em 30 dias', 'sem uso em 30 dias'),
-            ]}
-            acao={lote ? <CopiarComandos key={lote.comandos.join(' ')} lote={lote} /> : null}
-            mostrarLimpar={temFiltroAtivoIndices(filtros) && filtrados.length > 0}
-            aoLimpar={limparFiltros}
-          />
-        </div>
 
-        <div ref={regiao}>
-          <ConteudoAssincrono
-            resultado={lista}
-            esqueleto={<EsqueletoIndices linhas={LINHAS_DO_ESQUELETO} {...ordenacaoDaTabela} />}
-            tituloErro="Não foi possível carregar os índices"
-          >
-            {() =>
-              indices.length === 0 ? (
-                <EstadoVazio
-                  icone={Waypoints}
-                  titulo="O banco não tem índices"
-                  descricao="Os índices aparecem aqui assim que o banco tiver ao menos uma tabela com índice fora dos esquemas do sistema."
-                />
-              ) : filtrados.length === 0 ? (
-                <EstadoVazio
-                  icone={SearchX}
-                  titulo="Nenhum índice encontrado"
-                  descricao={`Nenhum dos ${formatarNumero(indices.length)} índices corresponde aos filtros (${descreverFiltrosIndices(filtros).join(', ')}).`}
-                  acao={
-                    <Botao variante="secundario" onClick={limparFiltros}>
-                      Limpar filtros
-                    </Botao>
-                  }
-                />
-              ) : (
-                <TabelaIndices
-                  indices={filtrados}
-                  contexto={contexto}
-                  idAberto={aberto?.id ?? null}
-                  rolarAteAberto={!abertoPeloPainel}
-                  aoAbrir={abrirPelaTabela}
-                  {...ordenacaoDaTabela}
-                />
-              )
-            }
-          </ConteudoAssincrono>
-        </div>
-      </Painel>
+          <PainelDaAba id={ID_DAS_ABAS} valor="EXISTENTES" ativa={filtros.aba === 'EXISTENTES'}>
+            <div className={estilos.topo}>
+              <h2 className="visualmente-oculto">Lista de índices</h2>
+              <BarraFiltrosIndices
+                busca={busca}
+                filtros={filtros}
+                esquemas={esquemas}
+                tabelas={tabelas}
+                aoDigitarBusca={setBusca}
+                aoConfirmarBusca={() => mudarFiltros({ busca: buscaDigitada })}
+                aoMudar={mudarFiltros}
+              />
+              <ResumoDaLista
+                contagem={carregado ? resumirIndices(indices, filtrados.length, filtros) : ''}
+                complemento={
+                  carregado && indices.length > 0 ? (
+                    <p
+                      className={juntarClasses(estilos.coleta, coleta.incompleta && estilos.coletaIncompleta)}
+                      title={coleta.completo}
+                    >
+                      <Clock size={14} strokeWidth={2} aria-hidden="true" />
+                      {coleta.incompleta ? coleta.completo : coleta.curto}
+                    </p>
+                  ) : null
+                }
+                emEspera={lista.dados === null && lista.carregando}
+                rotuloDosAtalhos="Índices que pedem atenção"
+                atalhos={[
+                  atalho('INVALIDOS', OctagonAlert, 'inválido', 'inválidos', 'erro'),
+                  atalho('DUPLICADOS', CopyX, 'duplicado', 'duplicados'),
+                  atalho('SEM_USO', EyeOff, 'sem uso em 30 dias', 'sem uso em 30 dias'),
+                ]}
+                acao={lote ? <CopiarComandos key={lote.comandos.join(' ')} lote={lote} /> : null}
+                mostrarLimpar={temFiltroAtivoIndices(filtros) && filtrados.length > 0}
+                aoLimpar={limparFiltros}
+              />
+            </div>
 
-      {carregado && sugestoes.length > 0 ? (
-        <div ref={ancoraDasSugestoes} className={estilos.ancora} tabIndex={-1}>
-          <SugestoesDeIndices
-            sugestoes={sugestoes}
-            aoVerPlano={(consulta) => irParaOPlano(consulta.id)}
-            aoVerHistorico={verHistorico}
-          />
-        </div>
-      ) : null}
+            <div ref={regiao}>
+              <ConteudoAssincrono
+                resultado={lista}
+                esqueleto={<EsqueletoIndices linhas={LINHAS_DO_ESQUELETO} {...ordenacaoDaTabela} />}
+                tituloErro="Não foi possível carregar os índices"
+              >
+                {() =>
+                  indices.length === 0 ? (
+                    <EstadoVazio
+                      icone={Waypoints}
+                      titulo="O banco não tem índices"
+                      descricao="Os índices aparecem aqui assim que o banco tiver ao menos uma tabela com índice fora dos esquemas do sistema."
+                    />
+                  ) : filtrados.length === 0 ? (
+                    <EstadoVazio
+                      icone={SearchX}
+                      titulo="Nenhum índice encontrado"
+                      descricao={`Nenhum dos ${formatarNumero(indices.length)} índices corresponde aos filtros (${descreverFiltrosIndices(filtros).join(', ')}).`}
+                      acao={
+                        <Botao variante="secundario" onClick={limparFiltros}>
+                          Limpar filtros
+                        </Botao>
+                      }
+                    />
+                  ) : (
+                    <>
+                      <TabelaIndices
+                        indices={paginaAtual.itens}
+                        contexto={contexto}
+                        idAberto={aberto?.id ?? null}
+                        rolarAteAberto={!abertoPeloPainel}
+                        aoAbrir={abrirPelaTabela}
+                        {...ordenacaoDaTabela}
+                      />
+                      {paginaAtual.totalPaginas > 1 ? (
+                        <Paginacao
+                          rotulo="Páginas da lista de índices"
+                          resumo={`${formatarNumero(paginaAtual.primeiro)} a ${formatarNumero(paginaAtual.ultimo)} de ${formatarNumero(filtrados.length)}`}
+                          pagina={paginaAtual.pagina}
+                          totalPaginas={paginaAtual.totalPaginas}
+                          aoMudar={mudarPagina}
+                          className={estilos.paginacao}
+                        />
+                      ) : null}
+                    </>
+                  )
+                }
+              </ConteudoAssincrono>
+            </div>
+          </PainelDaAba>
+
+          <PainelDaAba id={ID_DAS_ABAS} valor="SUGERIDOS" ativa={filtros.aba === 'SUGERIDOS'}>
+            <ConteudoAssincrono
+              resultado={lista}
+              esqueleto={<EsqueletoSugestoesDeIndices />}
+              tituloErro="Não foi possível carregar os índices sugeridos"
+            >
+              {() =>
+                sugestoes.length === 0 ? (
+                  <EstadoVazio
+                    icone={Lightbulb}
+                    titulo="Nenhum índice sugerido"
+                    descricao="Os planos de execução dos últimos 30 dias não pedem nenhum índice que o banco ainda não tenha."
+                  />
+                ) : (
+                  <SugestoesDeIndices
+                    sugestoes={sugestoes}
+                    aoVerPlano={(consulta) => irParaOPlano(consulta.id)}
+                    aoVerHistorico={verHistorico}
+                  />
+                )
+              }
+            </ConteudoAssincrono>
+          </PainelDaAba>
+        </Painel>
+      </div>
 
       <DetalheIndice
         indice={aberto}

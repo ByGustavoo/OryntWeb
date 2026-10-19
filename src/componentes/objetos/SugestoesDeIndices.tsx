@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Check, Copy, History, Info, ListTree } from 'lucide-react';
 import sugeridos from '@/componentes/consultas/IndicesSugeridos.module.css';
-import { Botao, CabecalhoPainel, Painel } from '@/componentes/ui';
+import { Botao, EsqueletoLista } from '@/componentes/ui';
 import type { ConsultaDetalhadaDTO } from '@/modelos/consultas';
 import type { SugestaoDeIndiceDTO } from '@/modelos/objetos';
 import { useNotificacoes } from '@/provedores/ProvedorNotificacoes';
@@ -22,11 +22,11 @@ interface SugestoesDeIndicesProps extends AcoesDasConsultas {
 
 export function SugestoesDeIndices({ sugestoes, aoVerPlano, aoVerHistorico }: SugestoesDeIndicesProps) {
   return (
-    <Painel aria-labelledby="titulo-sugestoes-indices">
-      <CabecalhoPainel
-        titulo={<span id="titulo-sugestoes-indices">Índices sugeridos pelos planos</span>}
-        descricao="Os índices que faltam segundo os planos de execução dos últimos 30 dias, para avaliar e criar por conta própria"
-      />
+    <div className={estilos.corpo}>
+      <h2 className="visualmente-oculto">Índices sugeridos pelos planos</h2>
+      <p className={estilos.introducao}>
+        Os índices que faltam segundo os planos de execução dos últimos 30 dias, para avaliar e criar por conta própria.
+      </p>
       <ul className={estilos.lista}>
         {sugestoes.map((sugestao) => (
           <Sugestao key={sugestao.comando} sugestao={sugestao} aoVerPlano={aoVerPlano} aoVerHistorico={aoVerHistorico} />
@@ -39,7 +39,15 @@ export function SugestoesDeIndices({ sugestoes, aoVerPlano, aoVerHistorico }: Su
           rodar dentro de uma transação. Todo índice novo também deixa as gravações um pouco mais lentas.
         </span>
       </p>
-    </Painel>
+    </div>
+  );
+}
+
+export function EsqueletoSugestoesDeIndices() {
+  return (
+    <div className={estilos.corpo}>
+      <EsqueletoLista linhas={3} rotulo="Carregando os índices sugeridos…" />
+    </div>
   );
 }
 

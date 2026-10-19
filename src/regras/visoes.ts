@@ -12,6 +12,7 @@ import type {
 } from '@/modelos/objetos';
 import { formatarDuracaoExtensa, formatarNumero, formatarTempoRelativo, pluralizar } from '@/utilitarios/formatacao';
 import { correspondeABusca, limparBusca, termosDaBusca } from './buscaConsultas';
+import { lerPagina, paginaAposMudanca } from './paginacaoLocal';
 
 export const HORAS_ATE_DESATUALIZAR = 24;
 export const PERIODO_DAS_LEITURAS: PeriodoDashboard = 'ULTIMOS_30_DIAS';
@@ -62,6 +63,7 @@ export const filtrosVisoesIniciais: FiltrosVisoes = {
   situacao: null,
   ordenacao: 'NOME',
   direcao: 'ASC',
+  pagina: 1,
 };
 
 export interface ContextoDasVisoes {
@@ -164,7 +166,12 @@ export function lerFiltrosVisoes(valor: unknown): FiltrosVisoes {
     situacao: lerDaLista(filtrosSituacao, guardado.situacao),
     ordenacao,
     direcao: lerDaLista<DirecaoOrdenacao>(['ASC', 'DESC'], guardado.direcao) ?? direcaoInicialDaOrdenacao[ordenacao],
+    pagina: lerPagina(guardado.pagina),
   };
+}
+
+export function aplicarMudancaVisoes(filtros: FiltrosVisoes, mudanca: Partial<FiltrosVisoes>): FiltrosVisoes {
+  return lerFiltrosVisoes({ ...filtros, ...mudanca, pagina: paginaAposMudanca(filtros, mudanca) });
 }
 
 export function alternarOrdenacaoVisoes(

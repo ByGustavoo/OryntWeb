@@ -11,7 +11,7 @@ import type { ItemDeAtencao } from '@/componentes/objetos/PontosDeAtencao';
 import { ResumoDaLista } from '@/componentes/objetos/ResumoDaLista';
 import type { AtalhoDaLista } from '@/componentes/objetos/ResumoDaLista';
 import { EsqueletoVisoes, TabelaVisoes } from '@/componentes/objetos/TabelaVisoes';
-import { Botao, ConteudoAssincrono, EstadoVazio, Nota, Painel } from '@/componentes/ui';
+import { Botao, ConteudoAssincrono, EstadoVazio, Nota, Paginacao, Painel } from '@/componentes/ui';
 import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
 import { useFiltrosVisoes } from '@/ganchos/useFiltrosVisoes';
 import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
@@ -23,6 +23,7 @@ import { useConexao } from '@/provedores/ProvedorConexao';
 import type { SituacaoConexao } from '@/provedores/ProvedorConexao';
 import { limparBusca } from '@/regras/buscaConsultas';
 import type { SentidoDoPasso } from '@/regras/filtrosConsultas';
+import { paginaDaPosicao, paginarLista } from '@/regras/paginacaoLocal';
 import {
   PERIODO_DAS_LEITURAS,
   alternarOrdenacaoVisoes,
@@ -126,6 +127,8 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
   const buscaDigitada = limparBusca(busca);
   const esquemaInexistente = lista.dados !== null && filtros.esquema !== null && !esquemas.includes(filtros.esquema);
   const indiceAberta = aberta ? filtradas.findIndex((visao) => visao.id === aberta.id) : -1;
+  const paginaAtual = useMemo(() => paginarLista(filtradas, filtros.pagina), [filtradas, filtros.pagina]);
+  const paginaForaDaLista = lista.dados !== null && paginaAtual.pagina !== filtros.pagina;
 
   useEffect(() => {
     if (sessaoEncerrada) marcarDesconectada();
@@ -140,6 +143,10 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
   useEffect(() => {
     if (esquemaInexistente) mudarFiltros({ esquema: null });
   }, [esquemaInexistente, mudarFiltros]);
+
+  useEffect(() => {
+    if (paginaForaDaLista) mudarFiltros({ pagina: paginaAtual.pagina });
+  }, [paginaForaDaLista, paginaAtual.pagina, mudarFiltros]);
 
   const abrir = (visao: VisaoDTO) => {
     ultimaAberta.current = visao.id;
@@ -167,9 +174,18 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
     topo.current?.scrollIntoView({ block: 'start', behavior: prefereMovimentoReduzido() ? 'auto' : 'smooth' });
   };
 
+  const mudarPagina = (pagina: number) => {
+    mudarFiltros({ pagina });
+    topo.current?.scrollIntoView({ block: 'start', behavior: 'instant' });
+  };
+
   const percorrer = (sentido: SentidoDoPasso) => {
-    const vizinha = filtradas[indiceAberta + sentido];
-    if (indiceAberta >= 0 && vizinha) abrir(vizinha);
+    const posicao = indiceAberta + sentido;
+    const vizinha = filtradas[posicao];
+    if (indiceAberta < 0 || !vizinha) return;
+    abrir(vizinha);
+    const pagina = paginaDaPosicao(posicao);
+    if (pagina !== paginaAtual.pagina) mudarFiltros({ pagina });
   };
 
   const limparFiltros = () => {
@@ -272,14 +288,26 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
                   }
                 />
               ) : (
-                <TabelaVisoes
-                  visoes={filtradas}
-                  contexto={contexto}
-                  idAberta={aberta?.id ?? null}
-                  rolarAteAberta={!abertaPeloPainel}
-                  aoAbrir={abrirPelaTabela}
-                  {...ordenacaoDaTabela}
-                />
+                <>
+                  <TabelaVisoes
+                    visoes={paginaAtual.itens}
+                    contexto={contexto}
+                    idAberta={aberta?.id ?? null}
+                    rolarAteAberta={!abertaPeloPainel}
+                    aoAbrir={abrirPelaTabela}
+                    {...ordenacaoDaTabela}
+                  />
+                  {paginaAtual.totalPaginas > 1 ? (
+                    <Paginacao
+                      rotulo="Páginas da lista de visões"
+                      resumo={`${formatarNumero(paginaAtual.primeiro)} a ${formatarNumero(paginaAtual.ultimo)} de ${formatarNumero(filtradas.length)}`}
+                      pagina={paginaAtual.pagina}
+                      totalPaginas={paginaAtual.totalPaginas}
+                      aoMudar={mudarPagina}
+                      className={estilos.paginacao}
+                    />
+                  ) : null}
+                </>
               )
             }
           </ConteudoAssincrono>

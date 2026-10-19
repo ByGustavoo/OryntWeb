@@ -1,6 +1,22 @@
+.corpo {
+  padding: var(--espaco-5) var(--espaco-6);
+}
+
+.introducao {
+  margin-bottom: var(--espaco-5);
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-sm);
+}
+
 .lista {
   display: flex;
   flex-direction: column;
+}
+
+@media (max-width: 767px) {
+  .corpo {
+    padding: var(--espaco-4);
+  }
 }
 
 .sugestao {
