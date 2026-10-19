@@ -19,6 +19,7 @@ import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
 import { useFiltrosIndices } from '@/ganchos/useFiltrosIndices';
 import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
 import { useVerHistorico } from '@/ganchos/useVerHistorico';
+import { useObjetoDaChegada, useVerObjeto } from '@/ganchos/useVerObjeto';
 import { useVerPlano } from '@/ganchos/useVerPlano';
 import type {
   AbaIndices,
@@ -40,6 +41,7 @@ import {
   direcaoInicialDaOrdenacaoIndices,
   esquemasDosIndices,
   filtrarIndices,
+  idDaTabela,
   loteDeComandos,
   pontosDeAtencaoIndices,
   resumirIndices,
@@ -136,6 +138,9 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
   const { marcarDesconectada } = useConexao();
   const irParaOHistorico = useVerHistorico();
   const irParaOPlano = useVerPlano();
+  const irParaObjeto = useVerObjeto();
+  const chegada = useObjetoDaChegada();
+  const chegadaAtendida = useRef(false);
   const regiao = useRef<HTMLDivElement>(null);
   const inicio = useRef<HTMLDivElement>(null);
   const ultimoAberto = useRef<string | null>(null);
@@ -190,6 +195,19 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
   useEffect(() => {
     if (paginaForaDaLista) mudarFiltros({ pagina: paginaAtual.pagina });
   }, [paginaForaDaLista, paginaAtual.pagina, mudarFiltros]);
+
+  useEffect(() => {
+    if (chegada === null || chegadaAtendida.current || !carregado) return;
+    chegadaAtendida.current = true;
+    const alvo = indices.find((indice) => indice.id === chegada);
+    const posicao = alvo ? filtrados.indexOf(alvo) : -1;
+    if (alvo) {
+      ultimoAberto.current = alvo.id;
+      setAbertoPeloPainel(true);
+      setAberto(alvo);
+    }
+    mudarFiltros(posicao >= 0 ? { pagina: paginaDaPosicao(posicao), aba: 'EXISTENTES' } : {});
+  }, [chegada, carregado, indices, filtrados, mudarFiltros]);
 
   const rolarAte = (elemento: HTMLElement | null) =>
     elemento?.scrollIntoView({ block: 'start', behavior: prefereMovimentoReduzido() ? 'auto' : 'smooth' });
@@ -455,6 +473,10 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
         total={filtrados.length}
         aoPercorrer={percorrer}
         aoAbrirIndice={abrirIndice}
+        aoVerTabela={(indice: IndiceDTO) =>
+          indice.tabela.tipo === 'TABELA' ? irParaObjeto.tabela(idDaTabela(indice)) : irParaObjeto.visao(idDaTabela(indice))
+        }
+        aoAbrirFuncao={irParaObjeto.funcao}
         aoVerHistorico={(uso: UsoDoIndiceDTO) => verHistorico(uso.consulta)}
         aoVerPlano={(uso: UsoDoIndiceDTO) =>
           irParaOPlano(uso.consulta.id, uso.versao === uso.versaoAtual ? null : uso.versao)

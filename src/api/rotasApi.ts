@@ -25,6 +25,8 @@ export const rotasApi = {
   objetos: {
     visoes: '/objetos/visoes',
     indices: '/objetos/indices',
+    tabelas: '/objetos/tabelas',
+    funcoes: '/objetos/funcoes',
   },
   relatorios: {
     resumo: '/relatorios/resumo',

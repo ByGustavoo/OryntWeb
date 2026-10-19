@@ -16,6 +16,7 @@ import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
 import { useFiltrosVisoes } from '@/ganchos/useFiltrosVisoes';
 import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
 import { useVerHistorico } from '@/ganchos/useVerHistorico';
+import { useObjetoDaChegada, useVerObjeto } from '@/ganchos/useVerObjeto';
 import { useVerPlano } from '@/ganchos/useVerPlano';
 import type { ConsultaDetalhadaDTO } from '@/modelos/consultas';
 import type { FiltroSituacaoVisao, FiltrosVisoes, OrdenacaoVisoes, VisaoDTO } from '@/modelos/objetos';
@@ -106,6 +107,9 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
   const { marcarDesconectada } = useConexao();
   const irParaOHistorico = useVerHistorico();
   const irParaOPlano = useVerPlano();
+  const irParaObjeto = useVerObjeto();
+  const chegada = useObjetoDaChegada();
+  const chegadaAtendida = useRef(false);
   const regiao = useRef<HTMLDivElement>(null);
   const topo = useRef<HTMLDivElement>(null);
   const ultimaAberta = useRef<string | null>(null);
@@ -147,6 +151,19 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
   useEffect(() => {
     if (paginaForaDaLista) mudarFiltros({ pagina: paginaAtual.pagina });
   }, [paginaForaDaLista, paginaAtual.pagina, mudarFiltros]);
+
+  useEffect(() => {
+    if (chegada === null || chegadaAtendida.current || lista.dados === null) return;
+    chegadaAtendida.current = true;
+    const alvo = visoes.find((visao) => visao.id === chegada);
+    const posicao = alvo ? filtradas.indexOf(alvo) : -1;
+    if (alvo) {
+      ultimaAberta.current = alvo.id;
+      setAbertaPeloPainel(true);
+      setAberta(alvo);
+    }
+    mudarFiltros(posicao >= 0 ? { pagina: paginaDaPosicao(posicao) } : {});
+  }, [chegada, lista.dados, visoes, filtradas, mudarFiltros]);
 
   const abrir = (visao: VisaoDTO) => {
     ultimaAberta.current = visao.id;
@@ -322,7 +339,7 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
         posicao={indiceAberta >= 0 ? indiceAberta + 1 : null}
         total={filtradas.length}
         aoPercorrer={percorrer}
-        aoAbrirObjeto={abrirObjeto}
+        aoAbrirObjeto={(id: string) => (conhecidas.has(id) ? abrirObjeto(id) : irParaObjeto.tabela(id))}
         aoVerHistorico={(consulta: ConsultaDetalhadaDTO) => irParaOHistorico(consulta.id, PERIODO_DAS_LEITURAS)}
         aoVerPlano={(consulta: ConsultaDetalhadaDTO) => irParaOPlano(consulta.id)}
         aoFechar={() => setAberta(null)}

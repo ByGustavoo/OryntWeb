@@ -1,0 +1,5 @@
+.linha :global(.recharts-line-curve) {
+  stroke: var(--grafico-1);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}

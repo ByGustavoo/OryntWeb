@@ -8,7 +8,9 @@ import { formatarNumero, pluralizar } from '@/utilitarios/formatacao';
 
 const DURACAO_CONFIRMACAO_MS = 2400;
 
-export function CopiarComandos({ lote }: { lote: LoteDeComandos }) {
+const ERRO_PADRAO = 'O navegador bloqueou a área de transferência. Abra cada índice e copie o comando pelo detalhe.';
+
+export function CopiarComandos({ lote, seFalhar = ERRO_PADRAO }: { lote: LoteDeComandos; seFalhar?: string }) {
   const notificacoes = useNotificacoes();
   const [copiados, setCopiados] = useState(false);
   const quantidade = lote.comandos.length;
@@ -24,10 +26,7 @@ export function CopiarComandos({ lote }: { lote: LoteDeComandos }) {
       setCopiados(true);
       return;
     }
-    notificacoes.erro(
-      'Não foi possível copiar os comandos',
-      'O navegador bloqueou a área de transferência. Abra cada índice e copie o comando pelo detalhe.',
-    );
+    notificacoes.erro('Não foi possível copiar os comandos', seFalhar);
   };
 
   return (

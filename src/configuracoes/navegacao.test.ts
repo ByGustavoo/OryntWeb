@@ -91,14 +91,11 @@ describe('navegacao', () => {
     expect(destinoInicial(relatorios)).toBe(caminhos.relatoriosResumo);
   });
 
-  it('deixa Visões e Índices prontas e as outras telas de Objetos do banco planejadas', () => {
+  it('não deixa nenhuma tela dos objetos do banco como planejada', () => {
     const [, , objetos] = funcionalidades;
     if (!objetos) throw new Error('Faltam os objetos do banco para o teste.');
 
     expect(destinoInicial(objetos)).toBe(caminhos.objetosVisoes);
-    expect(telasPlanejadas(objetos).map((tela) => tela.destino)).toEqual([
-      caminhos.objetosTabelas,
-      caminhos.objetosFuncoes,
-    ]);
+    expect(telasPlanejadas(objetos)).toEqual([]);
   });
 });

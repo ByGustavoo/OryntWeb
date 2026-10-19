@@ -48,9 +48,9 @@ consulta que explica.
 
 * **Consultas SQL:** as telas Todas, Histórico e Planos de execução estão prontas, com dados demonstrativos.
 
-* **Objetos do banco:** as telas Visões e Índices estão prontas, com dados demonstrativos.
+* **Objetos do banco (concluído):** as telas Visões, Índices, Tabelas e Funções estão prontas, com dados demonstrativos.
 
-* **Planejado:** Usuários e permissões e as telas Tabelas e Funções de Objetos do banco. As funcionalidades existem na navegação, nos grupos "Análise" e "Gerenciamento", cada uma com as suas telas, e as planejadas mostram só o que está previsto.
+* **Planejado:** Usuários e permissões. As funcionalidades existem na navegação, nos grupos "Análise" e "Gerenciamento", cada uma com as suas telas, e as planejadas mostram só o que está previsto.
 
 * **Pendente:** a API (OryntAPI). O contrato que ela precisa cumprir está em [`docs/api-contrato.md`](docs/api-contrato.md).
 
@@ -226,13 +226,45 @@ consulta que explica.
 
 * Pontos de atenção no topo, do mais urgente ao menos urgente, com o espaço ocupado e as gravações que cada índice recebe
 
-* Detalhe de cada índice: o comando que o refaz ou o remove, pronto para copiar, a definição, as colunas, os outros índices da mesma tabela e as consultas cujo plano o lê, com atalhos para o plano, para a comparação de planos e para o Histórico
+* Detalhe de cada índice: o comando que o refaz ou o remove, pronto para copiar, a definição, as colunas, as funções que ele usa, com atalho para Funções, os outros índices da mesma tabela e as consultas cujo plano o lê, com atalhos para o plano, para a comparação de planos e para o Histórico
 
 * Com um filtro de situação, os comandos de todos os índices da lista copiados de uma vez, um por linha
 
 * Índices sugeridos pelos planos de execução numa aba ao lado da lista, com o comando de cada um e a consulta que o pediu
 
 * Data desde quando o uso é medido, e índices com menos de 30 dias de coleta em observação, para um índice novo não ser tomado por esquecido
+
+🔹 **Objetos do banco › Tabelas**
+
+* Inventário das tabelas de cada esquema, com busca pelo nome, pela descrição ou pelas colunas e filtros de esquema e situação
+
+* Linhas, tamanho total, leituras dos últimos 30 dias e última manutenção de cada tabela, com ordenação pelas colunas e 15 tabelas por página; as particionadas aparecem uma vez, com as partições somadas
+
+* Tabelas com idade de transação perto do limite, linhas mortas demais, estatísticas desatualizadas, lidas inteiras na maior parte das vezes ou sem chave primária em destaque, com atalhos que filtram cada caso
+
+* Pontos de atenção no topo, do mais urgente ao menos urgente, cada um com o atalho para a tabela ou para a lista filtrada
+
+* Detalhe de cada tabela: o comando de manutenção e os índices sugeridos pelos planos, prontos para copiar; o crescimento em 30 dias com um gráfico diário; o espaço em dados, índices e TOAST; as linhas vivas e mortas, a idade das transações e as datas de VACUUM e ANALYZE; os ajustes de autovacuum da tabela, com o valor do servidor; as partições, as colunas, os índices, as visões que dependem dela e as consultas cujo plano a lê
+
+* Com um filtro de situação, os comandos de todas as tabelas da lista copiados de uma vez, um por linha
+
+* Caminhos entre as telas: os índices da tabela abrem Índices, as visões abrem Visões, os gatilhos abrem a função deles em Funções, e a tabela de um índice ou de uma visão abre o detalhe dela em Tabelas
+
+🔹 **Objetos do banco › Funções**
+
+* Inventário das funções, dos procedimentos e das funções de gatilho de cada esquema, com busca pelo nome, pelos argumentos, pela descrição ou por um trecho do código e filtros de tipo, esquema, linguagem e situação
+
+* Chamadas, tempo total e tempo por chamada dos últimos 30 dias, com ordenação pelas colunas e 15 funções por página; cada sobrecarga numa linha, com os argumentos ao lado do nome
+
+* Funções que rodam com os privilégios do dono sem fixar o search_path, funções pesadas (100 ms ou mais por chamada) e funções sem chamadas em 30 dias em destaque, com atalhos que filtram cada caso; uma função de que dependem um gatilho ativo, um índice ou uma visão nunca entra como sem chamadas
+
+* Pontos de atenção no topo, do mais urgente ao menos urgente, cada um com o atalho para a função ou para a lista filtrada
+
+* Detalhe de cada função: o comando que fixa o caminho de busca ou remove a função, pronto para copiar; o uso, com a parte do tempo gasta dentro da própria função; os parâmetros, o retorno e a volatilidade explicados; o código com cópia; os gatilhos que a chamam, com atalho para a tabela; as consultas que a citam, com atalhos para o plano e o Histórico; e os índices e as visões que dependem dela
+
+* Com um filtro de situação, os comandos de todas as funções da lista copiados de uma vez, um por linha
+
+* Aviso quando o servidor não mede as chamadas das funções (`track_functions = none`), com os comandos que ligam a medida, e as funções que o servidor não mede marcadas como "Não medida"
 
 <br>
 
@@ -317,6 +349,9 @@ oryntSimulacao.falhar('/relatorios')
 
 // Esvazia os dados do dashboard e do resumo, para ver os estados vazios (esvaziar(false) restaura)
 oryntSimulacao.esvaziar()
+
+// Muda o track_functions simulado do servidor ('none', 'pl' ou 'all'; o padrão é 'pl')
+oryntSimulacao.rastrearFuncoes('none')
 
 // Encerra a conexão simulada com o banco
 oryntSimulacao.encerrarSessao()

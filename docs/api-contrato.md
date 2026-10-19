@@ -120,6 +120,8 @@ ajustar `PROBLEMAS_CONEXAO` em `src/modelos/conexao.ts`.
 | `GET` | `/consultas/{id}/plano` | O plano de execução registrado de uma consulta, as versões dele nos últimos 30 dias e os índices sugeridos | sim |
 | `GET` | `/objetos/visoes` | As visões comuns e materializadas do banco, com as dependências e as consultas que as leem | sim |
 | `GET` | `/objetos/indices` | Os índices do banco, com o tamanho, as leituras e as gravações dos últimos 30 dias, as consultas cujo plano os lê e os índices sugeridos pelos planos | sim |
+| `GET` | `/objetos/tabelas` | As tabelas do banco, com o espaço que ocupam, as linhas vivas e mortas, a manutenção, as leituras e as gravações dos últimos 30 dias, o crescimento diário, as partições, os ajustes de autovacuum, os índices, as visões que dependem delas e as consultas cujo plano as lê | sim |
+| `GET` | `/objetos/funcoes` | As funções e os procedimentos do banco, com o código, as chamadas e o tempo dos últimos 30 dias, os gatilhos que as chamam, os índices e as visões que dependem delas e as consultas que as citam | sim |
 | `GET` | `/sistema/versao` | Versão publicada da API e a data de lançamento | não |
 
 ---
@@ -515,6 +517,7 @@ interface IndiceDTO {
   leituras: number;
   linhasLidas: number;
   observadoDesde: string;
+  funcoes: string[];
   usos: UsoDoIndiceDTO[];
 }
 
@@ -531,6 +534,191 @@ interface ListaIndicesDTO {
   coletaDesde: string;
   indices: IndiceDTO[];
   sugestoes: SugestaoDeIndiceDTO[];
+}
+
+interface ColunaTabelaDTO {
+  nome: string;
+  tipo: string;
+  anulavel: boolean;
+  padrao: string | null;
+}
+
+type EstrategiaParticionamento = 'RANGE' | 'LIST' | 'HASH';
+
+interface ParticaoDTO {
+  id: string;
+  esquema: string;
+  nome: string;
+  limites: string;
+  tamanhoBytes: number;
+  linhas: number;
+  linhasMortas: number;
+  idadeTransacoes: number;
+  ultimoVacuum: string | null;
+  ultimoAutovacuum: string | null;
+}
+
+interface ParticionamentoDTO {
+  estrategia: EstrategiaParticionamento;
+  chave: string;
+  particoes: ParticaoDTO[];
+}
+
+interface IndiceDaTabelaDTO {
+  id: string;
+  nome: string;
+  colunas: string[];
+  restricao: RestricaoIndice | null;
+  unico: boolean;
+  valido: boolean;
+  tamanhoBytes: number;
+  leituras: number;
+}
+
+interface LeituraDaTabelaDTO {
+  consulta: ConsultaDetalhadaDTO;
+  etapa: string;
+  indice: string | null;
+  leiturasPorExecucao: number;
+}
+
+interface IndiceSugeridoDaTabelaDTO {
+  colunas: string[];
+  comando: string;
+  extensao: string | null;
+}
+
+interface AjusteAutovacuumDTO {
+  parametro: string;
+  valor: string;
+  padrao: string;
+}
+
+interface PontoDeCrescimentoDTO {
+  dia: string;
+  tamanhoBytes: number;
+  linhas: number;
+}
+
+interface TabelaDTO {
+  id: string;
+  esquema: string;
+  nome: string;
+  dono: string;
+  descricao: string | null;
+  colunas: ColunaTabelaDTO[];
+  chavePrimaria: string[] | null;
+  tamanhoDadosBytes: number;
+  tamanhoIndicesBytes: number;
+  tamanhoToastBytes: number;
+  linhas: number;
+  linhasMortas: number;
+  alteracoesDesdeAnalyze: number;
+  insercoes: number;
+  atualizacoes: number;
+  atualizacoesHot: number;
+  exclusoes: number;
+  leiturasSequenciais: number;
+  linhasLidasSequencialmente: number;
+  leiturasPorIndice: number;
+  linhasLidasPorIndice: number;
+  ultimoVacuum: string | null;
+  ultimoAutovacuum: string | null;
+  ultimoAnalyze: string | null;
+  ultimoAutoanalyze: string | null;
+  idadeTransacoes: number;
+  limiteCongelamento: number;
+  autovacuum: AjusteAutovacuumDTO[];
+  particionamento: ParticionamentoDTO | null;
+  indices: IndiceDaTabelaDTO[];
+  indicesSugeridos: IndiceSugeridoDaTabelaDTO[];
+  usadaPor: ReferenciaObjetoDTO[];
+  gatilhos: GatilhoDaTabelaDTO[];
+  leituras: LeituraDaTabelaDTO[];
+  crescimento: PontoDeCrescimentoDTO[];
+}
+
+interface ListaTabelasDTO {
+  geradoEm: string;
+  coletaDesde: string;
+  tabelas: TabelaDTO[];
+}
+
+type MomentoGatilho = 'ANTES' | 'DEPOIS' | 'EM_VEZ_DE';
+type EventoGatilho = 'INSERCAO' | 'ATUALIZACAO' | 'EXCLUSAO' | 'TRUNCAMENTO';
+type NivelGatilho = 'LINHA' | 'COMANDO';
+
+interface GatilhoDaTabelaDTO {
+  nome: string;
+  funcao: string;
+  momento: MomentoGatilho;
+  eventos: EventoGatilho[];
+  nivel: NivelGatilho;
+  ativo: boolean;
+}
+
+type TipoFuncao = 'FUNCAO' | 'PROCEDIMENTO' | 'GATILHO';
+type VolatilidadeFuncao = 'IMUTAVEL' | 'ESTAVEL' | 'VOLATIL';
+type ModoParametro = 'IN' | 'OUT' | 'INOUT' | 'VARIADIC';
+type RastreamentoFuncoes = 'NENHUM' | 'PL' | 'TODAS';
+
+interface ParametroFuncaoDTO {
+  nome: string | null;
+  tipo: string;
+  modo: ModoParametro;
+  padrao: string | null;
+}
+
+interface UsoDaFuncaoDTO {
+  chamadas: number;
+  tempoTotalMs: number;
+  tempoProprioMs: number;
+}
+
+interface GatilhoDaFuncaoDTO {
+  nome: string;
+  tabela: ReferenciaObjetoDTO;
+  momento: MomentoGatilho;
+  eventos: EventoGatilho[];
+  nivel: NivelGatilho;
+  ativo: boolean;
+}
+
+interface IndiceDaFuncaoDTO {
+  id: string;
+  nome: string;
+  tabela: string;
+}
+
+interface FuncaoDTO {
+  id: string;
+  esquema: string;
+  nome: string;
+  argumentos: string;
+  tipo: TipoFuncao;
+  linguagem: string;
+  retorno: string | null;
+  parametros: ParametroFuncaoDTO[];
+  volatilidade: VolatilidadeFuncao;
+  estrita: boolean;
+  segurancaDefinidor: boolean;
+  configuracoes: string[];
+  dono: string;
+  descricao: string | null;
+  definicao: string;
+  observadaDesde: string;
+  uso: UsoDaFuncaoDTO | null;
+  gatilhos: GatilhoDaFuncaoDTO[];
+  indices: IndiceDaFuncaoDTO[];
+  visoes: ReferenciaObjetoDTO[];
+  consultas: ConsultaDetalhadaDTO[];
+}
+
+interface ListaFuncoesDTO {
+  geradoEm: string;
+  coletaDesde: string;
+  rastreamento: RastreamentoFuncoes;
+  funcoes: FuncaoDTO[];
 }
 ```
 
@@ -1070,8 +1258,102 @@ coleta, contados a partir do mais recente entre `coletaDesde` e `observadoDesde`
 * `sugestoes` são os índices sugeridos pelos planos atuais das consultas dos 30 dias (os `sugestoes` de
   `PlanoExecucaoDTO`), um por comando, com a tabela qualificada (`esquema.nome`) e as consultas cujo plano o
   pede.
+* `funcoes` são as funções de que o índice depende (`pg_depend` do índice para `pg_proc`), as usadas na
+  expressão ou na condição dele, no mesmo formato do `id` de `GET /objetos/funcoes`. Um índice comum traz a
+  lista vazia.
 
 `401` sem conexão ativa, como as outras rotas de dados.
+
+### 11.3 `GET /objetos/tabelas`
+
+Sem parâmetros. Devolve `200` com `ListaTabelasDTO`: todas as tabelas comuns e particionadas da conexão ativa,
+fora dos mesmos esquemas do sistema de `GET /objetos/visoes`. As partições não entram como tabelas próprias:
+cada uma aparece em `particionamento.particoes` da tabela mãe, e as visões materializadas ficam em
+`GET /objetos/visoes`. A lista vem inteira, sem paginação: a tela busca, filtra, ordena e decide a situação de
+cada tabela no navegador. `geradoEm` e `coletaDesde` têm o mesmo sentido de `GET /objetos/indices`.
+
+* `id` é `esquema.nome`. `descricao` é o `COMMENT` da tabela, ou `null`, e `dono` é o dono dela.
+* `colunas` vêm na ordem de `attnum`, com o tipo como `format_type` o escreve, `anulavel` (o contrário de
+  `attnotnull`) e o `padrao` como `pg_get_expr(adbin, adrelid)` o escreve. `chavePrimaria` são as colunas da
+  chave primária, na ordem dela, ou `null` quando a tabela não tem uma.
+* `tamanhoDadosBytes` é `pg_relation_size` da tabela, `tamanhoIndicesBytes` é `pg_indexes_size` e
+  `tamanhoToastBytes` é `pg_total_relation_size` menos os dois. Numa tabela particionada, os três são a soma
+  das partições.
+* `linhas` é `n_live_tup`, `linhasMortas` é `n_dead_tup` e `alteracoesDesdeAnalyze` é `n_mod_since_analyze`
+  de `pg_stat_user_tables`. `insercoes`, `atualizacoes`, `atualizacoesHot` e `exclusoes` são quanto
+  `n_tup_ins`, `n_tup_upd`, `n_tup_hot_upd` e `n_tup_del` cresceram nos últimos 30 dias.
+* `leiturasSequenciais` e `linhasLidasSequencialmente` são quanto `seq_scan` e `seq_tup_read` cresceram nos
+  30 dias, e `leiturasPorIndice` e `linhasLidasPorIndice` o mesmo para `idx_scan` e `idx_tup_fetch`. A tela
+  marca uma tabela como lida inteira quando ela tem 10 MB de dados ou mais e a maior parte das linhas lidas veio
+  de leituras sequenciais. `leiturasPorIndice` é a soma das `leituras` dos índices dela em `GET /objetos/indices`.
+* `ultimoVacuum`, `ultimoAutovacuum`, `ultimoAnalyze` e `ultimoAutoanalyze` são `last_vacuum`,
+  `last_autovacuum`, `last_analyze` e `last_autoanalyze`, ou `null` quando o PostgreSQL não tem registro. Numa
+  tabela particionada, `ultimoVacuum` e `ultimoAutovacuum` são os mais recentes entre as partições.
+* `idadeTransacoes` é `age(relfrozenxid)`; numa tabela particionada, a maior entre as partições.
+  `limiteCongelamento` é o `autovacuum_freeze_max_age` que vale para a tabela: o dela, quando definido, ou o do
+  servidor.
+* `autovacuum` são só os parâmetros de autovacuum definidos na própria tabela (`reloptions`), com o `valor`
+  dela e o `padrao` do servidor (`pg_settings`). Uma tabela sem ajustes traz a lista vazia.
+* `particionamento` é `null` numa tabela comum. Numa particionada, traz a estratégia, a chave como
+  `pg_get_partkeydef` a escreve e as partições, com os limites como `pg_get_expr(relpartbound, oid)` os escreve e
+  os números de cada uma.
+* `indices` resume os índices da tabela, com os mesmos `id`, tamanho e leituras de `GET /objetos/indices`.
+  `indicesSugeridos` são as sugestões dos planos atuais para esta tabela, as mesmas de `sugestoes` daquela rota.
+* `usadaPor` são as visões que leem a tabela diretamente (`pg_depend` pelas regras de `pg_rewrite`).
+* `gatilhos` são os gatilhos da tabela que não são internos (`pg_trigger` com `tgisinternal` falso, o que deixa
+  de fora os das chaves estrangeiras), com a função que cada um chama no mesmo formato do `id` de
+  `GET /objetos/funcoes`, o momento, os eventos, o nível e `ativo` falso quando `tgenabled` é `D`.
+* `leituras` são as etapas dos planos atuais das consultas dos 30 dias que leem a tabela, com os números que
+  `GET /consultas?periodo=ULTIMOS_30_DIAS` devolve para elas. `etapa` é o `Node Type`, `indice` é o índice que
+  a etapa usa (o do `Bitmap Index Scan` filho num `Bitmap Heap Scan`) ou `null` num `Seq Scan`, e
+  `leiturasPorExecucao` são os `Actual Loops` dela.
+* `crescimento` tem um ponto por dia dos últimos 30 dias, mais o dia de hoje, do mais antigo ao mais novo:
+  `dia` no formato `AAAA-MM-DD` do fuso do banco, `tamanhoBytes` como `pg_total_relation_size` e `linhas` como
+  `n_live_tup`, na última amostra daquele dia. O último ponto é igual aos números atuais da tabela. Com menos de
+  30 dias de coleta, a lista começa na primeira amostra.
+
+A tela só lê; o texto que ela copia é só o comando, sem aviso de demonstração. `401` sem conexão ativa, como as
+outras rotas de dados.
+
+---
+
+### 11.4 `GET /objetos/funcoes`
+
+Sem parâmetros. Devolve `200` com `ListaFuncoesDTO`: as funções e os procedimentos da conexão ativa (`pg_proc`
+com `prokind` `f` ou `p`), fora dos mesmos esquemas do sistema de `GET /objetos/visoes` e fora das extensões
+(sem dependência `e` em `pg_depend`). Agregações e funções de janela ficam de fora. A lista vem inteira, sem
+paginação: a tela busca, filtra, ordena e decide a situação de cada função no navegador. `geradoEm` e
+`coletaDesde` têm o mesmo sentido de `GET /objetos/indices`, e `rastreamento` é o `track_functions` do servidor
+(`none`, `pl` ou `all`).
+
+* `id` é `esquema.nome(argumentos)`, e `argumentos` é `pg_get_function_identity_arguments` (só os tipos de
+  entrada, separados por vírgula e espaço): é o que separa as sobrecargas e o que um `ALTER FUNCTION` ou um
+  `DROP FUNCTION` aceita depois do nome.
+* `tipo` é `PROCEDIMENTO` quando `prokind` é `p`, `GATILHO` quando a função devolve `trigger` (ou
+  `event_trigger`) e `FUNCAO` no resto. `linguagem` é o `lanname`. `retorno` é
+  `pg_get_function_result`, ou `null` num procedimento.
+* `parametros` são todos os parâmetros, na ordem, com o nome (ou `null`), o tipo como `format_type` o escreve,
+  o modo (`proargmodes`) e o valor padrão como `pg_get_function_arguments` o escreve.
+* `volatilidade` vem de `provolatile`, `estrita` de `proisstrict` e `segurancaDefinidor` de `prosecdef`.
+  `configuracoes` é `proconfig` como o banco o guarda (`search_path=auditoria, pg_temp`). A tela marca o risco
+  de segurança quando `segurancaDefinidor` é verdadeiro e nenhuma configuração começa por `search_path=`.
+* `descricao` é o `COMMENT` da função e `definicao` é `pg_get_functiondef`, com o cabeçalho e o corpo.
+  `observadaDesde` é quando a API viu a função pela primeira vez: uma função medida e sem chamadas só é marcada
+  sem chamadas depois de 30 dias de coleta, contados do mais recente entre `coletaDesde` e `observadaDesde`.
+* `uso` é `null` quando o servidor não mede a função: sempre com `track_functions = none`, e com `pl` nas
+  funções em `sql`, `c` e `internal`. Quando medida, `chamadas`, `tempoTotalMs` e `tempoProprioMs` são quanto
+  `calls`, `total_time` e `self_time` de `pg_stat_user_functions` cresceram nos 30 dias. Uma função medida que
+  não aparece em `pg_stat_user_functions` não foi chamada e vem com zeros.
+* `gatilhos` são os gatilhos que chamam a função, no formato de `gatilhos` de `GET /objetos/tabelas`, com a
+  tabela no lugar da função. `indices` são os índices cuja expressão ou condição usa a função, e `visoes` as
+  visões que a citam (os dois por `pg_depend`), com o mesmo `id` de `GET /objetos/indices` e de
+  `GET /objetos/visoes`. As tabelas que a função lê por dentro não entram: o PostgreSQL só registra essa
+  dependência nas funções em SQL com corpo `BEGIN ATOMIC`.
+* `consultas` são as consultas dos 30 dias cujo texto cita a função pelo nome, com os números que
+  `GET /consultas?periodo=ULTIMOS_30_DIAS` devolve para elas.
+
+A tela só lê; o texto que ela copia é só o comando ou o código, sem aviso de demonstração. `401` sem conexão
+ativa, como as outras rotas de dados.
 
 ---
 
@@ -1095,4 +1377,7 @@ coleta, contados a partir do mais recente entre `coletaDesde` e `observadoDesde`
   atualização das materializadas além dos 30 dias e se as visões de extensões entram na lista.
 * Índices: com que frequência a API amostra `pg_stat_user_indexes` e `pg_stat_user_tables`, o que faz depois de um
   `pg_stat_reset` e se os índices das tabelas de extensões entram na lista.
+* Funções: com que frequência a API amostra `pg_stat_user_functions`, o que faz depois de um `pg_stat_reset`,
+  como liga uma consulta à função que ela cita (análise do texto, como nas visões) e se guarda quando o
+  `track_functions` mudou no período, o que deixaria uma parte dos 30 dias sem medida.
 * Planos de execução: como a API captura os planos (`auto_explain` com amostragem, `log_min_duration`), quantos guarda por consulta, como decide que dois planos são a mesma versão e se os valores dos parâmetros (`$1`) entram no plano guardado, o que exigiria cuidado com dados pessoais.

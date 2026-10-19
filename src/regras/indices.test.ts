@@ -48,6 +48,7 @@ function criarIndice(nome: string, campos: Partial<IndiceDTO> = {}): IndiceDTO {
     leituras: 10,
     linhasLidas: 10,
     observadoDesde: coletaDesde,
+    funcoes: [],
     usos: [],
     ...campos,
   };
