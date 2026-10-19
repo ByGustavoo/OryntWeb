@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import type { FiltrosVisoes } from '@/modelos/objetos';
-import { lerFiltrosVisoes } from '@/regras/visoes';
+import { aplicarMudancaVisoes, lerFiltrosVisoes } from '@/regras/visoes';
 
 interface FiltrosDaTela {
   filtros: FiltrosVisoes;
@@ -24,7 +24,7 @@ export function useFiltrosVisoes(caminho: string): FiltrosDaTela {
 
   const mudarFiltros = useCallback(
     (mudanca: Partial<FiltrosVisoes>) => {
-      const proximos = lerFiltrosVisoes({ ...filtrosAtuais.current, ...mudanca });
+      const proximos = aplicarMudancaVisoes(filtrosAtuais.current, mudanca);
       filtrosAtuais.current = proximos;
       navegar(caminho, { replace: true, state: { visoes: proximos } });
     },

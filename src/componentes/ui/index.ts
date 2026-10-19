@@ -1,3 +1,5 @@
+export { Abas, PainelDaAba, idDaAba } from './Abas';
+export type { Aba } from './Abas';
 export { Botao } from './Botao';
 export type { BotaoProps, TamanhoBotao, VarianteBotao } from './Botao';
 export { BotaoIcone } from './BotaoIcone';

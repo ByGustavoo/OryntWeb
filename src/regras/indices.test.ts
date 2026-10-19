@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { IndiceDTO, SugestaoDeIndiceDTO } from '@/modelos/objetos';
 import {
+  aplicarMudancaIndices,
   comandoDoIndice,
   filtrarIndices,
   filtrosIndicesIniciais,
@@ -141,6 +142,28 @@ describe('lerFiltrosIndices', () => {
       situacao: 'SEM_USO',
     });
     expect(lerFiltrosIndices(null)).toEqual(filtrosIndicesIniciais);
+  });
+
+  it('lê a página e a aba e descarta valores fora do formato', () => {
+    expect(lerFiltrosIndices({ pagina: 2, aba: 'SUGERIDOS' })).toMatchObject({ pagina: 2, aba: 'SUGERIDOS' });
+    expect(lerFiltrosIndices({ pagina: 0, aba: 'OUTRA' })).toMatchObject({ pagina: 1, aba: 'EXISTENTES' });
+    expect(lerFiltrosIndices({ pagina: 1.5 })).toMatchObject({ pagina: 1 });
+    expect(lerFiltrosIndices({ pagina: '2' })).toMatchObject({ pagina: 1 });
+  });
+});
+
+describe('aplicarMudancaIndices', () => {
+  const naSegundaPagina = { ...filtrosIndicesIniciais, pagina: 2 };
+
+  it('mantém a página quando muda só a página ou a aba', () => {
+    expect(aplicarMudancaIndices(naSegundaPagina, { aba: 'SUGERIDOS' })).toMatchObject({ pagina: 2, aba: 'SUGERIDOS' });
+    expect(aplicarMudancaIndices(naSegundaPagina, { pagina: 3 })).toMatchObject({ pagina: 3 });
+  });
+
+  it('volta à primeira página com qualquer outra mudança', () => {
+    expect(aplicarMudancaIndices(naSegundaPagina, { busca: 'pedidos' })).toMatchObject({ pagina: 1, busca: 'pedidos' });
+    expect(aplicarMudancaIndices(naSegundaPagina, { ordenacao: 'TAMANHO', direcao: 'DESC' })).toMatchObject({ pagina: 1 });
+    expect(aplicarMudancaIndices(naSegundaPagina, { situacao: 'SEM_USO', aba: 'EXISTENTES' })).toMatchObject({ pagina: 1 });
   });
 });
 

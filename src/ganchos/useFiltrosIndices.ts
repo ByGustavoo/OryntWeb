@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import type { FiltrosIndices } from '@/modelos/objetos';
-import { lerFiltrosIndices } from '@/regras/indices';
+import { aplicarMudancaIndices, lerFiltrosIndices } from '@/regras/indices';
 
 interface FiltrosDaTela {
   filtros: FiltrosIndices;
@@ -24,7 +24,7 @@ export function useFiltrosIndices(caminho: string): FiltrosDaTela {
 
   const mudarFiltros = useCallback(
     (mudanca: Partial<FiltrosIndices>) => {
-      const proximos = lerFiltrosIndices({ ...filtrosAtuais.current, ...mudanca });
+      const proximos = aplicarMudancaIndices(filtrosAtuais.current, mudanca);
       filtrosAtuais.current = proximos;
       navegar(caminho, { replace: true, state: { indices: proximos } });
     },

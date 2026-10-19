@@ -198,7 +198,7 @@ export function TabelaVisoes({
   useEffect(() => {
     if (idAberta === null || !rolarAteAberta) return;
     corpo.current?.querySelector('[aria-current="true"]')?.scrollIntoView({ block: 'nearest' });
-  }, [idAberta, rolarAteAberta]);
+  }, [idAberta, rolarAteAberta, visoes]);
 
   const abrir = (evento: MouseEvent<HTMLTableRowElement>, visao: VisaoDTO) => {
     evento.currentTarget.querySelector('button')?.focus({ preventScroll: true });

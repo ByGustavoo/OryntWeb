@@ -3,6 +3,7 @@ import type { ConsultaDetalhadaDTO } from '@/modelos/consultas';
 import type { MaterializacaoDTO, ReferenciaObjetoDTO, VisaoDTO } from '@/modelos/objetos';
 import {
   alternarOrdenacaoVisoes,
+  aplicarMudancaVisoes,
   avisosDaVisao,
   definicaoLegivel,
   descreverFiltrosVisoes,
@@ -179,8 +180,24 @@ describe('filtros das visões', () => {
     expect(lerFiltrosVisoes(null)).toEqual(filtrosVisoesIniciais);
     expect(
       lerFiltrosVisoes({ busca: '  vendas   diarias ', tipo: 'OUTRO', esquema: 'drop table;', situacao: 'SEM_LEITURA', ordenacao: 'TAMANHO' }),
-    ).toEqual({ busca: 'vendas diarias', tipo: null, esquema: null, situacao: 'SEM_LEITURA', ordenacao: 'TAMANHO', direcao: 'DESC' });
+    ).toEqual({
+      busca: 'vendas diarias',
+      tipo: null,
+      esquema: null,
+      situacao: 'SEM_LEITURA',
+      ordenacao: 'TAMANHO',
+      direcao: 'DESC',
+      pagina: 1,
+    });
     expect(lerFiltrosVisoes({ esquema: 'relatorios', direcao: 'ASC' }).esquema).toBe('relatorios');
+    expect(lerFiltrosVisoes({ pagina: 2 }).pagina).toBe(2);
+  });
+
+  it('volta à primeira página com qualquer mudança que não seja a página', () => {
+    const naSegundaPagina = { ...filtrosVisoesIniciais, pagina: 2 };
+    expect(aplicarMudancaVisoes(naSegundaPagina, { pagina: 3 }).pagina).toBe(3);
+    expect(aplicarMudancaVisoes(naSegundaPagina, { tipo: 'COMUM' }).pagina).toBe(1);
+    expect(aplicarMudancaVisoes(naSegundaPagina, { ordenacao: 'TAMANHO', direcao: 'DESC' }).pagina).toBe(1);
   });
 
   it('resume a contagem e descreve os filtros em uso', () => {
