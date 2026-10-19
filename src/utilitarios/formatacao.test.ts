@@ -149,6 +149,7 @@ describe('formatarTamanho', () => {
     expect(formatarTamanho(1024)).toBe('1,0 kB');
     expect(formatarTamanho(1536)).toBe('1,5 kB');
     expect(formatarTamanho(3 * 1024 * 1024)).toBe('3,0 MB');
+    expect(formatarTamanho(2150 * 1024 * 1024)).toBe('2,1 GB');
   });
 });
 

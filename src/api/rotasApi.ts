@@ -22,6 +22,10 @@ export const rotasApi = {
     historico: (id: string) => `/consultas/${id}/historico`,
     plano: (id: string) => `/consultas/${id}/plano`,
   },
+  objetos: {
+    visoes: '/objetos/visoes',
+    indices: '/objetos/indices',
+  },
   relatorios: {
     resumo: '/relatorios/resumo',
   },

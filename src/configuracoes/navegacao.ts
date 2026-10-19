@@ -83,13 +83,11 @@ const objetosBanco: Funcionalidade = {
       rotulo: 'Visões',
       destino: caminhos.objetosVisoes,
       descricao: 'Visões e visões materializadas de cada esquema.',
-      planejado: true,
     },
     {
       rotulo: 'Índices',
       destino: caminhos.objetosIndices,
       descricao: 'O tamanho e o uso de cada índice, com os pouco usados em evidência.',
-      planejado: true,
     },
     {
       rotulo: 'Tabelas',

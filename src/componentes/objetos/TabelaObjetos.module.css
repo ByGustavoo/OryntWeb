@@ -1,0 +1,347 @@
+.conteiner {
+  container: lista-objetos / inline-size;
+}
+
+.ordenacaoCompacta {
+  display: none;
+  padding: 0 var(--espaco-4) var(--espaco-4);
+}
+
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--tamanho-sm);
+}
+
+.tabela th,
+.tabela thead td {
+  padding: var(--espaco-2) var(--espaco-3);
+  border-block: 1px solid var(--borda);
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.tabela th.colunaVisao,
+.tabela th.colunaNumerica {
+  padding-block: var(--espaco-1);
+}
+
+.tabela th.colunaNumerica {
+  text-align: right;
+}
+
+.tabela tbody td {
+  padding: var(--espaco-3);
+  border-bottom: 1px solid var(--borda);
+  vertical-align: middle;
+}
+
+.tabela tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.tabela th:first-child,
+.tabela tbody td:first-child {
+  padding-left: var(--espaco-6);
+}
+
+.tabela thead td:last-child,
+.tabela tbody td:last-child {
+  padding-right: var(--espaco-5);
+}
+
+.colunaTipo {
+  width: 9rem;
+}
+
+.colunaSituacao {
+  width: 11rem;
+}
+
+.colunaSeta {
+  width: calc(16px + var(--espaco-5));
+}
+
+.tabela thead td.colunaSeta,
+.tabela tbody td.celulaSeta {
+  padding-left: 0;
+}
+
+.ordenar {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-1);
+  min-height: 28px;
+  margin-inline: calc(var(--espaco-2) * -1);
+  padding-inline: var(--espaco-2);
+  border-radius: var(--raio-sm);
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+  transition:
+    background-color var(--duracao-rapida) var(--curva-saida),
+    color var(--duracao-rapida) var(--curva-saida);
+}
+
+.ordenar:focus-visible {
+  outline: none;
+  box-shadow: var(--anel-foco);
+}
+
+.ordenarAtivo {
+  color: var(--texto);
+}
+
+.ordenar svg,
+.celulaSeta svg {
+  flex-shrink: 0;
+  max-width: none;
+}
+
+.linha {
+  scroll-margin-block: calc(var(--altura-cabecalho) + var(--espaco-2)) var(--espaco-4);
+  cursor: pointer;
+}
+
+.linha[aria-current='true'] td {
+  background-color: var(--destaque-suave);
+}
+
+.celulaVisao {
+  width: 100%;
+  max-width: 0;
+}
+
+.abrir {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  border-radius: var(--raio-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.abrir:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 var(--espaco-1) var(--superficie),
+    0 0 0 calc(var(--espaco-1) + 3px) var(--destaque);
+}
+
+.nome {
+  overflow: hidden;
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.esquema {
+  color: var(--texto-terciario);
+  font-weight: var(--peso-regular);
+}
+
+.descricao {
+  overflow: hidden;
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-xs);
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.semDescricao {
+  color: var(--texto-terciario);
+}
+
+.celulaTipo {
+  white-space: nowrap;
+}
+
+.celulaEmLinhas {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.textoPrincipal {
+  color: var(--texto);
+  line-height: 1.5;
+}
+
+.textoSecundario {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  line-height: 1.5;
+}
+
+.celulaNumerica {
+  color: var(--texto);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.secundario,
+.vazio {
+  color: var(--texto-terciario);
+}
+
+.linhaEmEspera {
+  display: flex;
+  align-items: center;
+  height: 1.5em;
+}
+
+.celulaVisao .linhaEmEspera + .linhaEmEspera {
+  height: 1.5em;
+  margin-top: 2px;
+  font-size: var(--tamanho-xs);
+}
+
+.celulaNumerica .linhaEmEspera {
+  justify-content: flex-end;
+}
+
+.lugarDaSeta {
+  display: inline-block;
+  width: 16px;
+}
+
+.celulaSeta {
+  color: var(--texto-terciario);
+  line-height: 0;
+  text-align: right;
+}
+
+.celulaSeta svg {
+  transition:
+    color var(--duracao-rapida) var(--curva-saida),
+    transform var(--duracao-base) var(--curva-saida);
+}
+
+.linha:has(.abrir:focus-visible) .celulaSeta svg {
+  color: var(--destaque);
+  transform: translateX(3px);
+}
+
+@media (hover: hover) {
+  .ordenar:hover {
+    background-color: var(--superficie-suave);
+    color: var(--texto);
+  }
+
+  .linha:hover td {
+    background-color: color-mix(in srgb, var(--superficie-suave) 60%, transparent);
+  }
+
+  .linha:hover .celulaSeta svg {
+    color: var(--destaque);
+    transform: translateX(3px);
+  }
+}
+
+@container lista-objetos (max-width: 1000px) {
+  .tabela th,
+  .tabela tbody td {
+    padding-inline: var(--espaco-2);
+  }
+
+  .colunaTipo,
+  .colunaSituacao {
+    width: auto;
+  }
+}
+
+@container lista-objetos (max-width: 860px) {
+  .ordenacaoCompacta {
+    display: flex;
+  }
+
+  .tabela,
+  .tabela tbody {
+    display: block;
+  }
+
+  .tabela thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .tabela tbody tr {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--espaco-3) var(--espaco-4);
+    padding: var(--espaco-4);
+    border-top: 1px solid var(--borda);
+  }
+
+  .tabela tbody td,
+  .tabela tbody td:first-child,
+  .tabela tbody td:last-child {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--espaco-1);
+    padding: 0;
+    border-bottom: none;
+    text-align: left;
+  }
+
+  .tabela td[data-rotulo]::before {
+    content: attr(data-rotulo);
+    color: var(--texto-terciario);
+    font-family: var(--fonte-interface);
+    font-size: var(--tamanho-xs);
+    letter-spacing: 0;
+  }
+
+  .tabela tbody td.celulaVisao {
+    grid-column: 1 / -1;
+    width: auto;
+    max-width: none;
+    align-items: stretch;
+    padding-right: var(--espaco-8);
+  }
+
+  .nome,
+  .descricao {
+    white-space: normal;
+  }
+
+  .nome {
+    overflow-wrap: anywhere;
+  }
+
+  .tabela tbody td.celulaSeta {
+    position: absolute;
+    top: var(--espaco-4);
+    right: var(--espaco-4);
+    height: calc(var(--tamanho-sm) * 1.5);
+    justify-content: center;
+  }
+
+  .celulaNumerica .linhaEmEspera {
+    justify-content: flex-start;
+  }
+
+  .linha:hover td {
+    background-color: transparent;
+  }
+}
+
+@container lista-objetos (max-width: 520px) {
+  .tabela tbody tr {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

@@ -204,7 +204,6 @@ function ItemMenu({ item, recolhido, marcarPlanejados = false }: ItemMenuProps) 
         >
           <Icone className={estilos.iconeItem} size={18} strokeWidth={2} aria-hidden="true" />
           <span className={estilos.rotuloItem}>{item.rotulo}</span>
-          {planejado && marcarPlanejados ? <span className={estilos.marcaPlanejado}>Em breve</span> : null}
           <ChevronDown
             className={juntarClasses(estilos.seta, aberto && estilos.setaAberta)}
             size={16}
@@ -225,7 +224,7 @@ function ItemMenu({ item, recolhido, marcarPlanejados = false }: ItemMenuProps) 
                   className={({ isActive }) => juntarClasses(estilos.filho, isActive && estilos.filhoAtivo)}
                 >
                   <span className={estilos.rotuloFilho}>{filho.rotulo}</span>
-                  {filho.planejado && marcarPlanejados && !planejado ? (
+                  {filho.planejado && marcarPlanejados ? (
                     <span className={estilos.marcaPlanejado}>Em breve</span>
                   ) : null}
                 </NavLink>

@@ -48,7 +48,9 @@ consulta que explica.
 
 * **Consultas SQL:** as telas Todas, Histórico e Planos de execução estão prontas, com dados demonstrativos.
 
-* **Planejado:** Usuários e permissões e Objetos do banco. As funcionalidades existem na navegação, nos grupos "Análise" e "Gerenciamento", cada uma com as suas telas, e as planejadas mostram só o que está previsto.
+* **Objetos do banco:** as telas Visões e Índices estão prontas, com dados demonstrativos.
+
+* **Planejado:** Usuários e permissões e as telas Tabelas e Funções de Objetos do banco. As funcionalidades existem na navegação, nos grupos "Análise" e "Gerenciamento", cada uma com as suas telas, e as planejadas mostram só o que está previsto.
 
 * **Pendente:** a API (OryntAPI). O contrato que ela precisa cumprir está em [`docs/api-contrato.md`](docs/api-contrato.md).
 
@@ -199,6 +201,38 @@ consulta que explica.
 * Cópia do plano em texto, como o psql mostra, ou em JSON, para colar no explain.depesz.com ou no PEV2
 
 * Atalho "Ver plano" no modal de detalhes da lista Todas, no Histórico e nas tabelas de consultas do Dashboard, do Resumo e da Comparação
+
+🔹 **Objetos do banco › Visões**
+
+* Inventário das visões comuns e materializadas de cada esquema, com busca pelo nome ou pela descrição e filtros de tipo, esquema e situação
+
+* Leituras nos últimos 30 dias, tamanho e última atualização de cada visão, com ordenação pelas colunas
+
+* Materializadas desatualizadas (mais de 24 horas sem atualizar) e sem dados marcadas na lista, e visões que nenhuma consulta leu em 30 dias em destaque, com atalhos que filtram cada caso
+
+* Pontos de atenção no topo, do mais urgente ao menos urgente, cada um com o atalho para a visão ou para a lista filtrada
+
+* Detalhe de cada visão: definição com cópia, colunas, do que ela depende e quem depende dela, e as consultas que a leem, com atalhos para o Histórico e o plano de execução
+
+* Nas materializadas, o tamanho, as linhas e o comando REFRESH que as atualiza, com quantas vezes rodou e quanto tempo levou
+
+🔹 **Objetos do banco › Índices**
+
+* Inventário dos índices de cada tabela, com busca pelo nome, pela tabela ou pelas colunas e filtros de esquema, tabela e situação
+
+* Método, chave primária, restrição única ou condição de cada índice, com o tamanho e as leituras dos últimos 30 dias, e ordenação pelas colunas
+
+* Índices inválidos, duplicados, redundantes e sem uso em 30 dias em destaque, com atalhos que filtram cada caso; chaves primárias e índices únicos nunca entram como sem uso
+
+* Pontos de atenção no topo, do mais urgente ao menos urgente, com o espaço ocupado e as gravações que cada índice recebe
+
+* Detalhe de cada índice: o comando que o refaz ou o remove, pronto para copiar, a definição, as colunas, os outros índices da mesma tabela e as consultas cujo plano o lê, com atalhos para o plano, para a comparação de planos e para o Histórico
+
+* Com um filtro de situação, os comandos de todos os índices da lista copiados de uma vez, um por linha
+
+* Índices sugeridos pelos planos de execução, com o comando de cada um e a consulta que o pediu
+
+* Data desde quando o uso é medido, e índices com menos de 30 dias de coleta em observação, para um índice novo não ser tomado por esquecido
 
 <br>
 

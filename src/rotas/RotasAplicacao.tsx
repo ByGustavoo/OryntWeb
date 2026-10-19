@@ -17,6 +17,8 @@ const PaginaComparacaoRelatorio = lazy(() => import('@/paginas/PaginaComparacaoR
 const PaginaTodasConsultas = lazy(() => import('@/paginas/PaginaTodasConsultas'));
 const PaginaHistoricoConsulta = lazy(() => import('@/paginas/PaginaHistoricoConsulta'));
 const PaginaPlanosExecucao = lazy(() => import('@/paginas/PaginaPlanosExecucao'));
+const PaginaVisoes = lazy(() => import('@/paginas/PaginaVisoes'));
+const PaginaIndices = lazy(() => import('@/paginas/PaginaIndices'));
 const PaginaFuncionalidadePlanejada = lazy(() => import('@/paginas/PaginaFuncionalidadePlanejada'));
 const PaginaConfiguracoes = lazy(() => import('@/paginas/PaginaConfiguracoes'));
 const PaginaNaoEncontrada = lazy(() => import('@/paginas/PaginaNaoEncontrada'));
@@ -48,6 +50,8 @@ export function RotasAplicacao() {
             <Route path={caminhos.consultasTodas} element={<PaginaTodasConsultas />} />
             <Route path={caminhos.consultasHistorico} element={<PaginaHistoricoConsulta />} />
             <Route path={caminhos.consultasPlanos} element={<PaginaPlanosExecucao />} />
+            <Route path={caminhos.objetosVisoes} element={<PaginaVisoes />} />
+            <Route path={caminhos.objetosIndices} element={<PaginaIndices />} />
             {funcionalidades.map((funcionalidade) => (
               <Route
                 key={funcionalidade.destino}

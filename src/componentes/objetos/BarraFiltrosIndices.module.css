@@ -1,0 +1,39 @@
+.conteiner {
+  container: filtros-indices / inline-size;
+}
+
+.barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-3);
+}
+
+.busca {
+  flex: 1 1 15rem;
+}
+
+.selecao {
+  flex: 0 0 12.5rem;
+}
+
+@container filtros-indices (max-width: 980px) {
+  .busca {
+    flex-basis: 100%;
+  }
+
+  .selecao {
+    flex: 1 1 11rem;
+  }
+}
+
+@container filtros-indices (max-width: 560px) {
+  .selecao {
+    flex-basis: 100%;
+  }
+
+  .emPar {
+    flex: 1 1 calc(50% - var(--espaco-3) / 2);
+    min-width: 0;
+  }
+}

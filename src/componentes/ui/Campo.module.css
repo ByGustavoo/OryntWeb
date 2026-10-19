@@ -222,6 +222,24 @@
   color: var(--texto-terciario);
 }
 
+.gatilhoAdaptavel {
+  container: campo-selecao / inline-size;
+}
+
+.textoCurto {
+  display: none;
+}
+
+@container campo-selecao (max-width: 149px) {
+  .textoAmplo {
+    display: none;
+  }
+
+  .textoCurto {
+    display: inline;
+  }
+}
+
 .gatilho:disabled .textoVazio {
   color: var(--texto-desabilitado);
 }

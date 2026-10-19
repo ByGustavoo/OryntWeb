@@ -53,23 +53,24 @@ describe('navegacao', () => {
     expect(contemCaminho(navegacaoRodape, primeira.destino)).toBe(false);
   });
 
-  it('marca como planejada só a seção em que nenhuma tela está pronta', () => {
+  it('não marca como planejada a seção que já tem uma tela pronta', () => {
     const [inicio, analise, gerenciamento] = navegacaoPrincipal;
 
     expect(inicio && secaoPlanejada(inicio)).toBe(false);
     expect(analise && secaoPlanejada(analise)).toBe(false);
-    expect(gerenciamento && secaoPlanejada(gerenciamento)).toBe(true);
+    expect(gerenciamento && secaoPlanejada(gerenciamento)).toBe(false);
   });
 
   it('trata como planejado só o item em que todas as telas estão planejadas', () => {
     const [relatorios, consultas] = funcionalidades;
     if (!relatorios || !consultas) throw new Error('Faltam funcionalidades para o teste.');
 
-    const [, , objetos] = funcionalidades;
+    const [, , objetos, usuarios] = funcionalidades;
 
     expect(itemPlanejado(relatorios)).toBe(false);
     expect(itemPlanejado(consultas)).toBe(false);
-    expect(objetos && itemPlanejado(objetos)).toBe(true);
+    expect(objetos && itemPlanejado(objetos)).toBe(false);
+    expect(usuarios && itemPlanejado(usuarios)).toBe(true);
     expect(itemPlanejado(navegacaoRodape)).toBe(false);
   });
 
@@ -88,5 +89,16 @@ describe('navegacao', () => {
 
     expect(planejadas).toEqual([]);
     expect(destinoInicial(relatorios)).toBe(caminhos.relatoriosResumo);
+  });
+
+  it('deixa Visões e Índices prontas e as outras telas de Objetos do banco planejadas', () => {
+    const [, , objetos] = funcionalidades;
+    if (!objetos) throw new Error('Faltam os objetos do banco para o teste.');
+
+    expect(destinoInicial(objetos)).toBe(caminhos.objetosVisoes);
+    expect(telasPlanejadas(objetos).map((tela) => tela.destino)).toEqual([
+      caminhos.objetosTabelas,
+      caminhos.objetosFuncoes,
+    ]);
   });
 });
