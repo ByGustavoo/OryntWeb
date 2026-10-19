@@ -6,6 +6,7 @@ import {
   definirDadosVazios,
   definirFalhas,
   definirLatencia,
+  definirRastreamentoDasFuncoes,
   deveFalhar,
   latenciaConfigurada,
 } from './controles';
@@ -23,7 +24,7 @@ import {
 } from './manipuladores/conexoes';
 import { buscarHistoricoDaConsulta, buscarPlanoDaConsulta, listarConsultas } from './manipuladores/consultas';
 import { buscarAtividade, buscarConsultas, buscarIndicadores } from './manipuladores/dashboard';
-import { listarIndices, listarVisoes } from './manipuladores/objetos';
+import { listarFuncoes, listarIndices, listarTabelas, listarVisoes } from './manipuladores/objetos';
 import { redefinirSenha, solicitarRecuperacao, verificarCodigoRecuperacao } from './manipuladores/recuperacaoSenha';
 import { buscarResumoRelatorio } from './manipuladores/relatorios';
 import { buscarVersao } from './manipuladores/sistema';
@@ -85,6 +86,8 @@ const rotas: Rota[] = [
   { metodo: 'GET', caminho: rotasApi.consultas.plano(`${MARCA_PARAMETRO}id`), manipulador: buscarPlanoDaConsulta },
   { metodo: 'GET', caminho: rotasApi.objetos.visoes, manipulador: listarVisoes },
   { metodo: 'GET', caminho: rotasApi.objetos.indices, manipulador: listarIndices },
+  { metodo: 'GET', caminho: rotasApi.objetos.tabelas, manipulador: listarTabelas },
+  { metodo: 'GET', caminho: rotasApi.objetos.funcoes, manipulador: listarFuncoes },
   { metodo: 'GET', caminho: rotasApi.relatorios.resumo, manipulador: buscarResumoRelatorio },
   { metodo: 'GET', caminho: rotasApi.sistema.versao, manipulador: buscarVersao },
 ];
@@ -167,6 +170,7 @@ if (ambiente.desenvolvimento) {
       falhar: (caminhos: string | false = '*') => definirFalhas(caminhos),
       latencia: definirLatencia,
       esvaziar: (vazios = true) => definirDadosVazios(vazios),
+      rastrearFuncoes: definirRastreamentoDasFuncoes,
       encerrarSessao: encerrarSessaoSimulada,
       expirarCodigo: expirarCodigoSimulado,
       expirarRedefinicao: expirarRedefinicaoSimulada,

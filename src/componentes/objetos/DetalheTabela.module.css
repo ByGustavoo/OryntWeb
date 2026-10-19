@@ -1,0 +1,68 @@
+.ajustes {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-md);
+  background-color: var(--borda);
+}
+
+.ajuste {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-1);
+  padding: var(--espaco-3) var(--espaco-4);
+  background-color: var(--superficie);
+}
+
+.rotuloAjuste {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--espaco-1) var(--espaco-3);
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+}
+
+.parametro {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-regular);
+  overflow-wrap: anywhere;
+}
+
+.efeitoAjuste {
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  line-height: var(--altura-linha-normal);
+}
+
+.idade {
+  flex-shrink: 0;
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+}
+
+.idadeAlta {
+  color: var(--erro);
+  font-weight: var(--peso-medio);
+}
+
+.nomeColuna {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chave {
+  flex-shrink: 0;
+  color: var(--destaque);
+}
+
+.seloNaLista {
+  align-self: flex-start;
+  margin-top: var(--espaco-1);
+}

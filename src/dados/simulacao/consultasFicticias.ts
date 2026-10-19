@@ -171,7 +171,7 @@ const secundarias: ConsultaSecundaria[] = [
   },
   {
     id: 'q-pagamento-novo',
-    sql: 'INSERT INTO pagamentos (pedido_id, metodo, valor, situacao) VALUES ($1, $2, $3, $4)',
+    sql: 'INSERT INTO pagamentos (pedido_id, metodo, valor, situacao) VALUES ($1, $2, calcular_total_pedido($1), $3)',
     tempoRelativo: 5.2,
     pesoExecucoes: 3.6,
     linhasPorExecucao: 1,

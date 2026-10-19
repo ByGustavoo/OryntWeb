@@ -6,8 +6,11 @@ import {
   FlaskConical,
   GitCompareArrows,
   History,
+  Layers,
   ListTree,
   OctagonAlert,
+  SquareFunction,
+  Table2,
   TriangleAlert,
   Waypoints,
 } from 'lucide-react';
@@ -56,6 +59,8 @@ interface DetalheIndiceProps extends AcoesDosUsos {
   total: number;
   aoPercorrer: (sentido: SentidoDoPasso) => void;
   aoAbrirIndice: (id: string) => void;
+  aoVerTabela: (indice: IndiceDTO) => void;
+  aoAbrirFuncao: (id: string) => void;
   aoFechar: () => void;
   focoAoFechar: () => HTMLElement | null;
 }
@@ -69,6 +74,8 @@ export function DetalheIndice({
   total,
   aoPercorrer,
   aoAbrirIndice,
+  aoVerTabela,
+  aoAbrirFuncao,
   aoVerHistorico,
   aoVerPlano,
   aoCompararPlanos,
@@ -128,6 +135,8 @@ export function DetalheIndice({
           contexto={contexto}
           simulada={simulada}
           aoAbrirIndice={aoAbrirIndice}
+          aoVerTabela={aoVerTabela}
+          aoAbrirFuncao={aoAbrirFuncao}
           aoVerHistorico={aoVerHistorico}
           aoVerPlano={aoVerPlano}
           aoCompararPlanos={aoCompararPlanos}
@@ -148,6 +157,8 @@ interface CorpoDetalheProps extends AcoesDosUsos {
   contexto: ContextoDosIndices;
   simulada: boolean;
   aoAbrirIndice: (id: string) => void;
+  aoVerTabela: (indice: IndiceDTO) => void;
+  aoAbrirFuncao: (id: string) => void;
 }
 
 function CorpoDetalhe({
@@ -156,6 +167,8 @@ function CorpoDetalhe({
   contexto,
   simulada,
   aoAbrirIndice,
+  aoVerTabela,
+  aoAbrirFuncao,
   aoVerHistorico,
   aoVerPlano,
   aoCompararPlanos,
@@ -230,6 +243,7 @@ function CorpoDetalhe({
       />
 
       <SecaoEstrutura indice={indice} />
+      {indice.funcoes.length > 0 ? <SecaoFuncoes indice={indice} aoAbrirFuncao={aoAbrirFuncao} /> : null}
 
       <section className={estilos.secao} aria-labelledby="titulo-consultas-indice">
         <h3 className={estilos.tituloSecao} id="titulo-consultas-indice">
@@ -253,6 +267,32 @@ function CorpoDetalhe({
         ) : (
           <p className={estilos.leitura}>{semConsultas(indice, situacao)}</p>
         )}
+      </section>
+
+      <section className={estilos.secao} aria-labelledby="titulo-tabela-indice">
+        <h3 className={estilos.tituloSecao} id="titulo-tabela-indice">
+          {rotuloTipoObjeto[tabela.tipo]}
+        </h3>
+        <button type="button" className={juntarClasses(estilos.objeto, estilos.objetoAbrivel)} onClick={() => aoVerTabela(indice)}>
+          {tabela.tipo === 'TABELA' ? (
+            <Table2 className={estilos.iconeObjeto} size={16} strokeWidth={2} aria-hidden="true" />
+          ) : (
+            <Layers className={estilos.iconeObjeto} size={16} strokeWidth={2} aria-hidden="true" />
+          )}
+          <span className={estilos.textosObjeto}>
+            <span className={`${estilos.nomeObjeto} codigo`}>
+              <NomeObjeto esquema={tabela.esquema} nome={tabela.nome} classeEsquema={estilos.esquema} />
+            </span>
+            <span className={estilos.tipoObjeto}>
+              <span className="numeros">{formatarNumero(tabela.linhas)}</span> {pluralizar(tabela.linhas, 'linha', 'linhas')} ·{' '}
+              <span className="numeros">{formatarTamanho(tabela.tamanhoBytes)}</span> de dados
+            </span>
+          </span>
+          <ChevronRight className={estilos.setaObjeto} size={16} strokeWidth={2} aria-hidden="true" />
+          <span className="visualmente-oculto">
+            {tabela.tipo === 'TABELA' ? '. Abrir esta tabela em Tabelas' : '. Abrir esta visão em Visões'}
+          </span>
+        </button>
       </section>
 
       <section className={estilos.secao} aria-labelledby="titulo-outros-indices">
@@ -288,6 +328,39 @@ function CorpoDetalhe({
         )}
       </section>
     </div>
+  );
+}
+
+function SecaoFuncoes({ indice, aoAbrirFuncao }: { indice: IndiceDTO; aoAbrirFuncao: (id: string) => void }) {
+  return (
+    <section className={estilos.secao} aria-labelledby="titulo-funcoes-indice">
+      <h3 className={estilos.tituloSecao} id="titulo-funcoes-indice">
+        Funções que ele usa <span className={`${estilos.contagem} numeros`}>{formatarNumero(indice.funcoes.length)}</span>
+      </h3>
+      <ul className={estilos.objetos}>
+        {indice.funcoes.map((funcao) => (
+          <li key={funcao}>
+            <button
+              type="button"
+              className={juntarClasses(estilos.objeto, estilos.objetoAbrivel)}
+              onClick={() => aoAbrirFuncao(funcao)}
+            >
+              <SquareFunction className={estilos.iconeObjeto} size={16} strokeWidth={2} aria-hidden="true" />
+              <span className={estilos.textosObjeto}>
+                <span className={`${estilos.nomeObjeto} codigo`}>{funcao}</span>
+                <span className={estilos.tipoObjeto}>Calculada em cada linha gravada</span>
+              </span>
+              <ChevronRight className={estilos.setaObjeto} size={16} strokeWidth={2} aria-hidden="true" />
+              <span className="visualmente-oculto">. Abrir esta função em Funções</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+      <p className={estilos.leitura}>
+        O índice guarda o resultado {indice.funcoes.length === 1 ? 'da função' : 'das funções'} para cada linha. Se o código
+        mudar sem um REINDEX, o índice fica com os resultados antigos e as buscas por ele erram em silêncio.
+      </p>
+    </section>
   );
 }
 

@@ -100,6 +100,7 @@ export interface IndiceDTO {
   leituras: number;
   linhasLidas: number;
   observadoDesde: string;
+  funcoes: string[];
   usos: UsoDoIndiceDTO[];
 }
 
@@ -132,6 +133,229 @@ export type FiltroSituacaoIndice = 'INVALIDOS' | 'DUPLICADOS' | 'SEM_USO';
 export type OrdenacaoIndices = 'NOME' | 'TAMANHO' | 'LEITURAS';
 
 export type AbaIndices = 'EXISTENTES' | 'SUGERIDOS';
+
+export interface ColunaTabelaDTO {
+  nome: string;
+  tipo: string;
+  anulavel: boolean;
+  padrao: string | null;
+}
+
+export type EstrategiaParticionamento = 'RANGE' | 'LIST' | 'HASH';
+
+export interface ParticaoDTO {
+  id: string;
+  esquema: string;
+  nome: string;
+  limites: string;
+  tamanhoBytes: number;
+  linhas: number;
+  linhasMortas: number;
+  idadeTransacoes: number;
+  ultimoVacuum: string | null;
+  ultimoAutovacuum: string | null;
+}
+
+export interface ParticionamentoDTO {
+  estrategia: EstrategiaParticionamento;
+  chave: string;
+  particoes: ParticaoDTO[];
+}
+
+export interface IndiceDaTabelaDTO {
+  id: string;
+  nome: string;
+  colunas: string[];
+  restricao: RestricaoIndice | null;
+  unico: boolean;
+  valido: boolean;
+  tamanhoBytes: number;
+  leituras: number;
+}
+
+export interface LeituraDaTabelaDTO {
+  consulta: ConsultaDetalhadaDTO;
+  etapa: string;
+  indice: string | null;
+  leiturasPorExecucao: number;
+}
+
+export interface IndiceSugeridoDaTabelaDTO {
+  colunas: string[];
+  comando: string;
+  extensao: string | null;
+}
+
+export interface AjusteAutovacuumDTO {
+  parametro: string;
+  valor: string;
+  padrao: string;
+}
+
+export interface PontoDeCrescimentoDTO {
+  dia: string;
+  tamanhoBytes: number;
+  linhas: number;
+}
+
+export type MomentoGatilho = 'ANTES' | 'DEPOIS' | 'EM_VEZ_DE';
+
+export type EventoGatilho = 'INSERCAO' | 'ATUALIZACAO' | 'EXCLUSAO' | 'TRUNCAMENTO';
+
+export type NivelGatilho = 'LINHA' | 'COMANDO';
+
+export interface GatilhoDaTabelaDTO {
+  nome: string;
+  funcao: string;
+  momento: MomentoGatilho;
+  eventos: EventoGatilho[];
+  nivel: NivelGatilho;
+  ativo: boolean;
+}
+
+export interface TabelaDTO {
+  id: string;
+  esquema: string;
+  nome: string;
+  dono: string;
+  descricao: string | null;
+  colunas: ColunaTabelaDTO[];
+  chavePrimaria: string[] | null;
+  tamanhoDadosBytes: number;
+  tamanhoIndicesBytes: number;
+  tamanhoToastBytes: number;
+  linhas: number;
+  linhasMortas: number;
+  alteracoesDesdeAnalyze: number;
+  insercoes: number;
+  atualizacoes: number;
+  atualizacoesHot: number;
+  exclusoes: number;
+  leiturasSequenciais: number;
+  linhasLidasSequencialmente: number;
+  leiturasPorIndice: number;
+  linhasLidasPorIndice: number;
+  ultimoVacuum: string | null;
+  ultimoAutovacuum: string | null;
+  ultimoAnalyze: string | null;
+  ultimoAutoanalyze: string | null;
+  idadeTransacoes: number;
+  limiteCongelamento: number;
+  autovacuum: AjusteAutovacuumDTO[];
+  particionamento: ParticionamentoDTO | null;
+  indices: IndiceDaTabelaDTO[];
+  indicesSugeridos: IndiceSugeridoDaTabelaDTO[];
+  usadaPor: ReferenciaObjetoDTO[];
+  gatilhos: GatilhoDaTabelaDTO[];
+  leituras: LeituraDaTabelaDTO[];
+  crescimento: PontoDeCrescimentoDTO[];
+}
+
+export interface ListaTabelasDTO {
+  geradoEm: string;
+  coletaDesde: string;
+  tabelas: TabelaDTO[];
+}
+
+export type SituacaoTabela =
+  | 'IDADE_ALTA'
+  | 'PRECISA_VACUUM'
+  | 'LIDA_INTEIRA'
+  | 'ESTATISTICAS_DESATUALIZADAS'
+  | 'SEM_CHAVE_PRIMARIA';
+
+export type OrdenacaoTabelas = 'NOME' | 'LINHAS' | 'TAMANHO' | 'LEITURAS' | 'MANUTENCAO';
+
+export interface FiltrosTabelas {
+  busca: string;
+  esquema: string | null;
+  situacao: SituacaoTabela | null;
+  ordenacao: OrdenacaoTabelas;
+  direcao: DirecaoOrdenacao;
+  pagina: number;
+}
+
+export type TipoFuncao = 'FUNCAO' | 'PROCEDIMENTO' | 'GATILHO';
+
+export type VolatilidadeFuncao = 'IMUTAVEL' | 'ESTAVEL' | 'VOLATIL';
+
+export type ModoParametro = 'IN' | 'OUT' | 'INOUT' | 'VARIADIC';
+
+export type RastreamentoFuncoes = 'NENHUM' | 'PL' | 'TODAS';
+
+export interface ParametroFuncaoDTO {
+  nome: string | null;
+  tipo: string;
+  modo: ModoParametro;
+  padrao: string | null;
+}
+
+export interface UsoDaFuncaoDTO {
+  chamadas: number;
+  tempoTotalMs: number;
+  tempoProprioMs: number;
+}
+
+export interface GatilhoDaFuncaoDTO {
+  nome: string;
+  tabela: ReferenciaObjetoDTO;
+  momento: MomentoGatilho;
+  eventos: EventoGatilho[];
+  nivel: NivelGatilho;
+  ativo: boolean;
+}
+
+export interface IndiceDaFuncaoDTO {
+  id: string;
+  nome: string;
+  tabela: string;
+}
+
+export interface FuncaoDTO {
+  id: string;
+  esquema: string;
+  nome: string;
+  argumentos: string;
+  tipo: TipoFuncao;
+  linguagem: string;
+  retorno: string | null;
+  parametros: ParametroFuncaoDTO[];
+  volatilidade: VolatilidadeFuncao;
+  estrita: boolean;
+  segurancaDefinidor: boolean;
+  configuracoes: string[];
+  dono: string;
+  descricao: string | null;
+  definicao: string;
+  observadaDesde: string;
+  uso: UsoDaFuncaoDTO | null;
+  gatilhos: GatilhoDaFuncaoDTO[];
+  indices: IndiceDaFuncaoDTO[];
+  visoes: ReferenciaObjetoDTO[];
+  consultas: ConsultaDetalhadaDTO[];
+}
+
+export interface ListaFuncoesDTO {
+  geradoEm: string;
+  coletaDesde: string;
+  rastreamento: RastreamentoFuncoes;
+  funcoes: FuncaoDTO[];
+}
+
+export type SituacaoFuncao = 'RISCO_DE_SEGURANCA' | 'PESADA' | 'SEM_CHAMADAS';
+
+export type OrdenacaoFuncoes = 'NOME' | 'CHAMADAS' | 'TEMPO_TOTAL' | 'TEMPO_MEDIO';
+
+export interface FiltrosFuncoes {
+  busca: string;
+  tipo: TipoFuncao | null;
+  esquema: string | null;
+  linguagem: string | null;
+  situacao: SituacaoFuncao | null;
+  ordenacao: OrdenacaoFuncoes;
+  direcao: DirecaoOrdenacao;
+  pagina: number;
+}
 
 export interface FiltrosIndices {
   busca: string;

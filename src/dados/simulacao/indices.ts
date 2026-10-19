@@ -15,9 +15,9 @@ import { gerarConsultasDetalhadas } from './consultas';
 import { gerarPlanosDaConsulta, temPlano } from './planosExecucao';
 import { marcoDoDegrau } from './trocasDePlano';
 
-type TipoDaGravacao = 'INSERCAO' | 'ATUALIZACAO';
+export type TipoDaGravacao = 'INSERCAO' | 'ATUALIZACAO' | 'EXCLUSAO';
 
-interface TabelaFicticia {
+export interface TabelaFicticia {
   tipo: TabelaDoIndiceDTO['tipo'];
   esquema: string;
   nome: string;
@@ -42,6 +42,7 @@ interface IndiceFicticio {
   valido?: boolean;
   tamanhoBytes: number;
   observacao?: Observacao;
+  funcoes?: string[];
 }
 
 const DIAS_DE_COLETA = 47;
@@ -116,6 +117,7 @@ export const tabelasFicticias: TabelaFicticia[] = [
     gravacoes: [
       ['q-carrinho-item-novo', 'INSERCAO'],
       ['q-carrinho-item-quantidade', 'ATUALIZACAO'],
+      ['q-carrinho-item-remocao', 'EXCLUSAO'],
     ],
     partesHot: 0.88,
   },
@@ -147,7 +149,15 @@ export const tabelasFicticias: TabelaFicticia[] = [
     gravacoes: [['q-avaliacao-nova', 'INSERCAO']],
     partesHot: 0,
   },
-  { tipo: 'TABELA', esquema: 'public', nome: 'favoritos', tamanhoBytes: 24 * MB, linhas: 410_000, gravacoes: [], partesHot: 0 },
+  {
+    tipo: 'TABELA',
+    esquema: 'public',
+    nome: 'favoritos',
+    tamanhoBytes: 24 * MB,
+    linhas: 410_000,
+    gravacoes: [['q-favorito-remocao', 'EXCLUSAO']],
+    partesHot: 0,
+  },
   {
     tipo: 'TABELA',
     esquema: 'public',
@@ -163,8 +173,12 @@ export const tabelasFicticias: TabelaFicticia[] = [
     nome: 'sessoes',
     tamanhoBytes: 118 * MB,
     linhas: 414_000,
-    gravacoes: [['q-sessao-nova', 'INSERCAO']],
+    gravacoes: [
+      ['q-sessao-nova', 'INSERCAO'],
+      ['q-sessoes-limpeza', 'EXCLUSAO'],
+    ],
     partesHot: 0,
+    linhasPorAtualizacao: [1, 15],
   },
   {
     tipo: 'TABELA',
@@ -176,6 +190,15 @@ export const tabelasFicticias: TabelaFicticia[] = [
     partesHot: 0,
   },
   { tipo: 'TABELA', esquema: 'public', nome: 'entregas', tamanhoBytes: 210 * MB, linhas: 1_890_000, gravacoes: [], partesHot: 0 },
+  {
+    tipo: 'TABELA',
+    esquema: 'public',
+    nome: 'importacoes_legado',
+    tamanhoBytes: 31 * MB,
+    linhas: 186_400,
+    gravacoes: [],
+    partesHot: 0,
+  },
   {
     tipo: 'VISAO_MATERIALIZADA',
     esquema: 'relatorios',
@@ -205,6 +228,14 @@ export const indicesFicticios: IndiceFicticio[] = [
   { nome: 'usuarios_email_key', tabela: 'public.usuarios', colunas: ['email'], restricao: 'UNICA', tamanhoBytes: 41_369_600 },
   { nome: 'usuarios_email_idx', tabela: 'public.usuarios', colunas: ['email'], tamanhoBytes: 41_385_984 },
   { nome: 'clientes_pkey', tabela: 'public.clientes', colunas: ['id'], restricao: 'CHAVE_PRIMARIA', tamanhoBytes: 4_202_496 },
+  {
+    nome: 'clientes_documento_key',
+    tabela: 'public.clientes',
+    colunas: ['somente_digitos(documento)'],
+    unico: true,
+    tamanhoBytes: 5_783_552,
+    funcoes: ['public.somente_digitos(text)'],
+  },
   { nome: 'pedidos_pkey', tabela: 'public.pedidos', colunas: ['id'], restricao: 'CHAVE_PRIMARIA', tamanhoBytes: 43_909_120 },
   {
     nome: 'pedidos_cliente_id_idx',
@@ -292,7 +323,7 @@ export const indicesFicticios: IndiceFicticio[] = [
   {
     nome: 'auditoria_pkey',
     tabela: 'public.auditoria',
-    colunas: ['id'],
+    colunas: ['id', 'criado_em'],
     restricao: 'CHAVE_PRIMARIA',
     tamanhoBytes: 215_130_112,
   },
@@ -351,7 +382,7 @@ export function definicaoDoIndice(indice: Pick<IndiceDTO, 'nome' | 'metodo' | 'c
   return `CREATE ${unico}INDEX ${indice.nome} ON ${indice.tabela} USING ${metodoNoComando[indice.metodo]} (${indice.colunas.join(', ')})${incluidas}${predicado}`;
 }
 
-function linhasGravadas(tabela: TabelaFicticia, consultas: Map<string, ConsultaDetalhadaDTO>, tipo: TipoDaGravacao): number {
+export function linhasGravadas(tabela: TabelaFicticia, consultas: Map<string, ConsultaDetalhadaDTO>, tipo: TipoDaGravacao): number {
   const [porInsercao, porAtualizacao] = tabela.linhasPorAtualizacao ?? [1, null];
   return tabela.gravacoes
     .filter(([, tipoDaGravacao]) => tipoDaGravacao === tipo)
@@ -509,6 +540,7 @@ export function gerarIndices(agora: Date, vazio = false): ListaIndicesDTO {
         leituras: lidasAgora.reduce((soma, leitura) => soma + leitura.execucoes * leitura.uso.leiturasPorExecucao, 0),
         linhasLidas: Math.round(lidasAgora.reduce((soma, leitura) => soma + leitura.execucoes * leitura.linhasLidas, 0)),
         observadoDesde: observadoDesde(indice.observacao ?? 'DESDE_A_COLETA', agora).toISOString(),
+        funcoes: indice.funcoes ?? [],
         usos: ordenarUsos(doIndice.map((leitura) => leitura.uso)),
       },
     ];

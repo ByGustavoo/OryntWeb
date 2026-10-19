@@ -1,0 +1,40 @@
+.conteiner {
+  container: filtros-tabelas / inline-size;
+}
+
+.barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-3);
+}
+
+.busca {
+  flex: 1 1 15rem;
+}
+
+.esquema {
+  flex: 0 0 12.5rem;
+}
+
+.situacao {
+  flex: 0 0 15rem;
+}
+
+@container filtros-tabelas (max-width: 860px) {
+  .busca {
+    flex-basis: 100%;
+  }
+
+  .esquema,
+  .situacao {
+    flex: 1 1 12rem;
+  }
+}
+
+@container filtros-tabelas (max-width: 480px) {
+  .esquema,
+  .situacao {
+    flex-basis: 100%;
+  }
+}

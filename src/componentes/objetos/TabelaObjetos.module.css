@@ -170,6 +170,14 @@
   gap: 2px;
 }
 
+.alinhadaAoFim {
+  align-items: flex-end;
+}
+
+.alinhadaAoInicio {
+  align-items: flex-start;
+}
+
 .textoPrincipal {
   color: var(--texto);
   line-height: 1.5;
@@ -304,6 +312,7 @@
     font-family: var(--fonte-interface);
     font-size: var(--tamanho-xs);
     letter-spacing: 0;
+    white-space: normal;
   }
 
   .tabela tbody td.celulaVisao {
@@ -333,6 +342,14 @@
 
   .celulaNumerica .linhaEmEspera {
     justify-content: flex-start;
+  }
+
+  .alinhadaAoFim {
+    align-items: flex-start;
+  }
+
+  .tabela tbody td.celulaLarga {
+    grid-column: 1 / -1;
   }
 
   .linha:hover td {

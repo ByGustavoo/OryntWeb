@@ -1,4 +1,5 @@
 import { PREFIXO_ARMAZENAMENTO } from '@/configuracoes/aplicacao';
+import type { RastreamentoFuncoes } from '@/modelos/objetos';
 
 export type CenarioConexao = 'SUCESSO' | 'SENHA_INCORRETA' | 'SERVIDOR_INACESSIVEL' | 'BANCO_INEXISTENTE' | 'TEMPO_ESGOTADO';
 
@@ -21,6 +22,7 @@ const CHAVE_CENARIO_CONEXAO = `${PREFIXO_SIMULACAO}cenario-conexao`;
 const CHAVE_FALHAS = `${PREFIXO_SIMULACAO}falhas`;
 const CHAVE_LATENCIA = `${PREFIXO_SIMULACAO}latencia`;
 const CHAVE_DADOS_VAZIOS = `${PREFIXO_SIMULACAO}dados-vazios`;
+const CHAVE_RASTREAMENTO_FUNCOES = `${PREFIXO_SIMULACAO}track-functions`;
 
 export const EVENTO_CENARIO_ALTERADO = 'orynt:cenario-alterado';
 
@@ -80,4 +82,14 @@ export function dadosVazios(): boolean {
 
 export function definirDadosVazios(vazios: boolean): void {
   gravar(CHAVE_DADOS_VAZIOS, vazios ? 'true' : null);
+}
+
+const rastreamentoPorValor: Record<string, RastreamentoFuncoes> = { none: 'NENHUM', pl: 'PL', all: 'TODAS' };
+
+export function rastreamentoDasFuncoes(): RastreamentoFuncoes {
+  return rastreamentoPorValor[ler(CHAVE_RASTREAMENTO_FUNCOES) ?? ''] ?? 'PL';
+}
+
+export function definirRastreamentoDasFuncoes(valor: 'none' | 'pl' | 'all'): void {
+  gravar(CHAVE_RASTREAMENTO_FUNCOES, valor in rastreamentoPorValor && valor !== 'pl' ? valor : null);
 }

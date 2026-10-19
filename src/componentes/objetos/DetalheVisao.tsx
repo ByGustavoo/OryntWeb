@@ -375,7 +375,7 @@ function ListaDeObjetos({ titulo, objetos, vazio, conhecidas, aoAbrirObjeto }: L
             );
             return (
               <li key={id}>
-                {objeto.tipo !== 'TABELA' && conhecidas.has(id) ? (
+                {objeto.tipo === 'TABELA' || conhecidas.has(id) ? (
                   <button
                     type="button"
                     className={juntarClasses(estilos.objeto, estilos.objetoAbrivel)}
@@ -383,7 +383,9 @@ function ListaDeObjetos({ titulo, objetos, vazio, conhecidas, aoAbrirObjeto }: L
                   >
                     {conteudo}
                     <ChevronRight className={estilos.setaObjeto} size={16} strokeWidth={2} aria-hidden="true" />
-                    <span className="visualmente-oculto">. Abrir esta visão</span>
+                    <span className="visualmente-oculto">
+                      {objeto.tipo === 'TABELA' ? '. Abrir esta tabela em Tabelas' : '. Abrir esta visão'}
+                    </span>
                   </button>
                 ) : (
                   <div className={estilos.objeto}>{conteudo}</div>

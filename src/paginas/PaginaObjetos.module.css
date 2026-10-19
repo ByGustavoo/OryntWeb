@@ -39,6 +39,18 @@
   color: var(--texto-secundario);
 }
 
+.notaComAcao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-3);
+}
+
+.notaComAcao > span:first-child {
+  flex: 1 1 24rem;
+}
+
 .coletaIncompleta svg {
   margin-top: 2px;
   color: var(--aviso);

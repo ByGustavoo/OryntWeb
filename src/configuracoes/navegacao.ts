@@ -93,13 +93,11 @@ const objetosBanco: Funcionalidade = {
       rotulo: 'Tabelas',
       destino: caminhos.objetosTabelas,
       descricao: 'Tamanho em disco, quantidade de linhas e manutenção recente.',
-      planejado: true,
     },
     {
       rotulo: 'Funções',
       destino: caminhos.objetosFuncoes,
       descricao: 'Funções e procedimentos de cada esquema.',
-      planejado: true,
     },
   ],
 };
