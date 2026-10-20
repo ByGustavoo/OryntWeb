@@ -9,18 +9,19 @@ import estilos from './Campo.module.css';
 export interface CampoTextoProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, 'className' | 'type'>,
     PropriedadesMensagensCampo {
-  type?: 'text' | 'email' | 'password' | 'tel' | 'url';
+  type?: 'text' | 'email' | 'password' | 'tel' | 'url' | 'date';
   icone?: LucideIcon;
 }
 
 export const CampoTexto = forwardRef<HTMLInputElement, CampoTextoProps>(function CampoTexto(
-  { rotulo, dica, erro, sucesso, className, icone: Icone, id, required, ...resto },
+  { rotulo, rotuloOculto, dica, erro, sucesso, className, icone: Icone, id, required, ...resto },
   ref,
 ) {
   return (
     <EstruturaCampo
       id={id}
       rotulo={rotulo}
+      rotuloOculto={rotuloOculto}
       dica={dica}
       erro={erro}
       sucesso={sucesso}

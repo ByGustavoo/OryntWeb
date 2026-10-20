@@ -1,0 +1,253 @@
+.formulario {
+  container: formulario-alteracao / inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-6);
+}
+
+.secao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.cabecalhoSecao {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tituloSecao {
+  padding: 0;
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-forte);
+}
+
+.descricaoSecao {
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  line-height: var(--altura-linha-normal);
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--espaco-4);
+}
+
+.inteira {
+  grid-column: 1 / -1;
+}
+
+@container formulario-alteracao (min-width: 560px) {
+  .grade {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.modelos {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--espaco-2);
+}
+
+@container formulario-alteracao (min-width: 560px) {
+  .modelos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.modelo {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 2px var(--espaco-3);
+  align-items: start;
+  padding: var(--espaco-3) var(--espaco-4);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-lg);
+  background-color: var(--superficie);
+  cursor: pointer;
+  transition:
+    border-color var(--duracao-rapida) var(--curva-saida),
+    background-color var(--duracao-rapida) var(--curva-saida),
+    box-shadow var(--duracao-rapida) var(--curva-saida);
+}
+
+.modelo:has(input:checked) {
+  border-color: var(--destaque);
+  background-color: var(--destaque-suave);
+}
+
+.modelo:has(input:focus-visible) {
+  box-shadow: var(--anel-foco);
+}
+
+@media (hover: hover) {
+  .modelo:hover:not(:has(input:checked)) {
+    border-color: var(--borda-forte);
+  }
+}
+
+.entradaModelo {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.iconeModelo {
+  display: inline-flex;
+  grid-row: span 2;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--raio-md);
+  background-color: var(--neutro-suave);
+  color: var(--texto-secundario);
+}
+
+.modelo:has(input:checked) .iconeModelo {
+  background-color: var(--superficie);
+  color: var(--destaque);
+}
+
+.rotuloModelo {
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+}
+
+.descricaoModelo {
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-xs);
+  line-height: var(--altura-linha-normal);
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-lg);
+}
+
+.itemLista {
+  display: flex;
+  flex-direction: column;
+  padding: var(--espaco-1) var(--espaco-3);
+  border-bottom: 1px solid var(--borda);
+}
+
+.itemLista:last-child {
+  border-bottom: none;
+}
+
+.opcoesDoItem {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--espaco-4);
+  padding: 0 0 var(--espaco-2) calc(1.125rem + var(--espaco-3) + var(--espaco-1));
+}
+
+.grupoMarcacoes {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0 var(--espaco-4);
+}
+
+@container formulario-alteracao (min-width: 480px) {
+  .grupoMarcacoes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container formulario-alteracao (min-width: 640px) {
+  .grupoMarcacoes.tres {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.configuracao {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--espaco-2);
+}
+
+.cabecalhoConfiguracao {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) var(--alvo-toque);
+  gap: var(--espaco-2);
+  margin-bottom: calc(var(--espaco-2) * -1);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+}
+
+.remover {
+  margin-top: calc((var(--altura-controle) - var(--alvo-toque)) / 2);
+}
+
+.acoesDaSecao {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-2);
+}
+
+.senha {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+}
+
+.senhaGerada {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-2);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-xs);
+  line-height: var(--altura-linha-normal);
+}
+
+.alternarAvancados {
+  align-self: flex-start;
+}
+
+.vazio {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-sm);
+}
+
+.erroDoGrupo {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-1);
+  color: var(--erro);
+  font-size: var(--tamanho-xs);
+}
+
+.listaRolavel {
+  max-height: 16rem;
+  overflow-y: auto;
+}
+
+@container formulario-alteracao (max-width: 359px) {
+  .configuracao {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .configuracao > :nth-child(2) {
+    grid-row: 2;
+  }
+
+  .cabecalhoConfiguracao {
+    display: none;
+  }
+}

@@ -22,6 +22,7 @@ import { useVerHistorico } from '@/ganchos/useVerHistorico';
 import { useVerObjeto } from '@/ganchos/useVerObjeto';
 import { useVerPlano } from '@/ganchos/useVerPlano';
 import type { FiltrosSessoes, OrdenacaoSessoes, SessaoDTO, SituacaoSessao } from '@/modelos/sessoes';
+import { useAlteracoes } from '@/provedores/ProvedorAlteracoes';
 import { useConexao } from '@/provedores/ProvedorConexao';
 import type { SituacaoConexao } from '@/provedores/ProvedorConexao';
 import { limparBusca, termosDaBusca } from '@/regras/buscaConsultas';
@@ -155,7 +156,8 @@ function ListaConectada({ simulada, banco, filtros, mudarFiltros }: ListaConecta
   const [pidAberto, setPidAberto] = useState<number | null>(null);
   const [origem, setOrigem] = useState<Origem>('LISTA');
 
-  const lista = useDadosAssincronos((signal) => servicoUsuarios.listarSessoes(signal), []);
+  const { versao } = useAlteracoes();
+  const lista = useDadosAssincronos((signal) => servicoUsuarios.listarSessoes(signal), [versao]);
   const sessaoEncerrada = ehErroApi(lista.erro, 'NAO_AUTORIZADO');
   const sessoes = useMemo(() => lista.dados?.sessoes ?? [], [lista.dados]);
   const contexto = useMemo<ContextoDasSessoes>(

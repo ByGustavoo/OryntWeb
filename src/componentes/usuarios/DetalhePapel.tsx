@@ -9,7 +9,13 @@ import {
   Lightbulb,
   FlaskConical,
   KeyRound,
+  KeySquare,
   Layers,
+  Pencil,
+  Play,
+  Trash2,
+  UserPlus,
+  X,
   ListChecks,
   OctagonAlert,
   SquareFunction,
@@ -23,6 +29,15 @@ import estilos from '@/componentes/objetos/DetalheObjeto.module.css';
 import proprios from '@/componentes/objetos/DetalheTabela.module.css';
 import { NomeObjeto } from '@/componentes/objetos/NomeObjeto';
 import { Botao, BotaoIcone, Modal, Nota, Selo } from '@/componentes/ui';
+import type { OperacaoDTO } from '@/modelos/alteracoes';
+import type { PedidoDeAlteracao } from '@/provedores/ProvedorAlteracoes';
+import {
+  capacidadeDasOperacoes,
+  podeAlterarAtributosDoPapel,
+  podeExcluirPapel,
+  podeMudarParticipacao,
+} from '@/regras/capacidadeAlteracoes';
+import type { ContextoDaCapacidade } from '@/regras/capacidadeAlteracoes';
 import type {
   AtributoPapel,
   MetodoSenha,
@@ -62,6 +77,7 @@ import { sugestaoDeTempoOcioso } from '@/regras/sessoes';
 import type { SugestaoDeTempoOcioso } from '@/regras/sessoes';
 import { formatarNumero, pluralizar } from '@/utilitarios/formatacao';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
+import { BotaoDeAlteracao, BotaoIconeDeAlteracao } from './BotaoDeAlteracao';
 import locais from './DetalhePapel.module.css';
 import { SeloSituacaoPapel, SeloTipoPapel } from './SeloSituacaoPapel';
 
@@ -110,6 +126,16 @@ interface AcoesDoDetalhe {
   aoAbrirObjeto: (objeto: ObjetoDoPapelDTO) => void;
   aoVerSessoes: (papel: PapelDTO) => void;
   aoVerPermissoes: (papel: PapelDTO) => void;
+  aoAlterar: (pedido: PedidoDeAlteracao) => void;
+  capacidade: ContextoDaCapacidade | null;
+}
+
+function executar(aoAlterar: (pedido: PedidoDeAlteracao) => void, operacoes: OperacaoDTO[], origem: 'PONTO_DE_ATENCAO' | 'DETALHE') {
+  aoAlterar({ tipo: 'OPERACOES', operacoes, origem });
+}
+
+function trocaDeSenha(papel: PapelDTO): OperacaoDTO[] {
+  return [{ tipo: 'ALTERAR_PAPEL', papel: papel.nome, atributos: {}, senha: { tipo: 'NENHUMA' } }];
 }
 
 interface DetalhePapelProps extends AcoesDoDetalhe {
@@ -227,6 +253,8 @@ function CorpoDetalhe({
   aoAbrirObjeto,
   aoVerSessoes,
   aoVerPermissoes,
+  aoAlterar,
+  capacidade,
 }: CorpoDetalheProps) {
   const raiz = useRef<HTMLDivElement>(null);
   const avisos = avisosDoPapel(papel, papeis, contexto);
@@ -268,6 +296,38 @@ function CorpoDetalhe({
             </Selo>
           ) : null}
         </div>
+        <div className={locais.acoes} role="group" aria-label={`Alterar ${papel.nome}`}>
+          <BotaoDeAlteracao
+            variante="secundario"
+            tamanho="sm"
+            icone={Pencil}
+            capacidade={capacidade ? podeAlterarAtributosDoPapel(capacidade, papel.nome) : null}
+            onClick={() => aoAlterar({ tipo: 'EDITAR_PAPEL', papel: papel.nome })}
+          >
+            Editar
+          </BotaoDeAlteracao>
+          {papel.login ? (
+            <BotaoDeAlteracao
+              variante="secundario"
+              tamanho="sm"
+              icone={KeySquare}
+              capacidade={capacidade ? capacidadeDasOperacoes(trocaDeSenha(papel), capacidade) : null}
+              onClick={() => aoAlterar({ tipo: 'EDITAR_PAPEL', papel: papel.nome, trocarSenha: true })}
+            >
+              Trocar a senha
+            </BotaoDeAlteracao>
+          ) : null}
+          <BotaoDeAlteracao
+            variante="terciario"
+            tamanho="sm"
+            icone={Trash2}
+            className={locais.excluir}
+            capacidade={capacidade ? podeExcluirPapel(capacidade, papel.nome) : null}
+            onClick={() => aoAlterar({ tipo: 'EXCLUIR_PAPEL', papel: papel.nome })}
+          >
+            Excluir
+          </BotaoDeAlteracao>
+        </div>
       </header>
 
       {avisos.map((aviso) => (
@@ -286,6 +346,27 @@ function CorpoDetalhe({
           anuncio="Comando copiado para a área de transferência."
           tituloDoErro="Não foi possível copiar o comando"
           descricaoDoErro="O navegador bloqueou a área de transferência. Selecione o texto do comando e copie por lá."
+          acao={
+            comando.operacoes ? (
+              <BotaoDeAlteracao
+                tamanho="sm"
+                icone={Play}
+                capacidade={capacidade ? capacidadeDasOperacoes(comando.operacoes, capacidade) : null}
+                onClick={() => comando.operacoes && executar(aoAlterar, comando.operacoes, 'PONTO_DE_ATENCAO')}
+              >
+                Executar
+              </BotaoDeAlteracao>
+            ) : comando.situacao === 'SENHA_MD5' ? (
+              <BotaoDeAlteracao
+                tamanho="sm"
+                icone={KeySquare}
+                capacidade={capacidade ? capacidadeDasOperacoes(trocaDeSenha(papel), capacidade) : null}
+                onClick={() => aoAlterar({ tipo: 'EDITAR_PAPEL', papel: papel.nome, trocarSenha: true })}
+              >
+                Trocar a senha
+              </BotaoDeAlteracao>
+            ) : null
+          }
         >
           <p className={estilos.leitura}>{comando.explicacao}</p>
         </SecaoCopiavel>
@@ -293,8 +374,15 @@ function CorpoDetalhe({
 
       {papel.login ? <SecaoAcesso papel={papel} contexto={contexto} aoVerSessoes={aoVerSessoes} /> : null}
       <SecaoAtributos papel={papel} papeis={papeis} />
-      <SecaoParticipacoes papel={papel} papeis={papeis} aoAbrirPapel={aoAbrirPapel} aoVerPermissoes={aoVerPermissoes} />
-      <SecaoConfiguracoes papel={papel} sugestao={sugestao} />
+      <SecaoParticipacoes
+        papel={papel}
+        papeis={papeis}
+        aoAbrirPapel={aoAbrirPapel}
+        aoVerPermissoes={aoVerPermissoes}
+        aoAlterar={aoAlterar}
+        capacidade={capacidade}
+      />
+      <SecaoConfiguracoes papel={papel} sugestao={sugestao} aoAlterar={aoAlterar} capacidade={capacidade} />
       <SecaoObjetos papel={papel} aoAbrirObjeto={aoAbrirObjeto} />
     </div>
   );
@@ -499,58 +587,120 @@ function ItemParticipacao({ participacao, papeis, aoAbrirPapel }: ItemParticipac
   );
 }
 
+interface ListaDeParticipacoesProps {
+  titulo: string;
+  participacoes: ParticipacaoDTO[];
+  vazio: string;
+  papeis: PapelDTO[];
+  aoAbrirPapel: (nome: string) => void;
+  remocao: (participacao: ParticipacaoDTO) => { grupo: string; membro: string };
+  aoAlterar: (pedido: PedidoDeAlteracao) => void;
+  capacidade: ContextoDaCapacidade | null;
+}
+
+function ListaDeParticipacoes({
+  titulo,
+  participacoes,
+  vazio,
+  papeis,
+  aoAbrirPapel,
+  remocao,
+  aoAlterar,
+  capacidade,
+}: ListaDeParticipacoesProps) {
+  return (
+    <div className={estilos.grupoObjetos}>
+      <h4 className={estilos.rotuloGrupo}>
+        {titulo} <span className={`${estilos.contagem} numeros`}>{formatarNumero(participacoes.length)}</span>
+      </h4>
+      {participacoes.length > 0 ? (
+        <ul className={estilos.objetos}>
+          {participacoes.map((participacao) => {
+            const { grupo, membro } = remocao(participacao);
+            return (
+              <li key={participacao.papel} className={locais.itemComAcao}>
+                <ItemParticipacao participacao={participacao} papeis={papeis} aoAbrirPapel={aoAbrirPapel} />
+                <BotaoIconeDeAlteracao
+                  icone={X}
+                  rotulo={`Tirar ${membro} de ${grupo}`}
+                  capacidade={capacidade ? podeMudarParticipacao(capacidade, grupo) : null}
+                  onClick={() =>
+                    aoAlterar({ tipo: 'OPERACOES', operacoes: [{ tipo: 'REVOGAR_PARTICIPACAO', grupo, membro }], origem: 'DETALHE' })
+                  }
+                />
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        <p className={estilos.leitura}>{vazio}</p>
+      )}
+    </div>
+  );
+}
+
 function SecaoParticipacoes({
   papel,
   papeis,
   aoAbrirPapel,
   aoVerPermissoes,
+  aoAlterar,
+  capacidade,
 }: {
   papel: PapelDTO;
   papeis: PapelDTO[];
   aoAbrirPapel: (nome: string) => void;
   aoVerPermissoes: (papel: PapelDTO) => void;
+  aoAlterar: (pedido: PedidoDeAlteracao) => void;
+  capacidade: ContextoDaCapacidade | null;
 }) {
   const herdados = gruposHerdados(papel, papeis);
   const indiretos = herdados.filter((nome) => !papel.membroDe.some((participacao) => participacao.papel === nome));
 
   return (
     <section className={estilos.secao} aria-labelledby="titulo-participacoes-papel">
-      <h3 className={estilos.tituloSecao} id="titulo-participacoes-papel">
-        Participação
-      </h3>
+      <div className={estilos.cabecalhoSecao}>
+        <h3 className={estilos.tituloSecao} id="titulo-participacoes-papel">
+          Participação
+        </h3>
+        <div className={locais.acoesSecao}>
+          <Botao variante="secundario" tamanho="sm" icone={UsersRound} onClick={() => aoAlterar({ tipo: 'PARTICIPACAO', membro: papel.nome })}>
+            Pôr num grupo
+          </Botao>
+          {!papel.login ? (
+            <BotaoDeAlteracao
+              variante="secundario"
+              tamanho="sm"
+              icone={UserPlus}
+              capacidade={capacidade ? podeMudarParticipacao(capacidade, papel.nome) : null}
+              onClick={() => aoAlterar({ tipo: 'PARTICIPACAO', grupo: papel.nome })}
+            >
+              Pôr um membro
+            </BotaoDeAlteracao>
+          ) : null}
+        </div>
+      </div>
       <div className={estilos.dependencias}>
-        <div className={estilos.grupoObjetos}>
-          <h4 className={estilos.rotuloGrupo}>
-            Membro de <span className={`${estilos.contagem} numeros`}>{formatarNumero(papel.membroDe.length)}</span>
-          </h4>
-          {papel.membroDe.length > 0 ? (
-            <ul className={estilos.objetos}>
-              {papel.membroDe.map((participacao) => (
-                <li key={participacao.papel}>
-                  <ItemParticipacao participacao={participacao} papeis={papeis} aoAbrirPapel={aoAbrirPapel} />
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className={estilos.leitura}>Não participa de nenhum grupo.</p>
-          )}
-        </div>
-        <div className={estilos.grupoObjetos}>
-          <h4 className={estilos.rotuloGrupo}>
-            Membros <span className={`${estilos.contagem} numeros`}>{formatarNumero(papel.membros.length)}</span>
-          </h4>
-          {papel.membros.length > 0 ? (
-            <ul className={estilos.objetos}>
-              {papel.membros.map((participacao) => (
-                <li key={participacao.papel}>
-                  <ItemParticipacao participacao={participacao} papeis={papeis} aoAbrirPapel={aoAbrirPapel} />
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className={estilos.leitura}>Nenhum papel participa deste.</p>
-          )}
-        </div>
+        <ListaDeParticipacoes
+          titulo="Membro de"
+          participacoes={papel.membroDe}
+          vazio="Não participa de nenhum grupo."
+          papeis={papeis}
+          aoAbrirPapel={aoAbrirPapel}
+          remocao={(participacao) => ({ grupo: participacao.papel, membro: papel.nome })}
+          aoAlterar={aoAlterar}
+          capacidade={capacidade}
+        />
+        <ListaDeParticipacoes
+          titulo="Membros"
+          participacoes={papel.membros}
+          vazio="Nenhum papel participa deste."
+          papeis={papeis}
+          aoAbrirPapel={aoAbrirPapel}
+          remocao={(participacao) => ({ grupo: papel.nome, membro: participacao.papel })}
+          aoAlterar={aoAlterar}
+          capacidade={capacidade}
+        />
       </div>
       {indiretos.length > 0 ? (
         <p className={estilos.leitura}>
@@ -573,7 +723,17 @@ function SecaoParticipacoes({
   );
 }
 
-function SecaoConfiguracoes({ papel, sugestao }: { papel: PapelDTO; sugestao: SugestaoDeTempoOcioso | null }) {
+interface SecaoConfiguracoesProps {
+  papel: PapelDTO;
+  sugestao: SugestaoDeTempoOcioso | null;
+  aoAlterar: (pedido: PedidoDeAlteracao) => void;
+  capacidade: ContextoDaCapacidade | null;
+}
+
+const LIMITE_SUGERIDO = '30s';
+
+function SecaoConfiguracoes({ papel, sugestao, aoAlterar, capacidade }: SecaoConfiguracoesProps) {
+  const limite: OperacaoDTO[] = [{ tipo: 'CONFIGURAR_PAPEL', papel: papel.nome, parametro: 'statement_timeout', valor: LIMITE_SUGERIDO }];
   const semLimite = semLimiteDeTempo(papel);
   if (papel.configuracoes.length === 0 && !semLimite && !sugestao) {
     return (
@@ -612,17 +772,39 @@ function SecaoConfiguracoes({ papel, sugestao }: { papel: PapelDTO; sugestao: Su
         </dl>
       ) : null}
       {semLimite ? (
-        <Nota tom="aviso" icone={TriangleAlert}>
-          Sem <span className="codigo">statement_timeout</span>: uma consulta deste usuário pode rodar sem limite de tempo e
-          segurar bloqueios. <span className="codigo">ALTER ROLE {identificadorSql(papel.nome)} SET statement_timeout = '30s'</span>{' '}
-          define um limite para as próximas sessões.
-        </Nota>
+        <div className={locais.notaComAcao}>
+          <Nota tom="aviso" icone={TriangleAlert}>
+            Sem <span className="codigo">statement_timeout</span>: uma consulta deste usuário pode rodar sem limite de tempo e
+            segurar bloqueios. <span className="codigo">ALTER ROLE {identificadorSql(papel.nome)} SET statement_timeout = '30s'</span>{' '}
+            define um limite para as próximas sessões.
+          </Nota>
+          <BotaoDeAlteracao
+            variante="secundario"
+            tamanho="sm"
+            icone={Play}
+            capacidade={capacidade ? capacidadeDasOperacoes(limite, capacidade) : null}
+            onClick={() => executar(aoAlterar, limite, 'DETALHE')}
+          >
+            Definir o limite de 30 s
+          </BotaoDeAlteracao>
+        </div>
       ) : null}
       {sugestao ? (
-        <Nota tom="info" icone={Lightbulb}>
-          {sugestao.frase} <span className="codigo">{sugestao.comando}</span> faz o PostgreSQL encerrar sozinho a sessão
-          parada há mais de 5 minutos com uma transação aberta, e desfazer essa transação.
-        </Nota>
+        <div className={locais.notaComAcao}>
+          <Nota tom="info" icone={Lightbulb}>
+            {sugestao.frase} <span className="codigo">{sugestao.comando}</span> faz o PostgreSQL encerrar sozinho a sessão
+            parada há mais de 5 minutos com uma transação aberta, e desfazer essa transação.
+          </Nota>
+          <BotaoDeAlteracao
+            variante="secundario"
+            tamanho="sm"
+            icone={Play}
+            capacidade={capacidade ? capacidadeDasOperacoes(sugestao.operacoes, capacidade) : null}
+            onClick={() => executar(aoAlterar, sugestao.operacoes, 'PONTO_DE_ATENCAO')}
+          >
+            Executar
+          </BotaoDeAlteracao>
+        </div>
       ) : null}
     </section>
   );

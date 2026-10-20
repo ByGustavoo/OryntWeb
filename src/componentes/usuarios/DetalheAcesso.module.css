@@ -80,3 +80,22 @@
   flex-wrap: wrap;
   gap: var(--espaco-2);
 }
+
+.acoesDoLado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-2);
+}
+
+.textoDaForma {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--espaco-2);
+  min-width: 0;
+}
+
+.botaoDaForma {
+  max-width: 100%;
+}

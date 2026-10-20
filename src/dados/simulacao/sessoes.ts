@@ -1,3 +1,4 @@
+import type { ListaPapeisDTO } from '@/modelos/papeis';
 import type { BloqueioDTO, EstadoSessao, EsperaDTO, ListaSessoesDTO, SessaoDTO, TipoProcesso } from '@/modelos/sessoes';
 import { consultasFicticias, consultasSecundarias } from './consultasFicticias';
 import { PAPEL_DO_RESTO_DAS_SESSOES, gerarPapeis } from './papeis';
@@ -474,9 +475,17 @@ function materializar(esboco: SessaoEsbocada, pids: Map<string, number>, bancoDa
   };
 }
 
-export function gerarSessoes(agora: Date, conexao: ConexaoSimulada, vazio = false): ListaSessoesDTO {
+export interface PapeisAlterados {
+  lista: ListaPapeisDTO;
+  renomeacoes: Map<string, string>;
+}
+
+export function gerarSessoes(agora: Date, conexao: ConexaoSimulada, vazio = false, alterados?: PapeisAlterados): ListaSessoesDTO {
   const geradoEm = agora.toISOString();
-  const papeis = gerarPapeis(agora, conexao.usuario, false, false);
+  const papeis = alterados?.lista ?? gerarPapeis(agora, conexao.usuario, false, false);
+  const renomeacoes = alterados?.renomeacoes ?? new Map<string, string>();
+  const originais = new Map([...renomeacoes.entries()].map(([original, atual]) => [atual, original]));
+  const nomeAtual = (nome: string | null) => (nome === null ? null : (renomeacoes.get(nome) ?? nome));
   const base = {
     geradoEm,
     bancoDaConexao: conexao.banco,
@@ -486,7 +495,12 @@ export function gerarSessoes(agora: Date, conexao: ConexaoSimulada, vazio = fals
   if (vazio) return { ...base, papeis: [], sessoes: [] };
 
   const esbocos = papeis.papeis.flatMap((papel) =>
-    papel.sessoes > 0 ? sessoesDoPapel(papel.nome, papel.sessoes, conexao.usuario, conexao, agora) : [],
+    papel.sessoes > 0
+      ? sessoesDoPapel(originais.get(papel.nome) ?? papel.nome, papel.sessoes, conexao.usuario, conexao, agora).map((esboco) => ({
+          ...esboco,
+          papel: nomeAtual(esboco.papel),
+        }))
+      : [],
   );
   const presentes = new Set(esbocos.map((esboco) => esboco.chave));
   const coerentes = esbocos.map((esboco) => ({

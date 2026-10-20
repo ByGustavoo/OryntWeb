@@ -92,6 +92,13 @@
   min-height: var(--altura-controle-sm);
 }
 
+.acoesSecao {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--espaco-2);
+}
+
 .tituloSecao {
   display: flex;
   align-items: center;

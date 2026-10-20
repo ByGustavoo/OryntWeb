@@ -125,6 +125,8 @@ ajustar `PROBLEMAS_CONEXAO` em `src/modelos/conexao.ts`.
 | `GET` | `/usuarios/papeis` | Os usuários e os grupos do servidor, com os atributos, as participações, as sessões abertas, o último uso visto, a validade e o formato da senha, as configurações próprias e os objetos deste banco de que cada um é dono | sim |
 | `GET` | `/usuarios/sessoes` | O retrato do `pg_stat_activity` do servidor: cada sessão com o papel, o banco, a aplicação, o estado, a espera, a consulta com os literais trocados, quem a bloqueia e os bloqueios que segura | sim |
 | `GET` | `/usuarios/permissoes` | As permissões de cada objeto do banco (o banco, os esquemas, as tabelas, as visões, as sequências e as funções), os papéis com as participações e os privilégios padrão | sim |
+| `POST` | `/usuarios/alteracoes` | Executa, numa transação, as operações de papéis e de permissões revisadas na tela | sim |
+| `GET` | `/usuarios/alteracoes` | O histórico das alterações feitas pelo Orynt no servidor, aplicadas e recusadas | sim |
 | `GET` | `/sistema/versao` | Versão publicada da API e a data de lançamento | não |
 
 ---
@@ -822,6 +824,7 @@ interface ObjetoComPermissoesDTO {
   nome: string;
   dono: string;
   segurancaDefinidor: boolean;
+  colunas: string[];
   concessoes: ConcessaoDTO[];
 }
 
@@ -848,6 +851,80 @@ interface ListaPermissoesDTO {
   papeis: PapelDasPermissoesDTO[];
   objetos: ObjetoComPermissoesDTO[];
   privilegiosPadrao: PrivilegioPadraoDTO[];
+}
+```
+
+### 4.10 Alterações de papéis e permissões
+
+```ts
+interface AtributosDoPapelDTO {
+  login: boolean;
+  superusuario: boolean;
+  criaBancos: boolean;
+  criaPapeis: boolean;
+  replicacao: boolean;
+  ignoraRls: boolean;
+  herda: boolean;
+}
+
+type SenhaDaOperacaoDTO =
+  | { tipo: 'VERIFICADOR'; valor: string }
+  | { tipo: 'NENHUMA' }
+  | { tipo: 'OCULTA' };
+
+interface ReferenciaObjetoDTO {
+  id: string;
+  tipo: TipoObjetoPermissao;
+  esquema: string | null;
+  nome: string;
+}
+
+type AlvoDaConcessaoDTO =
+  | { tipo: 'OBJETO'; objeto: ReferenciaObjetoDTO }
+  | { tipo: 'TODOS_DO_ESQUEMA'; esquema: string; tipoDeObjeto: 'TABELAS' | 'SEQUENCIAS' | 'FUNCOES' };
+
+type OperacaoDTO =
+  | { tipo: 'CRIAR_PAPEL'; papel: string; atributos: AtributosDoPapelDTO; limiteConexoes: number | null; validadeSenha: string | null; senha: SenhaDaOperacaoDTO | null }
+  | { tipo: 'ALTERAR_PAPEL'; papel: string; atributos: Partial<AtributosDoPapelDTO>; limiteConexoes?: number | null; validadeSenha?: string | null; senha?: SenhaDaOperacaoDTO }
+  | { tipo: 'RENOMEAR_PAPEL'; papel: string; novoNome: string }
+  | { tipo: 'DESCREVER_PAPEL'; papel: string; descricao: string | null }
+  | { tipo: 'CONFIGURAR_PAPEL'; papel: string; parametro: string; valor: string | null }
+  | { tipo: 'EXCLUIR_PAPEL'; papel: string; herdeiro: string | null; removerPermissoes: boolean; encerrarSessoes: boolean }
+  | { tipo: 'CONCEDER_PARTICIPACAO'; grupo: string; membro: string; herda: boolean; assume: boolean; administra: boolean }
+  | { tipo: 'REVOGAR_PARTICIPACAO'; grupo: string; membro: string }
+  | { tipo: 'CONCEDER'; alvo: AlvoDaConcessaoDTO; beneficiario: string; privilegios: Privilegio[]; colunas: string[] | null; repassavel: boolean }
+  | { tipo: 'REVOGAR'; alvo: AlvoDaConcessaoDTO; beneficiario: string; privilegios: Privilegio[]; colunas: string[] | null; soRepasse: boolean; concedentes: string[]; cascata: boolean }
+  | { tipo: 'PRIVILEGIO_PADRAO'; acao: 'CONCEDER' | 'REVOGAR'; criador: string; esquema: string | null; tipoDeObjeto: 'TABELAS' | 'SEQUENCIAS' | 'FUNCOES'; beneficiario: string; privilegios: Privilegio[] };
+
+type OrigemDaAlteracao = 'FORMULARIO' | 'MODELO' | 'PONTO_DE_ATENCAO' | 'LOTE' | 'DESFAZER' | 'DETALHE';
+
+interface PedidoAlteracaoDTO {
+  operacoes: OperacaoDTO[];
+  inversas: OperacaoDTO[] | null;
+  desfaz: string | null;
+  origem: OrigemDaAlteracao;
+}
+
+interface AlteracaoDTO {
+  id: string;
+  feitaEm: string;
+  conta: string;
+  papelDaConexao: string;
+  banco: string;
+  origem: OrigemDaAlteracao;
+  operacoes: OperacaoDTO[];
+  comandos: string[];
+  resultado: 'APLICADA' | 'RECUSADA';
+  falha: { codigo: string; mensagem: string } | null;
+  inversas: OperacaoDTO[] | null;
+  desfaz: string | null;
+  desfeitaPor: string | null;
+}
+
+interface ListaAlteracoesDTO {
+  geradoEm: string;
+  papelDaConexao: string;
+  alteracoes: AlteracaoDTO[];
 }
 ```
 
@@ -1578,7 +1655,9 @@ herdado por um grupo, por `PUBLIC`, por ser dono ou superusuário), decide as si
   `GET /objetos/visoes` e `GET /objetos/funcoes` nos outros; nas funções e nos procedimentos, `nome` traz os
   argumentos, como em `GET /usuarios/papeis`. `tipo` é `BANCO`, `ESQUEMA`, `TABELA`, `VISAO`,
   `VISAO_MATERIALIZADA`, `SEQUENCIA`, `FUNCAO` ou `PROCEDIMENTO` (a função de gatilho é `FUNCAO`). `dono` é o
-  dono do objeto e `segurancaDefinidor` é o `prosecdef` (falso fora das funções).
+  dono do objeto e `segurancaDefinidor` é o `prosecdef` (falso fora das funções). `colunas` são os nomes das
+  colunas de uma tabela, de uma visão ou de uma visão materializada, na ordem de `attnum`, para a concessão por
+  coluna; nos outros tipos, vazio.
 * `concessoes` é o `aclexplode` da ACL do objeto (`datacl`, `nspacl`, `relacl`, `proacl`), com a ACL padrão do
   tipo (`acldefault`) quando ela é nula, fora as entradas do dono para ele mesmo, que já estão em `dono`.
   `beneficiario` é o papel, ou `PUBLIC` quando o `grantee` é `0`; `concedente` é o `grantor`; `privilegio` é o
@@ -1588,8 +1667,52 @@ herdado por um grupo, por `PUBLIC`, por ser dono ou superusuário), decide as si
   `defaclnamespace` (`null` quando vale para qualquer esquema), `tipoDeObjeto` é `TABELAS` (`r`, que inclui
   visões), `SEQUENCIAS` (`S`) ou `FUNCOES` (`f`), e cada `beneficiario` traz os seus `privilegios`.
 
-A tela só lê. Os comandos que ela oferece são `GRANT`, `REVOKE` e `ALTER DEFAULT PRIVILEGES`, prontos para
-copiar. `401` sem conexão ativa, como as outras rotas de dados.
+Os comandos que a tela oferece, `GRANT`, `REVOKE` e `ALTER DEFAULT PRIVILEGES`, saem para copiar ou, depois da
+revisão, para `POST /usuarios/alteracoes`. `401` sem conexão ativa, como as outras rotas de dados.
+
+### 12.4 `POST /usuarios/alteracoes`
+
+Recebe `PedidoAlteracaoDTO` e executa as `operacoes`, na ordem, numa transação só, no servidor da conexão ativa. É a
+única rota que muda o banco. O front nunca manda SQL: cada operação é estruturada, a API valida os nomes, cita os
+identificadores (`quote_ident`) e os literais (`quote_literal`) e monta o SQL pela mesma regra de
+`src/regras/sqlAlteracoes.ts`, que o front usa para a prévia. A resposta traz o SQL que rodou, que precisa ser igual
+à prévia.
+
+* **SQL de cada operação:** `CRIAR_PAPEL` é `CREATE ROLE` com `LOGIN` ou `NOLOGIN` e os atributos fora do padrão,
+  `CONNECTION LIMIT`, `VALID UNTIL` (`AAAA-MM-DD`) e `PASSWORD`; `ALTER_PAPEL` é `ALTER ROLE` só com o que veio
+  (`CONNECTION LIMIT -1` e `VALID UNTIL 'infinity'` tiram o limite e a validade, `PASSWORD NULL` tira a senha);
+  `RENOMEAR_PAPEL` é `ALTER ROLE … RENAME TO`; `DESCREVER_PAPEL` é `COMMENT ON ROLE`; `CONFIGURAR_PAPEL` é
+  `ALTER ROLE … SET` ou `RESET` (o `search_path` vai como lista de nomes); `EXCLUIR_PAPEL` é, nesta ordem, o
+  `pg_terminate_backend` das sessões do papel quando `encerrarSessoes`, `REASSIGN OWNED BY … TO herdeiro` quando
+  há herdeiro, `DROP OWNED BY` quando `removerPermissoes` e `DROP ROLE`; `CONCEDER_PARTICIPACAO` é
+  `GRANT grupo TO membro` com `WITH INHERIT FALSE`, `SET FALSE` e `ADMIN TRUE` quando fogem do padrão
+  (PostgreSQL 16 ou mais novo); `REVOGAR_PARTICIPACAO` é `REVOKE grupo FROM membro`; `CONCEDER` e `REVOGAR` são
+  `GRANT` e `REVOKE` no objeto (`ON TABLE`, `ON SEQUENCE`, `ON FUNCTION`, `ON SCHEMA`, `ON DATABASE`) ou em
+  `ALL TABLES|SEQUENCES|FUNCTIONS IN SCHEMA`, com as colunas quando há, `WITH GRANT OPTION`, `GRANT OPTION FOR`
+  (`soRepasse`), um `REVOKE … GRANTED BY` por concedente quando `concedentes` não é vazio e `CASCADE`;
+  `PRIVILEGIO_PADRAO` é `ALTER DEFAULT PRIVILEGES FOR ROLE … [IN SCHEMA …] GRANT|REVOKE … ON TABLES|SEQUENCES|FUNCTIONS`.
+* **Senha:** só chega como verificador SCRAM-SHA-256 (`SCRAM-SHA-256$<iterações>:<sal>$<StoredKey>:<ServerKey>`),
+  calculado no navegador. A API recusa qualquer outro formato com `400` e nunca recebe a senha. Nem o verificador
+  volta numa resposta nem fica no histórico: lá a operação traz `{ "tipo": "OCULTA" }` e o comando,
+  `PASSWORD '<verificador SCRAM omitido>'`.
+* **Inversas:** `inversas` são as operações que desfazem esta, calculadas pelo front com o estado que ele mostrou
+  (`src/regras/inversasAlteracoes.ts`), ou `null` quando não há desfazer (exclusão, troca de senha). A API só as
+  guarda e as valida quando chegam de volta como `operacoes`. `desfaz` é o `id` da alteração desfeita: a API marca
+  `desfeitaPor` nela e responde `409` quando ela não existe, foi recusada ou já foi desfeita.
+* **Sucesso:** `201` com `AlteracaoDTO`. `conta` é o e-mail da conta do Orynt que fez a alteração.
+* **Recusa do banco:** `422`, com o `detail` do PostgreSQL e o `type` pelo SQLSTATE: `database-permission-denied`
+  (42501), `database-dependent-objects` (2BP01), `database-duplicate-object` (42710), `database-undefined-object`
+  (42704), `database-invalid-grant` (0LP01), `database-object-in-use` (55006) e `database-command-failed` (os
+  outros). A recusa também entra no histórico, com `resultado` `RECUSADA` e `falha`. Nenhum comando da transação
+  fica aplicado.
+* `400` quando o pedido não segue o formato; `401` sem conexão ativa. A API não usa `403` aqui, porque o front lê
+  `403` como fim da sessão.
+
+### 12.5 `GET /usuarios/alteracoes`
+
+Sem parâmetros. Devolve `200` com `ListaAlteracoesDTO`: as alterações feitas pelo Orynt no servidor da conexão
+ativa, da mais recente à mais antiga, aplicadas e recusadas, numa resposta só. A tela busca, filtra e pagina no
+navegador. `401` sem conexão ativa.
 
 ---
 
@@ -1616,6 +1739,9 @@ copiar. `401` sem conexão ativa, como as outras rotas de dados.
 * Funções: com que frequência a API amostra `pg_stat_user_functions`, o que faz depois de um `pg_stat_reset`,
   como liga uma consulta à função que ela cita (análise do texto, como nas visões) e se guarda quando o
   `track_functions` mudou no período, o que deixaria uma parte dos 30 dias sem medida.
+* Alterações: quanto tempo o histórico fica guardado, se ele é por conta ou por servidor (o simulador guarda por
+  conexão), se a API recalcula as inversas em vez de guardar as do front e como trata um servidor anterior ao
+  PostgreSQL 16, que não aceita `WITH INHERIT` e `WITH SET` no `GRANT` de um papel.
 * Papéis: com que frequência a API amostra `pg_stat_activity`, quanto tempo guarda o último uso de cada papel e
   o que mostra quando a conexão dela não pode ler `pg_authid`, além do formato da senha.
 * Planos de execução: como a API captura os planos (`auto_explain` com amostragem, `log_min_duration`), quantos guarda por consulta, como decide que dois planos são a mesma versão e se os valores dos parâmetros (`$1`) entram no plano guardado, o que exigiria cuidado com dados pessoais.

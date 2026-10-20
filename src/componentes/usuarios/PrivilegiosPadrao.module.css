@@ -1,11 +1,12 @@
 .lista {
+  container: privilegios-padrao / inline-size;
   display: flex;
   flex-direction: column;
 }
 
 .item {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr) auto;
   gap: var(--espaco-3) var(--espaco-4);
   padding-block: var(--espaco-3);
   border-top: 1px solid var(--borda);
@@ -61,4 +62,19 @@
   color: var(--texto-secundario);
   font-size: var(--tamanho-sm);
   line-height: var(--altura-linha-normal);
+}
+
+.retirar {
+  align-self: start;
+}
+
+@container privilegios-padrao (max-width: 480px) {
+  .item {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .retirar {
+    grid-column: 2;
+    justify-self: start;
+  }
 }

@@ -8,3 +8,43 @@
 .alternar {
   align-self: flex-start;
 }
+
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-2);
+  margin-top: var(--espaco-2);
+}
+
+.excluir {
+  color: var(--erro);
+}
+
+.acoesSecao {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--espaco-2);
+}
+
+.itemComAcao {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-1);
+}
+
+.itemComAcao > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.notaComAcao {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--espaco-2);
+}
+
+.notaComAcao > :first-child {
+  align-self: stretch;
+}

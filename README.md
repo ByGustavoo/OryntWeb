@@ -50,7 +50,7 @@ consulta que explica.
 
 * **Objetos do banco (concluído):** as telas Visões, Índices, Tabelas e Funções estão prontas, com dados demonstrativos.
 
-* **Usuários e permissões (concluído):** as telas Papéis, Sessões e Permissões estão prontas, com dados demonstrativos.
+* **Usuários e permissões (concluído):** as telas Papéis, Sessões, Alterações e Permissões estão prontas, com dados demonstrativos. Papéis e Permissões criam, alteram e excluem papéis e concedem e revogam acesso, sempre depois de uma revisão.
 
 * **Pendente:** a API (OryntAPI). O contrato que ela precisa cumprir está em [`docs/api-contrato.md`](docs/api-contrato.md).
 
@@ -322,6 +322,28 @@ consulta que explica.
 
 * O detalhe de uma tabela, de uma visão ou de uma função mostra quem a acessa e leva a Permissões
 
+🔹 **Usuários e permissões › administração**
+
+* "Novo papel" em Papéis, em branco ou a partir de um modelo: grupo de leitura, usuário de aplicação e leitura de um esquema, com o acesso, os limites e os privilégios padrão já prontos
+
+* Editar, trocar a senha e excluir um papel; pôr e tirar de um grupo, com as opções de herança, `SET ROLE` e `ADMIN`; conceder e revogar no banco, num esquema, numa tabela (também por coluna), numa sequência, numa função ou em todos os objetos de um esquema; definir e retirar privilégios padrão
+
+* A senha nunca sai do navegador: o Orynt calcula o verificador SCRAM-SHA-256 e só ele vai à API; "Gerar senha forte" e o medidor de força ajudam a escolher
+
+* Toda alteração passa por uma revisão: os comandos na ordem em que rodam, numa transação só, o que muda no acesso de cada papel, o que continua por outro caminho e os avisos; excluir, tirar superusuário e revogar de PUBLIC pedem o nome digitado
+
+* A exclusão mostra o que prende o papel e resolve com `REASSIGN OWNED` para o herdeiro escolhido e `DROP OWNED`, com a opção de encerrar as sessões abertas
+
+* O que o papel da conexão não pode fazer fica bloqueado, com o motivo, e o que o banco recusa aparece com a resposta dele
+
+* Os comandos dos pontos de atenção de Papéis e Permissões ganham "Executar", também em lote
+
+* "Desfazer" na notificação e no histórico, com o comando inverso, também revisado
+
+🔹 **Usuários e permissões › Alterações**
+
+* Tudo o que o Orynt mudou nos papéis e nas permissões do servidor, aplicado ou recusado, com a conta, o papel da conexão, quando, os comandos e a resposta do banco, com busca, filtros e desfazer
+
 <br>
 
 ## ⚙️ Pré-requisitos
@@ -403,11 +425,17 @@ oryntSimulacao.latencia(8000)
 // Com '/relatorios', o resumo, a exportação e a comparação mostram o estado de erro
 oryntSimulacao.falhar('/relatorios')
 
-// Com '/objetos' ou '/usuarios', as telas de Objetos do banco ou as de Papéis, Sessões e Permissões mostram o estado de erro
+// Com '/objetos' ou '/usuarios', as telas de Objetos do banco ou as de Papéis, Sessões, Permissões e Alterações mostram o estado de erro
 oryntSimulacao.falhar('/usuarios')
 
 // Esvazia os dados das telas, para ver os estados vazios (esvaziar(false) restaura)
 oryntSimulacao.esvaziar()
+
+// Desfaz todas as alterações de papéis e permissões feitas pelo Orynt no simulador
+oryntSimulacao.restaurarPapeis()
+
+// Faz o banco simulado recusar toda alteração por falta de permissão (recusarAlteracoes(false) desliga)
+oryntSimulacao.recusarAlteracoes()
 
 // Muda o track_functions simulado do servidor ('none', 'pl' ou 'all'; o padrão é 'pl')
 oryntSimulacao.rastrearFuncoes('none')
@@ -494,6 +522,8 @@ fictícios dependem do campo `simulada` da conexão, e somem quando a API respon
 * **Simulação:** enquanto não há API, o simulador faz o papel do servidor com cookies de sessão comuns (um do login, outro da conexão), sem senha e sem dado real.
 
 * **Conexões salvas:** pelo contrato ficam na conta, com a senha cifrada pela API. No simulador a lista fica no `localStorage`, só com nome, tipo, host, porta, banco, usuário e último uso.
+
+* **Senha de um papel:** o navegador calcula o verificador SCRAM-SHA-256 e só ele vai à API; a senha fica só no formulário e some quando ele fecha. O histórico de alterações guarda um marcador no lugar do verificador, e o simulador guarda as alterações no `localStorage` sem senha nem verificador.
 
 <br>
 

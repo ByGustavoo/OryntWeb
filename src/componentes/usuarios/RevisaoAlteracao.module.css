@@ -1,0 +1,120 @@
+.revisao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-5);
+}
+
+.resumo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+}
+
+.titulo {
+  color: var(--texto);
+  font-size: var(--tamanho-md);
+  font-weight: var(--peso-forte);
+  line-height: var(--altura-linha-compacta);
+  overflow-wrap: anywhere;
+}
+
+.desfazer {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  color: var(--destaque);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+}
+
+.passos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-1);
+  padding-left: var(--espaco-5);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  line-height: var(--altura-linha-normal);
+  list-style: decimal;
+  overflow-wrap: anywhere;
+}
+
+.passos li::marker {
+  color: var(--texto-terciario);
+  font-family: var(--fonte-numeros);
+  font-size: var(--tamanho-xs);
+}
+
+.secao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+}
+
+.tituloSecao {
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+}
+
+.efeitos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+}
+
+.efeito {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--espaco-3);
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  line-height: var(--altura-linha-normal);
+  overflow-wrap: anywhere;
+}
+
+.icone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  margin-top: -1px;
+  border-radius: var(--raio-sm);
+  background-color: var(--neutro-suave);
+  color: var(--texto-secundario);
+}
+
+.GANHA {
+  background-color: var(--sucesso-suave);
+  color: var(--sucesso);
+}
+
+.PERDE {
+  background-color: var(--erro-suave);
+  color: var(--erro);
+}
+
+.MANTEM {
+  background-color: var(--aviso-suave);
+  color: var(--aviso);
+}
+
+.NEUTRO {
+  background-color: var(--destaque-suave);
+  color: var(--destaque);
+}
+
+.leitura {
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  line-height: var(--altura-linha-normal);
+}
+
+.confirmacao {
+  padding: var(--espaco-4);
+  border: 1px solid color-mix(in srgb, var(--erro) 35%, var(--borda));
+  border-radius: var(--raio-lg);
+  background-color: color-mix(in srgb, var(--erro-suave) 50%, transparent);
+}

@@ -1,0 +1,23 @@
+.titulo {
+  color: var(--texto);
+  font-weight: var(--peso-medio);
+  line-height: var(--altura-linha-compacta);
+  overflow-wrap: anywhere;
+}
+
+.conta {
+  max-width: 16rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.colunaQuando {
+  width: 9rem;
+}
+
+@container lista-objetos (max-width: 860px) {
+  .conta {
+    max-width: none;
+  }
+}

@@ -1,21 +1,39 @@
-import { FilePlus2 } from 'lucide-react';
+import { FilePlus2, Plus, Trash2 } from 'lucide-react';
 import { CabecalhoPainel, Painel, Selo } from '@/componentes/ui';
 import type { PrivilegioPadraoDTO } from '@/modelos/permissoes';
+import type { PedidoDeAlteracao } from '@/provedores/ProvedorAlteracoes';
+import { podeDefinirPadrao } from '@/regras/capacidadeAlteracoes';
+import { operacaoQueRetiraOPadrao } from '@/regras/formularioConcessao';
 import { comandoDoPrivilegioPadrao, fraseDoPrivilegioPadrao, rotuloDoSujeito } from '@/regras/permissoes';
+import type { IndiceDasPermissoes } from '@/regras/permissoes';
+import { BotaoDeAlteracao } from './BotaoDeAlteracao';
 import estilos from './PrivilegiosPadrao.module.css';
 
 interface PrivilegiosPadraoProps {
   padroes: PrivilegioPadraoDTO[];
   sujeito: string | null;
   alcanca: (padrao: PrivilegioPadraoDTO) => boolean;
+  indice: IndiceDasPermissoes;
+  aoAlterar: (pedido: PedidoDeAlteracao) => void;
 }
 
-export function PrivilegiosPadrao({ padroes, sujeito, alcanca }: PrivilegiosPadraoProps) {
+export function PrivilegiosPadrao({ padroes, sujeito, alcanca, indice, aoAlterar }: PrivilegiosPadraoProps) {
   return (
     <Painel aria-labelledby="titulo-privilegios-padrao">
       <CabecalhoPainel
         titulo={<span id="titulo-privilegios-padrao">Privilégios padrão</span>}
         descricao="O que os objetos criados daqui em diante já recebem, definido com ALTER DEFAULT PRIVILEGES"
+        acao={
+          <BotaoDeAlteracao
+            variante="secundario"
+            tamanho="sm"
+            icone={Plus}
+            capacidade={{ permitido: true, motivo: null }}
+            onClick={() => aoAlterar({ tipo: 'PADRAO', inicial: sujeito ? { beneficiario: sujeito } : {} })}
+          >
+            Novo privilégio padrão
+          </BotaoDeAlteracao>
+        }
       />
       {padroes.length === 0 ? (
         <p className={estilos.vazio}>
@@ -41,6 +59,19 @@ export function PrivilegiosPadrao({ padroes, sujeito, alcanca }: PrivilegiosPadr
                   </p>
                   <p className={`${estilos.comando} codigo`}>{comando}</p>
                 </div>
+                <BotaoDeAlteracao
+                  variante="terciario"
+                  tamanho="sm"
+                  icone={Trash2}
+                  className={estilos.retirar}
+                  aria-label={`Retirar o privilégio padrão de ${padrao.criador} para ${rotuloDoSujeito(padrao.beneficiario)}`}
+                  capacidade={podeDefinirPadrao(indice, padrao.criador)}
+                  onClick={() =>
+                    aoAlterar({ tipo: 'OPERACOES', operacoes: [operacaoQueRetiraOPadrao(padrao)], origem: 'DETALHE' })
+                  }
+                >
+                  Retirar
+                </BotaoDeAlteracao>
               </li>
             );
           })}

@@ -39,7 +39,7 @@ silenciosa no resto.
 * **Navegação:** menu lateral recolhível no desktop e gaveta abaixo de 1100px.
 * **Tipo de banco:** aparece como campo já resolvido (PostgreSQL), não como lista de uma opção.
 * **Rótulos:** capitalização de frase ("Usuários e permissões", "Objetos do banco"), como nos outros projetos.
-* **Navegação em grupos e subgrupos:** pedido do usuário em 11 de outubro de 2026, no modelo do PrismaWeb. O menu tem o Dashboard, o grupo "Análise" (Relatórios e Consultas SQL) e o grupo "Gerenciamento" (Objetos do banco e Usuários e permissões); Configurações segue no rodapé. Cada item de grupo abre as suas telas: Relatórios (Resumo, Exportação, Comparação), Consultas SQL (Todas, Histórico, Planos de execução), Objetos do banco (Visões, Índices, Tabelas, Funções) e Usuários e permissões (Papéis, Sessões, Permissões). Os nomes dos grupos e das telas foram escolhidos por boa prática, a partir do que já estava previsto para cada funcionalidade.
+* **Navegação em grupos e subgrupos:** pedido do usuário em 11 de outubro de 2026, no modelo do PrismaWeb. O menu tem o Dashboard, o grupo "Análise" (Relatórios e Consultas SQL) e o grupo "Gerenciamento" (Objetos do banco e Usuários e permissões); Configurações segue no rodapé. Cada item de grupo abre as suas telas: Relatórios (Resumo, Exportação, Comparação), Consultas SQL (Todas, Histórico, Planos de execução), Objetos do banco (Visões, Índices, Tabelas, Funções) e Usuários e permissões (Papéis, Sessões, Alterações, Permissões; Alterações entrou em 20 de outubro de 2026). Os nomes dos grupos e das telas foram escolhidos por boa prática, a partir do que já estava previsto para cada funcionalidade.
 * **Telas planejadas:** o grupo em que nada está pronto leva o selo "Em breve" ao lado do título (antes havia um único grupo chamado "Em breve"). Num grupo que já tem tela pronta, a marca "Em breve" desce para cada tela planejada. Não sobrou nenhuma: Papéis, Sessões e Permissões ficaram prontas em 19 de outubro de 2026. Objetos do banco não tem mais tela planejada: Visões e Índices ficaram prontas em 18 de outubro de 2026, e Tabelas e Funções, em 19 de outubro. O item em que nada está pronto não leva a marca ao lado do nome desde então: "Usuários e permissões" com a marca não cabia no menu e aparecia cortado; as telas dele, ao abrir o item, mostram a marca uma a uma. Cada tela planejada tem a própria rota, mostra o que está previsto para a funcionalidade, com a tela aberta em evidência, e não simula nada.
 * **Demonstração:** selo "Demonstração" no menu da conta enquanto há uma conexão simulada ativa e aviso "Dados demonstrativos" no dashboard. Sem conexão, o selo não aparece. O selo saiu do cabeçalho a pedido do usuário em 11 de outubro de 2026.
 * **Dashboard:** períodos de 1 h, 24 h, 7 dias e 30 dias; a tabela vira cartões em telas estreitas.
@@ -521,7 +521,7 @@ foram as recomendadas na descoberta, e as quatro sugestões foram aprovadas.
 |---|---|---|
 | Q1 | Origem dos dados | `GET /usuarios/papeis` devolve a lista inteira; a busca, os filtros e a ordem são feitos no navegador, como nas telas de Objetos do banco. |
 | Q2 | O que entra na lista | Os papéis criados no servidor. Os predefinidos do PostgreSQL (`pg_*`) ficam de fora e só aparecem em "Membro de", quando alguém participa deles. |
-| Q3 | Ações sobre o banco | Só leitura, com os comandos prontos para copiar, como em Índices, Tabelas e Funções. |
+| Q3 | Ações sobre o banco | Só leitura, com os comandos prontos para copiar, como em Índices, Tabelas e Funções. Revista em 20 de outubro de 2026: os comandos de papéis passam a ser executados depois de uma revisão (ver "Usuários e permissões: administração e Alterações"). |
 | Q4 | Uso | O PostgreSQL não registra o último login: a API amostra o `pg_stat_activity` e informa quando viu o papel conectado pela última vez. Antes de 30 dias de coleta, o usuário sem sessão fica "Em observação", como os índices. |
 | Q5 | Senha | A validade (`rolvaliduntil`) e o formato em que a senha está guardada (SCRAM ou MD5), quando a conexão da API pode ler `pg_authid`; sem isso, a tela diz que o formato não está disponível. |
 | Q6 | Situações apontadas | Superusuário com login além do criado na instalação, senha vencida ou que vence em até 7 dias, senha em MD5, sessões em 80% ou mais do limite do papel, usuário sem nenhuma sessão em 30 dias e grupo sem membros que não é dono de nada. |
@@ -691,7 +691,7 @@ foram aprovadas.
 | Q3 | Que permissões contam | As efetivas, cada uma com a origem: direta, por um grupo (só nas participações que herdam), por PUBLIC, por ser dono ou por ser superusuário. |
 | Q4 | Objetos desta versão | O banco (`CONNECT`, `CREATE`, `TEMPORARY`), os esquemas (`USAGE`, `CREATE`), as tabelas, as visões e as visões materializadas (com as permissões por coluna), as sequências, as funções e os procedimentos (`EXECUTE`), além dos privilégios padrão. As políticas de RLS ficam fora. |
 | Q5 | Situações apontadas | Função `SECURITY DEFINER` que PUBLIC executa; PUBLIC com `CREATE` num esquema; `WITH GRANT OPTION` dado a um usuário que não é dono; escrita num grupo de leitura; privilégio num objeto sem `USAGE` no esquema dele, e `USAGE` num esquema sem nenhum objeto dele; grupo que lê um esquema sem privilégio padrão para os objetos novos. A permissão dada direto a um usuário não é apontada. |
-| Q6 | Ações sobre o banco | Só leitura, com os comandos `GRANT`, `REVOKE` e `ALTER DEFAULT PRIVILEGES` prontos para copiar. |
+| Q6 | Ações sobre o banco | Só leitura, com os comandos `GRANT`, `REVOKE` e `ALTER DEFAULT PRIVILEGES` prontos para copiar. Revista em 20 de outubro de 2026: esses comandos passam a ser executados depois de uma revisão (ver "Usuários e permissões: administração e Alterações"). |
 | S1 | Comandos em lote | Com um filtro de situação, "Copiar os N comandos" da lista filtrada, como em Índices. Aprovada. |
 | S2 | Quem acessa | O detalhe de Tabelas, Visões e Funções ganha a seção "Quem acessa", com os papéis que alcançam o objeto, que abrem a linha em Permissões. Aprovada. |
 | S3 | Caminho a partir de Papéis | O detalhe de um papel ganha "Ver o que ele pode fazer em Permissões". Aprovada. |
@@ -767,6 +767,65 @@ Regras:
   nada; `fila_pedidos` lê e atualiza `pedidos` e `estoque`; `loja_admin` cria esquemas e mantém (`MAINTAIN`) as
   tabelas de `loja_app`, mas `suporte_dba` participa dele sem herdar; e `suporte_dba` lê só `id`, `email` e
   `criado_em` de `usuarios`. `falhar('/usuarios')` mostra o estado de erro também desta tela.
+
+## Usuários e permissões: administração e Alterações
+
+Pedido pelo usuário em 20 de outubro de 2026: gerenciar os papéis pelo Orynt (criar, alterar, excluir, listar, GRANT
+e REVOKE). Até aqui, Papéis e Permissões só liam o banco e mostravam os comandos para copiar; desde esta data o Orynt
+executa, nessas duas telas, os comandos de papéis e de permissões, sempre depois de uma revisão. As outras telas
+(Objetos do banco, Sessões, Consultas SQL) continuam só lendo. As decisões foram as recomendadas na descoberta, e as
+seis sugestões foram aprovadas.
+
+| # | Tema | Decisão |
+|---|---|---|
+| Q1 | Executar no banco | Sim, pela API, depois de revisar o SQL; "Copiar" continua ao lado. Revê Q3 de Papéis e Q6 de Permissões. |
+| Q2 | Onde fica | Nas telas que já existem: "Novo papel" no topo de Papéis; "Editar", "Trocar a senha" e "Excluir" no detalhe do papel; "Conceder ou revogar" no topo e no detalhe de Permissões. A tela nova é só o histórico (S1). |
+| Q3 | Contrato | Operações estruturadas (`OperacaoDTO`), nunca SQL livre. A API monta o SQL com os nomes citados; o front mostra a prévia pela mesma regra (`regras/sqlAlteracoes.ts`). Uma rota só, `POST /usuarios/alteracoes`, porque um modelo, um lote e uma exclusão são vários comandos que rodam numa transação. |
+| Q4 | Senha | O navegador calcula o verificador SCRAM-SHA-256 (PBKDF2 com 4096 iterações e SASLprep, como o `\password` do psql) e só ele vai à API. A senha fica só no estado do formulário. O histórico guarda um marcador no lugar do verificador. |
+| Q5 | Excluir com dependências | A tela mostra o que prende o papel e resolve numa transação: `REASSIGN OWNED BY … TO` o herdeiro escolhido, `DROP OWNED BY` e `DROP ROLE`, avisando que outros bancos do servidor precisam do mesmo. |
+| Q6 | O que o GRANT cobre | Participações (com INHERIT, SET e ADMIN), o banco, os esquemas, as tabelas e visões (também por coluna), as sequências, as funções, "todos de um esquema" e os privilégios padrão. |
+| Q7 | Confirmação | Toda alteração passa pela revisão. Excluir um papel, tirar SUPERUSER, revogar de PUBLIC e tirar o próprio acesso do papel da conexão pedem o nome digitado. |
+| Q8 | O que a conexão não pode | O botão fica bloqueado, com o motivo, calculado pelo papel da conexão (superusuário, CREATEROLE com ADMIN, dono ou herdeiro do dono, WITH GRANT OPTION, quem concedeu). A API continua sendo a palavra final, e a recusa vira frase. |
+| Q9 | Proteções | Não dá para excluir o papel da conexão nem o criado na instalação, nem renomear o papel da conexão. Avisa ao tirar o próprio LOGIN ou CREATEROLE. |
+| Q10 | Sessões ao excluir | Avisa quantas há e oferece encerrá-las na mesma transação, desmarcado por padrão. NOLOGIN não encerra as sessões abertas. |
+| S1 | Histórico | Tela Usuários e permissões › Alterações: cada alteração feita pelo Orynt, aplicada ou recusada, com a conta, o papel da conexão, o banco, quando, os comandos e a resposta do banco. Aprovada. |
+| S2 | Desfazer | A notificação de sucesso e o detalhe do histórico oferecem o comando inverso, que passa pela revisão. Excluir e trocar a senha não têm desfazer. Aprovada. |
+| S3 | Efeito antes de confirmar | A revisão diz o que muda no acesso de cada papel, junta quem ganha ou perde o mesmo e avisa o que continua por outro caminho. Aprovada. |
+| S4 | Modelos de papel | Em branco, Grupo de leitura, Usuário de aplicação e Leitura de um esquema. Aprovada. |
+| S5 | Executar os pontos de atenção | Os comandos que Papéis e Permissões sugerem ganham "Executar", também no lote ("Executar os N"). A senha em MD5 vira "Trocar a senha". Aprovada. |
+| S6 | Gerador de senha | "Gerar senha forte" (24 caracteres, sem os que se confundem), com o medidor de força da recuperação de senha. Aprovada. |
+
+Regras:
+
+* **Revisão:** um modal só, com o formulário e a revisão como duas etapas (o formulário fica montado e escondido,
+  então "Voltar" mantém o que foi digitado). A revisão mostra o que vai ser feito, os avisos, "O que muda", os
+  comandos na ordem em que rodam, com "Copiar", o aviso de demonstração e a confirmação digitada quando pedida. O
+  botão diz o que faz ("Criar usuário", "Excluir papel", "Conceder", "Revogar", "Desfazer").
+* **Modelos (S4):** "Usuário de aplicação" é um usuário com 20 conexões, `statement_timeout` de 30 s,
+  `idle_in_transaction_session_timeout` de 5 min, CONNECT no banco, USAGE no esquema, SELECT, INSERT, UPDATE e
+  DELETE em todas as tabelas, USAGE e SELECT nas sequências e os privilégios padrão para o que os donos do esquema
+  criarem. "Leitura de um esquema" é um usuário com 5 conexões e `statement_timeout` de 5 min que lê todas as tabelas
+  e visões do esquema, com o privilégio padrão de SELECT. "Grupo de leitura" é o mesmo acesso num grupo sem login,
+  com os membros escolhidos no formulário.
+* **Nome:** até 63 bytes, sem `pg_`, sem as palavras reservadas, único no servidor e só com letras sem acento,
+  números, `_`, `$`, ponto e hífen (o que as outras telas aceitam abrir). Com maiúsculas, ponto ou hífen, o nome
+  vai entre aspas.
+* **Revogação:** o PostgreSQL só revoga em nome de quem concedeu, então o comando leva `GRANTED BY` quando a
+  concessão não é do dono (`REVOKE UPDATE … FROM leitura GRANTED BY migracao`), e `CASCADE` quando quem perde o
+  acesso já o repassou.
+* **Depois de executar:** a notificação diz o que foi feito e oferece "Desfazer"; Papéis, Permissões, Sessões e
+  Alterações recarregam; o detalhe aberto acompanha um papel renomeado e fecha quando ele é excluído.
+* **Alterações (S1):** lista da mais recente à mais antiga, busca (alteração, comandos, conta), filtros de resultado
+  (aplicadas, desfeitas, recusadas) e de papel, atalho "N recusadas pelo banco", 15 por página e detalhe com as
+  setas, os comandos, a falha com o SQLSTATE e os vínculos entre uma alteração e a que a desfez. A URL é sempre
+  `/usuarios-e-permissoes/alteracoes`, com os filtros no histórico do navegador.
+* **Simulação:** as alterações ficam no `localStorage` (`orynt:simulacao:alteracoes`), por conexão, sem senha nem
+  verificador, e são reaplicadas sobre os dados gerados a cada leitura, em Papéis, Permissões, Sessões e nos donos de
+  Tabelas, Visões e Funções. As sessões de um papel excluído vão para `loja_app`, para a soma seguir igual às
+  conexões ativas do Dashboard. O simulador valida como o PostgreSQL e recusa com o SQLSTATE: papel que já existe,
+  falta de permissão, dependências sem herdeiro, ciclo de grupos, excluir ou renomear o papel da conexão.
+  `oryntSimulacao.restaurarPapeis()` volta ao início e `oryntSimulacao.recusarAlteracoes()` recusa tudo (`false`
+  desliga).
 
 ## Fora desta fase
 
