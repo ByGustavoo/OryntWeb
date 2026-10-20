@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import {
   ChevronDown,
   ChevronRight,
@@ -40,7 +41,7 @@ import {
   pluralizar,
 } from '@/utilitarios/formatacao';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
-import { ItemConsulta, Medida, SecaoCopiavel } from './DetalheObjeto';
+import { DonoDoObjeto, ItemConsulta, Medida, SecaoCopiavel } from './DetalheObjeto';
 import estilos from './DetalheObjeto.module.css';
 import { NomeObjeto } from './NomeObjeto';
 import { SeloSituacaoFuncao, SeloTipoFuncao } from './SeloSituacaoFuncao';
@@ -52,6 +53,8 @@ interface AcoesDoDetalhe {
   aoAbrirTabela: (id: string) => void;
   aoAbrirIndice: (id: string, tabela: string) => void;
   aoAbrirVisao: (id: string) => void;
+  aoAbrirPapel: (nome: string) => void;
+  quemAcessa?: (id: string) => ReactNode;
 }
 
 interface DetalheFuncaoProps extends AcoesDoDetalhe {
@@ -157,6 +160,7 @@ function CorpoDetalhe({ funcao, contexto, simulada, ...acoes }: CorpoDetalheProp
         <p className={juntarClasses(estilos.descricao, !funcao.descricao && estilos.semDescricao)}>
           {funcao.descricao ?? 'O banco não tem uma descrição para esta função.'}
         </p>
+        <DonoDoObjeto dono={funcao.dono} aoAbrir={acoes.aoAbrirPapel} />
         <div className={estilos.selos}>
           <SeloTipoFuncao tipo={funcao.tipo} />
           <Selo tom="neutro">
@@ -222,6 +226,7 @@ function CorpoDetalhe({ funcao, contexto, simulada, ...acoes }: CorpoDetalheProp
       {deGatilho ? null : (
         <SecaoDependentes funcao={funcao} aoAbrirIndice={acoes.aoAbrirIndice} aoAbrirVisao={acoes.aoAbrirVisao} />
       )}
+      {acoes.quemAcessa?.(funcao.id)}
     </div>
   );
 }

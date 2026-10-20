@@ -112,14 +112,12 @@ const usuariosPermissoes: Funcionalidade = {
       rotulo: 'Papéis',
       destino: caminhos.usuariosPapeis,
       descricao: 'Papéis e usuários do banco, com os atributos de cada um.',
-      planejado: true,
     },
-    { rotulo: 'Sessões', destino: caminhos.usuariosSessoes, descricao: 'As sessões abertas por usuário.', planejado: true },
+    { rotulo: 'Sessões', destino: caminhos.usuariosSessoes, descricao: 'Quem está conectado agora e o que está travado.' },
     {
       rotulo: 'Permissões',
       destino: caminhos.usuariosPermissoes,
       descricao: 'O que cada papel pode fazer em cada banco, esquema e tabela.',
-      planejado: true,
     },
   ],
 };

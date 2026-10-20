@@ -70,7 +70,7 @@ describe('navegacao', () => {
     expect(itemPlanejado(relatorios)).toBe(false);
     expect(itemPlanejado(consultas)).toBe(false);
     expect(objetos && itemPlanejado(objetos)).toBe(false);
-    expect(usuarios && itemPlanejado(usuarios)).toBe(true);
+    expect(usuarios && itemPlanejado(usuarios)).toBe(false);
     expect(itemPlanejado(navegacaoRodape)).toBe(false);
   });
 
@@ -97,5 +97,13 @@ describe('navegacao', () => {
 
     expect(destinoInicial(objetos)).toBe(caminhos.objetosVisoes);
     expect(telasPlanejadas(objetos)).toEqual([]);
+  });
+
+  it('não deixa nenhuma tela de Usuários e permissões como planejada', () => {
+    const [, , , usuarios] = funcionalidades;
+    if (!usuarios) throw new Error('Faltam os usuários e permissões para o teste.');
+
+    expect(destinoInicial(usuarios)).toBe(caminhos.usuariosPapeis);
+    expect(telasPlanejadas(usuarios)).toEqual([]);
   });
 });

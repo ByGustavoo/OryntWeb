@@ -17,6 +17,7 @@ export { EstadoVazio } from './EstadoVazio';
 export { Flutuante } from './Flutuante';
 export { GrupoOpcoes } from './GrupoOpcoes';
 export { IndicadorGiratorio } from './IndicadorGiratorio';
+export { Interruptor } from './Interruptor';
 export { Modal } from './Modal';
 export { Nota } from './Nota';
 export type { TomNota } from './Nota';

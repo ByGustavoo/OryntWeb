@@ -1,0 +1,266 @@
+.painel {
+  container: resumo-sessoes / inline-size;
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--espaco-6);
+}
+
+.agora {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+  min-width: 0;
+}
+
+.tituloBloco {
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+}
+
+.total {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--espaco-1) var(--espaco-2);
+}
+
+.valor {
+  color: var(--texto);
+  font-size: var(--tamanho-2xl);
+  font-weight: var(--peso-medio);
+  line-height: 1;
+}
+
+.limite {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-sm);
+}
+
+.ocupacao {
+  display: block;
+  height: 6px;
+  overflow: hidden;
+  border-radius: var(--raio-pilula);
+  background-color: var(--neutro-suave);
+}
+
+.preenchimento {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background-color: var(--grafico-1);
+  transform-origin: left center;
+  transition: width var(--duracao-expressiva) var(--curva-saida);
+  animation: preencher var(--duracao-expressiva) var(--curva-saida) var(--duracao-base) backwards;
+}
+
+.cheio {
+  background-color: var(--aviso-grafico);
+}
+
+@keyframes preencher {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.estados {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+  margin-top: var(--espaco-2);
+}
+
+.barraEstados {
+  display: flex;
+  gap: 2px;
+  height: 10px;
+  overflow: hidden;
+  border-radius: var(--raio-xs);
+}
+
+.segmento {
+  flex-basis: 0;
+  min-width: 4px;
+  transition: flex-grow var(--duracao-expressiva) var(--curva-saida);
+}
+
+.legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-1) var(--espaco-4);
+}
+
+.itemLegenda {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-xs);
+  line-height: 1.5;
+}
+
+.amostra {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.contagemLegenda {
+  color: var(--texto);
+  font-weight: var(--peso-medio);
+}
+
+.ativa {
+  background-color: var(--desempenho-rapida);
+}
+
+.esperando {
+  background-color: var(--desempenho-lenta);
+}
+
+.ociosaEmTransacao {
+  background-color: var(--desempenho-moderada);
+}
+
+.ociosa {
+  background-color: var(--grafico-referencia);
+}
+
+.emEspera {
+  background-color: var(--esqueleto-base);
+}
+
+.retrato {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-2) var(--espaco-4);
+  margin-top: auto;
+  padding-top: var(--espaco-3);
+  border-top: 1px solid var(--borda);
+}
+
+.instante {
+  display: flex;
+  align-items: center;
+  min-height: var(--altura-controle-sm);
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+}
+
+.horario {
+  margin-left: 0.25em;
+  color: var(--texto-secundario);
+}
+
+.controles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-2) var(--espaco-4);
+}
+
+.pausa {
+  flex-basis: 100%;
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  text-align: right;
+}
+
+.distribuicoes {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--espaco-5);
+  min-width: 0;
+}
+
+.distribuicao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+  min-width: 0;
+}
+
+.fatias {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+}
+
+.fatia {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 4px var(--espaco-3);
+}
+
+.rotuloFatia {
+  overflow: hidden;
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rotuloVazio {
+  color: var(--texto-terciario);
+}
+
+.quantidadeFatia {
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+}
+
+.trilhoFatia {
+  grid-column: 1 / -1;
+  display: block;
+  height: 4px;
+  overflow: hidden;
+  border-radius: var(--raio-pilula);
+  background-color: var(--neutro-suave);
+}
+
+.barraFatia {
+  display: block;
+  width: calc(var(--parte) * 100%);
+  height: 100%;
+  border-radius: inherit;
+  background-color: var(--grafico-1);
+  transition: width var(--duracao-expressiva) var(--curva-saida);
+}
+
+.vazio {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-sm);
+}
+
+@container resumo-sessoes (min-width: 560px) {
+  .distribuicoes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container resumo-sessoes (min-width: 960px) {
+  .grade {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: var(--espaco-8);
+  }
+
+  .distribuicoes {
+    padding-left: var(--espaco-8);
+    border-left: 1px solid var(--borda);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .preenchimento {
+    animation: none;
+  }
+}

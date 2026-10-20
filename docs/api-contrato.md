@@ -122,6 +122,9 @@ ajustar `PROBLEMAS_CONEXAO` em `src/modelos/conexao.ts`.
 | `GET` | `/objetos/indices` | Os índices do banco, com o tamanho, as leituras e as gravações dos últimos 30 dias, as consultas cujo plano os lê e os índices sugeridos pelos planos | sim |
 | `GET` | `/objetos/tabelas` | As tabelas do banco, com o espaço que ocupam, as linhas vivas e mortas, a manutenção, as leituras e as gravações dos últimos 30 dias, o crescimento diário, as partições, os ajustes de autovacuum, os índices, as visões que dependem delas e as consultas cujo plano as lê | sim |
 | `GET` | `/objetos/funcoes` | As funções e os procedimentos do banco, com o código, as chamadas e o tempo dos últimos 30 dias, os gatilhos que as chamam, os índices e as visões que dependem delas e as consultas que as citam | sim |
+| `GET` | `/usuarios/papeis` | Os usuários e os grupos do servidor, com os atributos, as participações, as sessões abertas, o último uso visto, a validade e o formato da senha, as configurações próprias e os objetos deste banco de que cada um é dono | sim |
+| `GET` | `/usuarios/sessoes` | O retrato do `pg_stat_activity` do servidor: cada sessão com o papel, o banco, a aplicação, o estado, a espera, a consulta com os literais trocados, quem a bloqueia e os bloqueios que segura | sim |
+| `GET` | `/usuarios/permissoes` | As permissões de cada objeto do banco (o banco, os esquemas, as tabelas, as visões, as sequências e as funções), os papéis com as participações e os privilégios padrão | sim |
 | `GET` | `/sistema/versao` | Versão publicada da API e a data de lançamento | não |
 
 ---
@@ -719,6 +722,132 @@ interface ListaFuncoesDTO {
   coletaDesde: string;
   rastreamento: RastreamentoFuncoes;
   funcoes: FuncaoDTO[];
+}
+```
+
+### 4.9 Usuários e permissões
+
+```ts
+type MetodoSenha = 'SCRAM' | 'MD5' | 'SEM_SENHA';
+
+type TipoObjetoDoPapel = 'TABELA' | 'VISAO' | 'VISAO_MATERIALIZADA' | 'FUNCAO' | 'PROCEDIMENTO';
+
+interface ParticipacaoDTO {
+  papel: string;
+  herda: boolean;
+  assume: boolean;
+  administra: boolean;
+}
+
+interface FuncaoDoDonoDTO {
+  segurancaDefinidor: boolean;
+  configuracoes: string[];
+}
+
+interface ObjetoDoPapelDTO {
+  tipo: TipoObjetoDoPapel;
+  id: string;
+  esquema: string;
+  nome: string;
+  funcao: FuncaoDoDonoDTO | null;
+}
+
+interface PapelDTO {
+  nome: string;
+  descricao: string | null;
+  inicial: boolean;
+  login: boolean;
+  superusuario: boolean;
+  criaBancos: boolean;
+  criaPapeis: boolean;
+  replicacao: boolean;
+  ignoraRls: boolean;
+  herda: boolean;
+  limiteConexoes: number | null;
+  validadeSenha: string | null;
+  metodoSenha: MetodoSenha | null;
+  configuracoes: string[];
+  membroDe: ParticipacaoDTO[];
+  membros: ParticipacaoDTO[];
+  sessoes: number;
+  vistoPorUltimo: string | null;
+  observadoDesde: string;
+  objetos: ObjetoDoPapelDTO[];
+}
+
+interface ListaPapeisDTO {
+  geradoEm: string;
+  coletaDesde: string;
+  papelDaConexao: string;
+  papeis: PapelDTO[];
+}
+
+type TipoObjetoPermissao =
+  | 'BANCO'
+  | 'ESQUEMA'
+  | 'TABELA'
+  | 'VISAO'
+  | 'VISAO_MATERIALIZADA'
+  | 'SEQUENCIA'
+  | 'FUNCAO'
+  | 'PROCEDIMENTO';
+
+type Privilegio =
+  | 'CONNECT'
+  | 'CREATE'
+  | 'TEMPORARY'
+  | 'USAGE'
+  | 'SELECT'
+  | 'INSERT'
+  | 'UPDATE'
+  | 'DELETE'
+  | 'TRUNCATE'
+  | 'REFERENCES'
+  | 'TRIGGER'
+  | 'MAINTAIN'
+  | 'EXECUTE';
+
+interface ConcessaoDTO {
+  beneficiario: string;
+  privilegio: Privilegio;
+  concedente: string;
+  repassavel: boolean;
+  colunas: string[] | null;
+}
+
+interface ObjetoComPermissoesDTO {
+  id: string;
+  tipo: TipoObjetoPermissao;
+  esquema: string | null;
+  nome: string;
+  dono: string;
+  segurancaDefinidor: boolean;
+  concessoes: ConcessaoDTO[];
+}
+
+interface PrivilegioPadraoDTO {
+  criador: string;
+  esquema: string | null;
+  tipoDeObjeto: 'TABELAS' | 'SEQUENCIAS' | 'FUNCOES';
+  beneficiario: string;
+  privilegios: Privilegio[];
+}
+
+interface PapelDasPermissoesDTO {
+  nome: string;
+  descricao: string | null;
+  login: boolean;
+  superusuario: boolean;
+  membroDe: ParticipacaoDTO[];
+}
+
+interface ListaPermissoesDTO {
+  geradoEm: string;
+  banco: string;
+  papelDaConexao: string;
+  papeis: PapelDasPermissoesDTO[];
+  objetos: ObjetoComPermissoesDTO[];
+  privilegiosPadrao: PrivilegioPadraoDTO[];
 }
 ```
 
@@ -1357,7 +1486,114 @@ ativa, como as outras rotas de dados.
 
 ---
 
-## 12. Pendências do contrato
+## 12. Usuários e permissões
+
+### 12.1 `GET /usuarios/papeis`
+
+Sem parâmetros. Devolve `200` com `ListaPapeisDTO`: os papéis do servidor da conexão ativa (`pg_roles`), fora
+dos predefinidos, cujo nome começa por `pg_`. A lista vem inteira, sem paginação: a tela busca, filtra, ordena e
+decide a situação de cada papel no navegador. `geradoEm` e `coletaDesde` têm o mesmo sentido de
+`GET /objetos/indices`, aqui para as amostras de `pg_stat_activity`. `papelDaConexao` é o `current_user` da
+conexão que a API usa, que a tela marca com "Você".
+
+* `nome` é o `rolname`, que também serve de identificador. `descricao` é o `COMMENT ON ROLE`
+  (`shobj_description`). `inicial` é verdadeiro só no papel criado na instalação (`oid` 10).
+* `login`, `superusuario`, `criaBancos`, `criaPapeis`, `replicacao`, `ignoraRls` e `herda` são `rolcanlogin`,
+  `rolsuper`, `rolcreatedb`, `rolcreaterole`, `rolreplication`, `rolbypassrls` e `rolinherit`.
+  `limiteConexoes` é `rolconnlimit`, ou `null` quando ele é `-1`. `validadeSenha` é `rolvaliduntil`, ou `null`
+  quando não há validade (`infinity` também vem `null`).
+* `metodoSenha` é `SCRAM` quando o `rolpassword` de `pg_authid` começa por `SCRAM-SHA-256$`, `MD5` quando começa
+  por `md5`, e `SEM_SENHA` quando ele é nulo. Vem `null` num grupo e quando a conexão da API não pode ler
+  `pg_authid`, o que exige superusuário: a tela então diz que o formato não está disponível. O hash nunca sai
+  da API.
+* `configuracoes` é o `setconfig` de `pg_db_role_setting` do papel em qualquer banco e no banco atual, no
+  formato `parametro=valor`.
+* `membroDe` e `membros` vêm de `pg_auth_members`: `papel` é o grupo (em `membroDe`) ou o membro (em `membros`),
+  `herda` é `inherit_option`, `assume` é `set_option` e `administra` é `admin_option` (PostgreSQL 16 ou mais
+  novo; antes disso, `herda` repete o `rolinherit` do membro e `assume` é sempre verdadeiro). `membroDe` pode
+  citar papéis predefinidos, que não estão na lista.
+* `sessoes` são as linhas de `pg_stat_activity` do papel com `backend_type` `client backend` ou `walsender`
+  no instante de `geradoEm`, incluindo a da própria API: somadas, dão as conexões ativas de
+  `GET /dashboard/indicadores`. `vistoPorUltimo` é o instante da última amostra em que o papel tinha uma sessão,
+  ou `null` quando a API nunca o viu conectado; o PostgreSQL não registra o último login. `observadoDesde` é
+  quando a API viu o papel pela primeira vez: um usuário sem sessão só é marcado sem uso depois de 30 dias de
+  coleta, contados do mais recente entre `coletaDesde` e `observadoDesde`. `ociosasEmTransacao30Dias` tem o
+  sentido de `GET /usuarios/sessoes`.
+* `objetos` são as tabelas, as visões e as funções do banco da conexão de que o papel é dono, com o mesmo `id`
+  de `GET /objetos/tabelas`, `GET /objetos/visoes` e `GET /objetos/funcoes`. Nas funções e nos procedimentos,
+  `nome` traz os argumentos, `nome(argumentos)`, e `funcao` repete `segurancaDefinidor` e `configuracoes` de
+  `FuncaoDTO`, para a tela apontar uma `SECURITY DEFINER` sem `search_path` fixo; nos outros, `funcao` é `null`.
+
+A tela só lê. Os comandos que ela oferece nunca levam uma senha: a troca de senha é feita com `\password` no
+psql. `limiteOciosoEmTransacao` tem o sentido de `GET /usuarios/sessoes`. `401` sem conexão ativa, como as
+outras rotas de dados.
+
+### 12.2 `GET /usuarios/sessoes`
+
+Sem parâmetros. Devolve `200` com `ListaSessoesDTO`: cada linha de `pg_stat_activity` do servidor da conexão
+ativa no instante de `geradoEm`, de todos os bancos. A lista vem inteira, sem paginação: o `max_connections`
+limita o tamanho, e a tela busca, filtra, ordena e decide a situação de cada sessão no navegador.
+
+* `bancoDaConexao` é o banco da conexão ativa, com que a tela começa filtrada. `limiteConexoes` é o
+  `max_connections`. `limiteOciosoEmTransacao` é o `idle_in_transaction_session_timeout` do servidor, ou `null`
+  quando ele é `0`.
+* `papeis` traz, para cada papel com ao menos uma sessão, o `limiteConexoes` e as `configuracoes` de
+  `GET /usuarios/papeis` e `ociosasEmTransacao30Dias`: quantas vezes, nas amostras dos últimos 30 dias, a API viu
+  uma sessão do papel ociosa em transação por 5 minutos ou mais (cada sessão conta uma vez por episódio).
+* `pid` é o `pid`. `tipo` agrupa o `backend_type`: `CLIENTE` (`client backend`), `REPLICACAO` (`walsender`),
+  `AUTOVACUUM` (`autovacuum launcher` e `autovacuum worker`) e `SERVIDOR` (os outros); `processo` repete o
+  `backend_type`. As sessões `CLIENTE` e `REPLICACAO` somadas dão as conexões ativas de
+  `GET /dashboard/indicadores` e as `sessoes` de `GET /usuarios/papeis`.
+* `papel`, `banco`, `aplicacao` e `endereco` são `usename`, `datname`, `application_name` (`null` quando vazio)
+  e `client_addr` (`null` num socket local). `iniciadaEm`, `transacaoDesde`, `consultaDesde` e `estadoDesde` são
+  `backend_start`, `xact_start`, `query_start` e `state_change`.
+* `estado` traduz `state`: `ATIVA` (`active`), `OCIOSA` (`idle`), `OCIOSA_EM_TRANSACAO` (`idle in transaction`),
+  `OCIOSA_EM_TRANSACAO_ABORTADA` (`idle in transaction (aborted)`), `CHAMADA_DE_FUNCAO` (`fastpath function
+  call`) e `DESATIVADA` (`disabled`); `null` num processo sem estado. `espera` é `{ tipo, evento }` com
+  `wait_event_type` e `wait_event`, ou `null`.
+* `consulta` é o `query` com os literais trocados por `$1`, `$2`…, como o `pg_stat_statements` faz: os valores
+  das consultas nunca chegam ao navegador. `consultaId` é o `id` de `GET /consultas` quando o `query_id` da
+  sessão está entre as consultas medidas; senão, `null`.
+* `bloqueadaPor` é o `pg_blocking_pids(pid)`. `bloqueios` são as linhas de `pg_locks` do `pid`: `tipo` traduz
+  `locktype` (`relation`, `transactionid`, `tuple`, `advisory`), `alvo` é o nome da tabela, `xid N` ou a tabela
+  com a linha, `modo` é o `mode` e `concedido` é o `granted`.
+* `doOrynt` é verdadeiro só na sessão que a API usou para tirar o retrato: a tela nunca a aponta.
+
+A tela só lê. Os comandos que ela oferece são `pg_cancel_backend` e `pg_terminate_backend`, prontos para copiar.
+`401` sem conexão ativa, como as outras rotas de dados.
+
+### 12.3 `GET /usuarios/permissoes`
+
+Sem parâmetros. Devolve `200` com `ListaPermissoesDTO`: as permissões de todos os objetos do banco da conexão
+ativa, numa resposta só, sem paginação. A tela calcula no navegador o acesso efetivo de cada papel (direto,
+herdado por um grupo, por `PUBLIC`, por ser dono ou superusuário), decide as situações e monta os comandos.
+
+* `banco` é o banco da conexão. `papelDaConexao` tem o sentido de `GET /usuarios/papeis`.
+* `papeis` são os mesmos papéis de `GET /usuarios/papeis`, só com `nome`, `descricao`, `login`, `superusuario` e
+  `membroDe` (com `herda`, `assume` e `administra`). A herança segue só as participações com `herda`: o que um
+  grupo pode, sem herança, só vale depois de `SET ROLE` e não entra no acesso efetivo.
+* `objetos` traz o banco, os esquemas fora dos do sistema (`pg_catalog`, `information_schema`, `pg_toast`), as
+  tabelas, as visões, as visões materializadas, as sequências, as funções e os procedimentos. `id` é
+  `banco:<nome>` no banco, `esquema:<nome>` num esquema e o mesmo `id` de `GET /objetos/tabelas`,
+  `GET /objetos/visoes` e `GET /objetos/funcoes` nos outros; nas funções e nos procedimentos, `nome` traz os
+  argumentos, como em `GET /usuarios/papeis`. `tipo` é `BANCO`, `ESQUEMA`, `TABELA`, `VISAO`,
+  `VISAO_MATERIALIZADA`, `SEQUENCIA`, `FUNCAO` ou `PROCEDIMENTO` (a função de gatilho é `FUNCAO`). `dono` é o
+  dono do objeto e `segurancaDefinidor` é o `prosecdef` (falso fora das funções).
+* `concessoes` é o `aclexplode` da ACL do objeto (`datacl`, `nspacl`, `relacl`, `proacl`), com a ACL padrão do
+  tipo (`acldefault`) quando ela é nula, fora as entradas do dono para ele mesmo, que já estão em `dono`.
+  `beneficiario` é o papel, ou `PUBLIC` quando o `grantee` é `0`; `concedente` é o `grantor`; `privilegio` é o
+  `privilege_type`; `repassavel` é o `is_grantable`. As permissões por coluna (`attacl` de `pg_attribute`) vêm
+  como uma concessão por papel e privilégio, com as colunas em `colunas`; nas outras, `colunas` é `null`.
+* `privilegiosPadrao` vem de `pg_default_acl`: `criador` é o `defaclrole` (o `FOR ROLE`), `esquema` é o
+  `defaclnamespace` (`null` quando vale para qualquer esquema), `tipoDeObjeto` é `TABELAS` (`r`, que inclui
+  visões), `SEQUENCIAS` (`S`) ou `FUNCOES` (`f`), e cada `beneficiario` traz os seus `privilegios`.
+
+A tela só lê. Os comandos que ela oferece são `GRANT`, `REVOKE` e `ALTER DEFAULT PRIVILEGES`, prontos para
+copiar. `401` sem conexão ativa, como as outras rotas de dados.
+
+---
+
+## 13. Pendências do contrato
 
 * Autenticação real: como as contas são criadas.
 * Recuperação de senha: o serviço de envio de e-mail, o texto da mensagem, o limite de pedidos por origem e o prazo do token de redefinição.
@@ -1380,4 +1616,6 @@ ativa, como as outras rotas de dados.
 * Funções: com que frequência a API amostra `pg_stat_user_functions`, o que faz depois de um `pg_stat_reset`,
   como liga uma consulta à função que ela cita (análise do texto, como nas visões) e se guarda quando o
   `track_functions` mudou no período, o que deixaria uma parte dos 30 dias sem medida.
+* Papéis: com que frequência a API amostra `pg_stat_activity`, quanto tempo guarda o último uso de cada papel e
+  o que mostra quando a conexão dela não pode ler `pg_authid`, além do formato da senha.
 * Planos de execução: como a API captura os planos (`auto_explain` com amostragem, `log_min_duration`), quantos guarda por consulta, como decide que dois planos são a mesma versão e se os valores dos parâmetros (`$1`) entram no plano guardado, o que exigiria cuidado com dados pessoais.

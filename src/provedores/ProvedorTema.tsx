@@ -24,7 +24,7 @@ const CLASSE_CRUZANDO_TEMA = 'cruzando-tema';
 const DURACAO_TROCA_TEMA_MS = 640;
 
 interface DocumentoComTransicao {
-  startViewTransition?: (atualizar: () => void) => { finished: Promise<void> };
+  startViewTransition?: (atualizar: () => void) => { ready: Promise<void>; finished: Promise<void> };
 }
 
 let temporizadorTroca = 0;
@@ -52,7 +52,9 @@ function trocarComTransicao(aplicar: () => void): void {
   const raiz = document.documentElement;
   const limpar = () => raiz.classList.remove(CLASSE_CRUZANDO_TEMA);
   raiz.classList.add(CLASSE_CRUZANDO_TEMA);
-  documento.startViewTransition(aplicar).finished.then(limpar, limpar);
+  const transicao = documento.startViewTransition(aplicar);
+  transicao.ready.catch(() => undefined);
+  transicao.finished.then(limpar, limpar);
 }
 
 function lerModoSalvo(): ModoTema {

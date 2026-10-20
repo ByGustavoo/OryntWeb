@@ -21,6 +21,9 @@ const PaginaVisoes = lazy(() => import('@/paginas/PaginaVisoes'));
 const PaginaIndices = lazy(() => import('@/paginas/PaginaIndices'));
 const PaginaTabelas = lazy(() => import('@/paginas/PaginaTabelas'));
 const PaginaFuncoes = lazy(() => import('@/paginas/PaginaFuncoes'));
+const PaginaPapeis = lazy(() => import('@/paginas/PaginaPapeis'));
+const PaginaSessoes = lazy(() => import('@/paginas/PaginaSessoes'));
+const PaginaPermissoes = lazy(() => import('@/paginas/PaginaPermissoes'));
 const PaginaFuncionalidadePlanejada = lazy(() => import('@/paginas/PaginaFuncionalidadePlanejada'));
 const PaginaConfiguracoes = lazy(() => import('@/paginas/PaginaConfiguracoes'));
 const PaginaNaoEncontrada = lazy(() => import('@/paginas/PaginaNaoEncontrada'));
@@ -56,6 +59,9 @@ export function RotasAplicacao() {
             <Route path={caminhos.objetosIndices} element={<PaginaIndices />} />
             <Route path={caminhos.objetosTabelas} element={<PaginaTabelas />} />
             <Route path={caminhos.objetosFuncoes} element={<PaginaFuncoes />} />
+            <Route path={caminhos.usuariosPapeis} element={<PaginaPapeis />} />
+            <Route path={caminhos.usuariosSessoes} element={<PaginaSessoes />} />
+            <Route path={caminhos.usuariosPermissoes} element={<PaginaPermissoes />} />
             {funcionalidades.map((funcionalidade) => (
               <Route
                 key={funcionalidade.destino}

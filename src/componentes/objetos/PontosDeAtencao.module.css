@@ -78,6 +78,7 @@
   color: var(--texto-secundario);
   font-size: var(--tamanho-sm);
   line-height: var(--altura-linha-normal);
+  overflow-wrap: anywhere;
 }
 
 .acao {

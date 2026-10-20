@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
   ChevronDown,
@@ -31,7 +32,7 @@ import {
   iniciarComMaiuscula,
 } from '@/utilitarios/formatacao';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
-import { ItemConsulta, Medida, SecaoCopiavel } from './DetalheObjeto';
+import { DonoDoObjeto, ItemConsulta, Medida, SecaoCopiavel } from './DetalheObjeto';
 import estilos from './DetalheObjeto.module.css';
 import { NomeObjeto } from './NomeObjeto';
 import { SeloTipoVisao } from './SeloTipoVisao';
@@ -51,8 +52,10 @@ interface DetalheVisaoProps {
   total: number;
   aoPercorrer: (sentido: SentidoDoPasso) => void;
   aoAbrirObjeto: (id: string) => void;
+  aoAbrirPapel: (nome: string) => void;
   aoVerHistorico: (consulta: ConsultaDetalhadaDTO) => void;
   aoVerPlano: (consulta: ConsultaDetalhadaDTO) => void;
+  quemAcessa?: (id: string) => ReactNode;
   aoFechar: () => void;
   focoAoFechar: () => HTMLElement | null;
 }
@@ -71,8 +74,10 @@ export function DetalheVisao({
   total,
   aoPercorrer,
   aoAbrirObjeto,
+  aoAbrirPapel,
   aoVerHistorico,
   aoVerPlano,
+  quemAcessa,
   aoFechar,
   focoAoFechar,
 }: DetalheVisaoProps) {
@@ -129,8 +134,10 @@ export function DetalheVisao({
           conhecidas={conhecidas}
           simulada={simulada}
           aoAbrirObjeto={aoAbrirObjeto}
+          aoAbrirPapel={aoAbrirPapel}
           aoVerHistorico={aoVerHistorico}
           aoVerPlano={aoVerPlano}
+          quemAcessa={quemAcessa}
         />
       ) : null}
     </Modal>
@@ -148,9 +155,21 @@ interface CorpoDetalheProps extends AcoesDasConsultas {
   conhecidas: ReadonlySet<string>;
   simulada: boolean;
   aoAbrirObjeto: (id: string) => void;
+  aoAbrirPapel: (nome: string) => void;
+  quemAcessa?: (id: string) => ReactNode;
 }
 
-function CorpoDetalhe({ visao, contexto, conhecidas, simulada, aoAbrirObjeto, aoVerHistorico, aoVerPlano }: CorpoDetalheProps) {
+function CorpoDetalhe({
+  visao,
+  contexto,
+  conhecidas,
+  simulada,
+  aoAbrirObjeto,
+  aoAbrirPapel,
+  aoVerHistorico,
+  aoVerPlano,
+  quemAcessa,
+}: CorpoDetalheProps) {
   const raiz = useRef<HTMLDivElement>(null);
   const avisos = avisosDaVisao(visao, contexto);
   const semLeitura = contexto.semLeitura.has(visao.id);
@@ -168,6 +187,7 @@ function CorpoDetalhe({ visao, contexto, conhecidas, simulada, aoAbrirObjeto, ao
         <p className={juntarClasses(estilos.descricao, !visao.descricao && estilos.semDescricao)}>
           {visao.descricao ?? 'O banco não tem uma descrição para esta visão.'}
         </p>
+        <DonoDoObjeto dono={visao.dono} aoAbrir={aoAbrirPapel} />
         <div className={estilos.selos}>
           <SeloTipoVisao tipo={visao.tipo} />
           <SeloSituacao visao={visao} geradoEm={contexto.geradoEm} />
@@ -253,6 +273,7 @@ function CorpoDetalhe({ visao, contexto, conhecidas, simulada, aoAbrirObjeto, ao
           </p>
         )}
       </section>
+      {quemAcessa?.(visao.id)}
     </div>
   );
 }

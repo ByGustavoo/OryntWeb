@@ -348,6 +348,10 @@
     align-items: flex-start;
   }
 
+  .celulaNumerica .textoSecundario {
+    white-space: normal;
+  }
+
   .tabela tbody td.celulaLarga {
     grid-column: 1 / -1;
   }

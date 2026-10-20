@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import { Check, Copy } from 'lucide-react';
+import { Check, Copy, UserRound } from 'lucide-react';
 import { TrechoSql } from '@/componentes/comum/TrechoSql';
 import { SeloDesempenho } from '@/componentes/dashboard/SeloDesempenho';
 import { Botao } from '@/componentes/ui';
@@ -33,6 +33,19 @@ export function ItemConsulta({ consulta, etapa, children }: ItemConsultaProps) {
         <div className={estilos.acoesConsulta}>{children}</div>
       </div>
     </div>
+  );
+}
+
+export function DonoDoObjeto({ dono, aoAbrir }: { dono: string; aoAbrir: (dono: string) => void }) {
+  return (
+    <p className={estilos.dono}>
+      <UserRound size={14} strokeWidth={2} aria-hidden="true" />
+      <span>Dono</span>
+      <button type="button" className={`${estilos.linkDono} codigo`} onClick={() => aoAbrir(dono)}>
+        {dono}
+        <span className="visualmente-oculto">. Abrir este papel em Papéis</span>
+      </button>
+    </p>
   );
 }
 

@@ -1,7 +1,7 @@
 import { Fragment } from 'react';
 
 interface NomeObjetoProps {
-  esquema: string;
+  esquema: string | null;
   nome: string;
   classeEsquema?: string;
 }
@@ -11,8 +11,12 @@ export function NomeObjeto({ esquema, nome, classeEsquema }: NomeObjetoProps) {
 
   return (
     <>
-      <span className={classeEsquema}>{esquema}.</span>
-      <wbr />
+      {esquema === null ? null : (
+        <>
+          <span className={classeEsquema}>{esquema}.</span>
+          <wbr />
+        </>
+      )}
       {partes.map((parte, indice) => (
         <Fragment key={indice}>
           {parte}

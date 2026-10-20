@@ -1,0 +1,140 @@
+.papelNoNome {
+  color: var(--texto-secundario);
+  font-weight: var(--peso-medio);
+}
+
+.comIcone {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espaco-2);
+}
+
+.comIcone svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--info);
+}
+
+.acaoDaSecao {
+  align-self: flex-start;
+}
+
+.acoesConsulta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-2);
+}
+
+.linhaDoTempo {
+  display: flex;
+  flex-direction: column;
+}
+
+.marco {
+  position: relative;
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr) auto auto;
+  align-items: baseline;
+  gap: var(--espaco-3);
+  padding-block: 6px;
+  font-size: var(--tamanho-sm);
+}
+
+.marco::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 5px;
+  border-left: 1px solid var(--borda-forte);
+}
+
+.marco:first-child::before {
+  top: 50%;
+}
+
+.marco:last-child::before {
+  bottom: 50%;
+}
+
+.ponto {
+  position: relative;
+  width: 11px;
+  height: 11px;
+  align-self: center;
+  border: 2px solid var(--superficie);
+  border-radius: 50%;
+  background-color: var(--texto-terciario);
+  box-shadow: 0 0 0 1px var(--borda-forte);
+}
+
+.agora .ponto {
+  background-color: var(--destaque);
+  box-shadow: 0 0 0 1px var(--destaque);
+}
+
+.rotuloMarco {
+  color: var(--texto-secundario);
+}
+
+.instanteMarco {
+  color: var(--texto);
+}
+
+.haMarco {
+  min-width: 7.5rem;
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  text-align: right;
+}
+
+.bloqueios {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-md);
+}
+
+.bloqueio {
+  display: grid;
+  grid-template-columns: 6rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--espaco-3);
+  padding: var(--espaco-2) var(--espaco-3);
+  font-size: var(--tamanho-sm);
+}
+
+.bloqueio + .bloqueio {
+  border-top: 1px solid var(--borda);
+}
+
+.tipoBloqueio {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+}
+
+.descricaoBloqueio {
+  overflow-wrap: anywhere;
+  color: var(--texto);
+}
+
+@container detalhe-objeto (max-width: 480px) {
+  .marco {
+    grid-template-columns: 12px minmax(0, 1fr) auto;
+  }
+
+  .haMarco {
+    grid-column: 2 / -1;
+    min-width: 0;
+    text-align: left;
+  }
+
+  .bloqueio {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .tipoBloqueio {
+    grid-column: 1 / -1;
+  }
+}

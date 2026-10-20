@@ -7,7 +7,7 @@ const ESPERA_MAXIMA_DO_DESTINO_MS = 600;
 const ACOMODACAO_APOS_A_TRAVESSIA_MS = 700;
 
 interface DocumentoComTransicao {
-  startViewTransition?: (atualizar: () => Promise<void>) => { finished: Promise<void> };
+  startViewTransition?: (atualizar: () => Promise<void>) => { ready: Promise<void>; finished: Promise<void> };
 }
 
 let concluirEspera: (() => void) | null = null;
@@ -52,11 +52,11 @@ export function atravessar(sentido: SentidoTravessia, trocarDeTela: () => void):
     }, ACOMODACAO_APOS_A_TRAVESSIA_MS);
 
   raiz.dataset.travessia = sentido;
-  documento
-    .startViewTransition(async () => {
-      const destinoMontado = aguardarDestinoMontado();
-      flushSync(trocarDeTela);
-      await destinoMontado;
-    })
-    .finished.then(limpar, limpar);
+  const transicao = documento.startViewTransition(async () => {
+    const destinoMontado = aguardarDestinoMontado();
+    flushSync(trocarDeTela);
+    await destinoMontado;
+  });
+  transicao.ready.catch(() => undefined);
+  transicao.finished.then(limpar, limpar);
 }
