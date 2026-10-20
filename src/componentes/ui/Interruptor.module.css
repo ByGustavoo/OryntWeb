@@ -1,0 +1,83 @@
+.interruptor {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  min-height: var(--altura-controle-sm);
+  padding-inline: 2px var(--espaco-1);
+  border-radius: var(--raio-sm);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  text-align: left;
+  cursor: pointer;
+  transition: color var(--duracao-rapida) var(--curva-saida);
+}
+
+.interruptor:focus-visible {
+  outline: none;
+  box-shadow: var(--anel-foco);
+}
+
+.trilho {
+  position: relative;
+  flex-shrink: 0;
+  width: 32px;
+  height: 18px;
+  border: 1px solid var(--borda-controle);
+  border-radius: var(--raio-pilula);
+  background-color: var(--neutro-suave);
+  transition:
+    background-color var(--duracao-rapida) var(--curva-saida),
+    border-color var(--duracao-rapida) var(--curva-saida);
+}
+
+.botao {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: var(--texto-terciario);
+  transition:
+    transform var(--duracao-base) var(--curva-saida),
+    background-color var(--duracao-rapida) var(--curva-saida);
+}
+
+.interruptor[aria-checked='true'] {
+  color: var(--texto);
+}
+
+.interruptor[aria-checked='true'] .trilho {
+  border-color: var(--acao);
+  background-color: var(--acao);
+}
+
+.interruptor[aria-checked='true'] .botao {
+  background-color: var(--acao-contraste);
+  transform: translateX(14px);
+}
+
+.rotulo {
+  line-height: var(--altura-linha-justa);
+}
+
+@media (hover: hover) {
+  .interruptor:hover {
+    color: var(--texto);
+  }
+
+  .interruptor:hover .trilho {
+    border-color: var(--borda-forte);
+  }
+
+  .interruptor[aria-checked='true']:hover .trilho {
+    border-color: var(--acao-forte);
+    background-color: var(--acao-forte);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .botao {
+    transition: none;
+  }
+}

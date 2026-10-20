@@ -1,0 +1,108 @@
+.cabecalho {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+}
+
+.colunaAcesso {
+  width: 15rem;
+}
+
+.colunaOrigem {
+  width: 12rem;
+}
+
+.colunaLado {
+  width: 30%;
+}
+
+.celulaAcesso,
+.celulaLado {
+  min-width: 0;
+}
+
+.celulaOrigem {
+  color: var(--texto-secundario);
+}
+
+.larguraDoAcesso {
+  min-width: 13rem;
+}
+
+.larguraDaOrigem {
+  min-width: 9rem;
+}
+
+.larguraDoLado {
+  min-width: 14rem;
+}
+
+.privilegios {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.diferente {
+  padding-inline: 2px;
+  border-radius: 3px;
+  background-color: var(--destaque-suave);
+  color: var(--destaque);
+  font-weight: var(--peso-medio);
+}
+
+.origem {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-height: 1.5;
+}
+
+.nomeDoLado {
+  display: block;
+  overflow: hidden;
+  max-width: 100%;
+  color: var(--texto-secundario);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.linhaDoNome {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  min-width: 0;
+}
+
+.voce {
+  flex-shrink: 0;
+}
+
+@container lista-objetos (max-width: 1000px) {
+  .larguraDoAcesso,
+  .larguraDoLado {
+    min-width: 11rem;
+  }
+
+  .larguraDaOrigem {
+    min-width: 7rem;
+  }
+}
+
+@container lista-objetos (max-width: 860px) {
+  .larguraDoAcesso,
+  .larguraDaOrigem,
+  .larguraDoLado {
+    min-width: 0;
+  }
+
+  .tabela tbody tr {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tabela tbody td.celulaLado {
+    grid-column: span 1;
+  }
+}

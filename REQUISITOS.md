@@ -40,7 +40,7 @@ silenciosa no resto.
 * **Tipo de banco:** aparece como campo já resolvido (PostgreSQL), não como lista de uma opção.
 * **Rótulos:** capitalização de frase ("Usuários e permissões", "Objetos do banco"), como nos outros projetos.
 * **Navegação em grupos e subgrupos:** pedido do usuário em 11 de outubro de 2026, no modelo do PrismaWeb. O menu tem o Dashboard, o grupo "Análise" (Relatórios e Consultas SQL) e o grupo "Gerenciamento" (Objetos do banco e Usuários e permissões); Configurações segue no rodapé. Cada item de grupo abre as suas telas: Relatórios (Resumo, Exportação, Comparação), Consultas SQL (Todas, Histórico, Planos de execução), Objetos do banco (Visões, Índices, Tabelas, Funções) e Usuários e permissões (Papéis, Sessões, Permissões). Os nomes dos grupos e das telas foram escolhidos por boa prática, a partir do que já estava previsto para cada funcionalidade.
-* **Telas planejadas:** o grupo em que nada está pronto leva o selo "Em breve" ao lado do título (antes havia um único grupo chamado "Em breve"). Num grupo que já tem tela pronta, a marca "Em breve" desce para cada tela planejada: Papéis, Sessões e Permissões. Objetos do banco não tem mais tela planejada: Visões e Índices ficaram prontas em 18 de outubro de 2026, e Tabelas e Funções, em 19 de outubro. O item em que nada está pronto não leva a marca ao lado do nome desde então: "Usuários e permissões" com a marca não cabia no menu e aparecia cortado; as telas dele, ao abrir o item, mostram a marca uma a uma. Cada tela planejada tem a própria rota, mostra o que está previsto para a funcionalidade, com a tela aberta em evidência, e não simula nada.
+* **Telas planejadas:** o grupo em que nada está pronto leva o selo "Em breve" ao lado do título (antes havia um único grupo chamado "Em breve"). Num grupo que já tem tela pronta, a marca "Em breve" desce para cada tela planejada. Não sobrou nenhuma: Papéis, Sessões e Permissões ficaram prontas em 19 de outubro de 2026. Objetos do banco não tem mais tela planejada: Visões e Índices ficaram prontas em 18 de outubro de 2026, e Tabelas e Funções, em 19 de outubro. O item em que nada está pronto não leva a marca ao lado do nome desde então: "Usuários e permissões" com a marca não cabia no menu e aparecia cortado; as telas dele, ao abrir o item, mostram a marca uma a uma. Cada tela planejada tem a própria rota, mostra o que está previsto para a funcionalidade, com a tela aberta em evidência, e não simula nada.
 * **Demonstração:** selo "Demonstração" no menu da conta enquanto há uma conexão simulada ativa e aviso "Dados demonstrativos" no dashboard. Sem conexão, o selo não aparece. O selo saiu do cabeçalho a pedido do usuário em 11 de outubro de 2026.
 * **Dashboard:** períodos de 1 h, 24 h, 7 dias e 30 dias; a tabela vira cartões em telas estreitas.
 * **Carregamento do Dashboard:** ao trocar o período, os indicadores, o gráfico e a tabela dão lugar na hora a um esqueleto no formato deles, com as molduras, os títulos e o cabeçalho da tabela no lugar, até a resposta chegar (pedido pelo usuário em 12 de outubro de 2026; antes os dados do período anterior ficavam na tela, esmaecidos). Os três blocos voltam em sequência, de cima para baixo, e a ordenação escolhida na tabela é mantida. Na primeira carga o esqueleto só aparece se a resposta demorar.
@@ -509,7 +509,265 @@ Regras:
 * **Sem conexão e demonstração:** o mesmo painel e o mesmo aviso "Dados demonstrativos" das outras telas.
 * **Simulação:** 13 funções em `public`, `relatorios` e `auditoria`, com o servidor em `track_functions = pl`. As chamadas saem das outras telas: as dos gatilhos são as gravações de Tabelas (`definir_atualizado_em` em cada atualização de `pedidos`, `validar_estoque` em cada atualização de `estoque`, `avisar_sessoes_expiradas` uma vez por limpeza de sessões), as de `calcular_total_pedido` são as execuções da consulta que registra um pagamento, que passou a chamá-la no texto sem mudar nenhum número, e `calcular_frete` é chamada por ela. `avisar_sessoes_expiradas` é pesada; `arquivar_pedidos_antigos` roda com os privilégios de `postgres` sem `search_path` fixo e não é chamada; `gerar_slug` e `copiar_cliente_para_legado`, cujo gatilho foi desativado depois da migração, também não; a versão de `calcular_frete` com frete expresso foi criada há quatro dias e está em observação; `auditoria.registrar_alteracao` tem um gatilho ativo numa tabela que ninguém grava, e por isso não é marcada; `somente_digitos` sustenta o índice único `clientes_documento_key`, que entrou em Índices (são 41 agora). Os controles do console ganham `rastrearFuncoes('none' | 'pl' | 'all')`.
 
+## Usuários e permissões: Papéis
+
+Pedido pelo usuário em 19 de outubro de 2026: a tela "Papéis" de Usuários e permissões deixa de ser planejada. É
+o inventário dos papéis do servidor conectado, usuários e grupos, e responde a três perguntas: quem existe e o que
+cada um pode fazer, quem está em uso e quem é um risco (superusuário a mais, senha vencida ou fraca, papel
+esquecido). Permissões continua planejada: esta tela não lista as permissões por tabela. As decisões
+foram as recomendadas na descoberta, e as quatro sugestões foram aprovadas.
+
+| # | Tema | Decisão |
+|---|---|---|
+| Q1 | Origem dos dados | `GET /usuarios/papeis` devolve a lista inteira; a busca, os filtros e a ordem são feitos no navegador, como nas telas de Objetos do banco. |
+| Q2 | O que entra na lista | Os papéis criados no servidor. Os predefinidos do PostgreSQL (`pg_*`) ficam de fora e só aparecem em "Membro de", quando alguém participa deles. |
+| Q3 | Ações sobre o banco | Só leitura, com os comandos prontos para copiar, como em Índices, Tabelas e Funções. |
+| Q4 | Uso | O PostgreSQL não registra o último login: a API amostra o `pg_stat_activity` e informa quando viu o papel conectado pela última vez. Antes de 30 dias de coleta, o usuário sem sessão fica "Em observação", como os índices. |
+| Q5 | Senha | A validade (`rolvaliduntil`) e o formato em que a senha está guardada (SCRAM ou MD5), quando a conexão da API pode ler `pg_authid`; sem isso, a tela diz que o formato não está disponível. |
+| Q6 | Situações apontadas | Superusuário com login além do criado na instalação, senha vencida ou que vence em até 7 dias, senha em MD5, sessões em 80% ou mais do limite do papel, usuário sem nenhuma sessão em 30 dias e grupo sem membros que não é dono de nada. |
+| Q7 | Herança | O detalhe mostra os atributos que o papel ganha ao assumir um grupo com SET ROLE, com o caminho, e as permissões que ele herda pelos grupos. |
+| Q8 | Papel da conexão em uso | Marcado com o selo "Você", na lista e no detalhe. |
+| Q9 | Sessões na lista | Só a contagem de agora e o limite. Desde que Sessões ficou pronta, o detalhe abre as sessões do papel lá. |
+| S1 | Comandos em lote | Com um filtro de situação, "Copiar os N comandos", como em Índices. Aprovada. |
+| S2 | Configurações por papel | O detalhe mostra o `statement_timeout`, o `search_path` e as outras configurações definidas com `ALTER ROLE … SET`, e avisa quando um usuário comum não tem `statement_timeout`. Aprovada. |
+| S3 | Caminho de volta | O dono no detalhe de Tabelas, Visões e Funções vira link para o papel aqui. Aprovada. |
+| S4 | Cruzamento com Funções | A função `SECURITY DEFINER` sem `search_path` fixo aparece no detalhe do papel dono dela, como risco herdado. Aprovada. |
+
+Regras:
+
+* **Dados:** uma rota nova, `GET /usuarios/papeis`, devolve numa resposta só todos os papéis fora dos
+  predefinidos, cada um com a descrição, se é o criado na instalação, os atributos (login, superusuário, cria
+  bancos, cria papéis, replicação, ignora RLS, herda), o limite de conexões, a validade e o formato da senha, as
+  configurações próprias, de quem é membro e quem é membro dele (com herança, SET ROLE e se pode conceder a
+  outros), as sessões abertas agora, quando a API o viu conectado pela última vez, desde quando a API o vê e os
+  objetos deste banco de que é dono. A resposta traz o instante em que foi gerada, desde quando a API acompanha
+  as sessões e o papel com que a API está conectada.
+* **Situação de cada papel**, do mais urgente ao menos urgente, e um papel pode ter várias: "Superusuário" quando
+  um usuário que faz login é superusuário e não é o criado na instalação; "Senha vencida" ou "Senha a vencer"
+  quando a validade passou ou acaba em até 7 dias; "Senha em MD5", formato que o PostgreSQL 18 marca como
+  obsoleto; "Perto do limite" quando as sessões abertas chegam a 80% do limite do papel; "Sem uso" quando o
+  usuário não abriu nenhuma sessão nos 30 dias e a API o vê há 30 dias ou mais (antes disso, "Em observação");
+  "Grupo vazio" quando um grupo não tem membros nem é dono de nenhum objeto.
+* **Atributos e SET ROLE:** no PostgreSQL, os atributos não passam pela participação num grupo; valem só depois de
+  SET ROLE. O detalhe mostra os atributos que o papel ganha assim, com o grupo de onde vem cada um, e avisa em
+  vermelho quando um usuário consegue virar superusuário por esse caminho.
+* **Lista:** nome e, embaixo, a descrição (ou "Sem descrição no banco"), com o selo "Você" no papel da conexão; a
+  situação mais urgente, com "e mais 1 ponto" quando há outras; o tipo (usuário ou grupo) e, embaixo, os
+  atributos; as sessões agora, com o limite embaixo quando há; o último uso ("Agora", "Há 3 dias", "Nunca visto",
+  "Em observação"); a validade da senha, com o formato embaixo. Num grupo, as três últimas colunas não se
+  aplicam. Ordem inicial pelo nome, usuários antes dos grupos; dá para ordenar pelas sessões, pelo último uso e
+  pela validade (os grupos no fim). 15 papéis por página, com a paginação só quando há mais de uma. A tabela vira
+  cartões em telas estreitas.
+* **Filtros:** busca no nome e na descrição; tipo (usuários, grupos), atributo e situação.
+* **Pontos de atenção:** painel acima da lista, com uma frase por papel que pede atenção, na ordem das situações.
+  A partir de três papéis na mesma situação, eles viram uma frase só, e "Ver na lista" aplica o filtro. Sem
+  nenhum ponto, o painel não aparece.
+* **Atalhos de atenção:** ao lado da contagem, um atalho por situação com papéis ("1 superusuário", "2 senhas
+  vencidas ou a vencer"…), que aplica o filtro com um clique e o tira no segundo. Ao lado da contagem também
+  aparece "Sessões acompanhadas desde 2 de setembro".
+* **Comandos:** o superusuário pede `ALTER ROLE … NOSUPERUSER`; a senha vencida ou a vencer, `ALTER ROLE … VALID
+  UNTIL` com 90 dias à frente; a senha em MD5, `SET password_encryption = 'scram-sha-256'` e `\password` no
+  psql; o limite, `ALTER ROLE … CONNECTION LIMIT` com metade a mais; o usuário sem uso, `ALTER ROLE … NOLOGIN`,
+  que se desfaz com `LOGIN`; o grupo vazio, `DROP ROLE`. Nenhum comando leva uma senha no texto. Cada um vem com o
+  cuidado que pede, e com o filtro de situação "Copiar os N comandos" copia os da lista filtrada, um por linha.
+* **Detalhe:** nome, descrição e selos (tipo, "Você", atributos, situações, demonstração); os avisos em frases;
+  os comandos, com "Copiar"; o acesso de um usuário (sessões, limite, último uso e formato da senha, com a
+  validade em frase); os atributos explicados e os que ele ganha com SET ROLE; "Membro de" e "Membros", que abrem
+  o outro papel (um papel predefinido aparece sem link); as configurações próprias explicadas, com o aviso do
+  `statement_timeout` (S2); e os objetos de que é dono, seis de cada vez, que abrem Tabelas, Visões e Funções.
+* **Risco herdado (S4):** o papel dono de uma função `SECURITY DEFINER` que não fixa o `search_path` recebe o
+  aviso no detalhe, em vermelho quando ele é superusuário.
+* **Dono em Objetos do banco (S3):** o detalhe de uma tabela, de uma visão e de uma função mostra "Dono" com o nome
+  do papel, que abre o papel em Papéis.
+* **URL:** sempre `/usuarios-e-permissoes/papeis`, sem parâmetros. A busca, os filtros, a ordem e a página ficam
+  no histórico do navegador, como nas outras telas.
+* **Sem conexão e demonstração:** o mesmo painel e o mesmo aviso "Dados demonstrativos" das outras telas.
+* **Simulação:** 15 papéis, mais o papel da conexão quando ele não está entre eles. Os donos são os de Tabelas,
+  Visões e Funções, e as sessões somadas dão as conexões ativas do Dashboard: `loja_app` fica com o que sobra.
+  `migracao` faz login como superusuário; a senha de `relatorio_bi` venceu há 12 dias e a de `loja_analise` vence
+  em 5; `auditoria_app` guarda a senha em MD5; `fila_pedidos` usa 4 das 5 conexões dele; `integracao_erp` não
+  conecta há 41 dias; `relatorios_antigos` é um grupo vazio; `exportacao_temp` foi criado há quatro dias e está em
+  observação; `suporte_dba` assume `loja_admin`, que cria bancos e papéis, sem herdar as permissões dele; e
+  `postgres` é dono de `arquivar_pedidos_antigos`, a `SECURITY DEFINER` sem `search_path` fixo de Funções.
+  `falhar('/usuarios')` mostra o estado de erro.
+
+## Usuários e permissões: Sessões
+
+Pedido pelo usuário em 19 de outubro de 2026: a tela "Sessões" de Usuários e permissões deixa de ser planejada. É
+o retrato do `pg_stat_activity` do servidor conectado e responde a três perguntas: quem está usando o servidor
+agora, se há algo travado (bloqueios, sessões paradas com uma transação aberta, consultas longas) e o que fazer a
+respeito. Permissões continua planejada. As decisões foram as recomendadas na descoberta, e as quatro sugestões
+foram aprovadas.
+
+| # | Tema | Decisão |
+|---|---|---|
+| Q1 | Origem dos dados | `GET /usuarios/sessoes` devolve o retrato inteiro numa resposta só; a busca, os filtros e a ordem são feitos no navegador, como em Papéis. A lista é limitada pelo `max_connections`. |
+| Q2 | Ações sobre o banco | Só leitura: `pg_cancel_backend` e `pg_terminate_backend` aparecem como comandos prontos para copiar. O Orynt não executa nada no banco. |
+| Q3 | O que entra na lista | As sessões de cliente de todos os bancos do servidor, com o filtro de banco começando no banco da conexão. Os processos do servidor (replicação, autovacuum, checkpointer e os outros) ficam atrás da chave "Mostrar processos do servidor". |
+| Q4 | Texto da consulta | A API troca os literais por `$1`, como o `pg_stat_statements`, para os dados dos clientes não chegarem ao navegador. O `query_id` liga a consulta da sessão à lista de Consultas SQL. |
+| Q5 | Atualização | Um retrato tirado num instante, com "Atualizar" e uma atualização automática opcional a cada 10 segundos, que pausa com a aba oculta ou com um detalhe aberto. |
+| Q6 | Situações apontadas | Bloqueando outras sessões; esperando um bloqueio há 30 s ou mais; ociosa em transação há 5 min ou mais; consulta rodando há 5 min ou mais; transação aberta há 30 min ou mais. |
+| Q7 | Cadeias de bloqueio | Painel acima da lista, com a cadeia em árvore a partir de `pg_blocking_pids`, só quando existe uma. |
+| Q8 | Ligações | Papéis abre Sessões filtrada pelo papel; a sessão abre o papel em Papéis e, quando a consulta está na lista de 30 dias, o plano e o histórico dela. |
+| S1 | Comandos em lote | Com um filtro de situação, "Copiar os N comandos", como em Índices. Aprovada. |
+| S2 | Atalho no Dashboard | O cartão "Conexões ativas" vira link para Sessões, como "Consultas lentas". Aprovada. |
+| S3 | Quem ocupa as conexões | As sessões por aplicação e por origem, ao lado do resumo. Aprovada. |
+| S4 | Tempo ocioso em transação | O papel que deixou transações paradas três vezes ou mais em 30 dias, sem `idle_in_transaction_session_timeout` nele nem no servidor, recebe a sugestão de `ALTER ROLE … SET idle_in_transaction_session_timeout`, em Sessões e no detalhe do papel em Papéis. Aprovada. |
+
+Regras:
+
+* **Dados:** uma rota nova, `GET /usuarios/sessoes`, devolve numa resposta só cada processo do `pg_stat_activity`
+  com o PID, o tipo (cliente, replicação, autovacuum ou outro processo do servidor), o papel, o banco, a
+  aplicação, o endereço do cliente, os instantes de início da sessão, da transação, da consulta e do estado, o
+  estado, o evento de espera, a consulta com os literais trocados por `$1` e o id dela em Consultas SQL quando
+  existe, os PIDs que a bloqueiam e os bloqueios que ela segura ou espera. A resposta traz o instante em que foi
+  gerada, o banco da conexão, o `max_connections`, o `idle_in_transaction_session_timeout` do servidor e, para
+  cada papel com sessão, o limite, as configurações próprias e quantas vezes a API o viu parado numa transação
+  por 5 min ou mais em 30 dias. A sessão do próprio Orynt vem marcada.
+* **Conexões:** o resumo conta as sessões de cliente e as de replicação, o mesmo número das conexões ativas do
+  Dashboard e da soma das sessões de Papéis. Os outros processos do servidor não contam.
+* **Situação de cada sessão**, do mais urgente ao menos urgente, e uma sessão pode ter várias: "Bloqueando" quando
+  outra sessão espera por ela e ela mesma não espera; "Esperando bloqueio" quando a consulta espera um bloqueio há
+  30 s ou mais; "Transação parada" quando está ociosa com uma transação aberta há 5 min ou mais; "Consulta longa" quando a consulta
+  roda há 5 min ou mais sem esperar bloqueio; "Transação longa" quando a transação está aberta há 30 min ou mais,
+  o que segura o VACUUM em todas as tabelas. Os tempos são medidos a partir do instante da resposta, nunca do
+  relógio do navegador. A sessão do Orynt e os processos do servidor nunca são apontados.
+* **Resumo:** as conexões sobre o `max_connections`, com a barra de ocupação do Dashboard; as sessões de cliente
+  por estado (ativa, esperando, ociosa em transação, ociosa); o instante do retrato, "Atualizar" e a chave da
+  atualização automática. Ao lado, as sessões por aplicação e por origem (S3), as cinco maiores de cada.
+* **Cadeias de bloqueio:** a sessão que bloqueia na raiz e, abaixo dela, as que esperam, com o papel, o estado, a
+  consulta e há quanto tempo cada uma está assim. Cada sessão abre o detalhe.
+* **Lista:** o PID com o selo "Orynt" na sessão do Orynt, e embaixo o papel, a aplicação e o banco quando não é o
+  da conexão; a situação mais urgente, com "e mais 1 ponto"; o estado e, embaixo, o evento de espera; a consulta,
+  em até duas linhas; há quanto tempo está no estado; há quanto tempo a transação está aberta. Ordem inicial pela
+  situação mais urgente e, depois, pelo maior tempo no estado; dá para ordenar pelo PID, pelo tempo no estado e
+  pela transação. 15 sessões por página, com a paginação só quando há mais de uma. A tabela vira cartões em telas
+  estreitas.
+* **Filtros:** busca no PID, no papel, na aplicação, no endereço e na consulta; banco, estado, situação, papel e a
+  chave dos processos do servidor.
+* **Pontos de atenção:** painel acima da lista, com uma frase por sessão que pede atenção, citada uma vez só, na
+  situação mais urgente dela;
+  a partir de três sessões na mesma situação, elas viram uma frase só, e "Ver na lista" aplica o filtro. A
+  sugestão do S4 entra no fim, com "Abrir papel". Sem nenhum ponto, o painel não aparece.
+* **Atalhos de atenção:** ao lado da contagem, um atalho por situação com sessões, que aplica o filtro com um
+  clique e o tira no segundo.
+* **Comandos:** a consulta ativa pede `pg_cancel_backend(pid)`, que interrompe só a consulta; a sessão ociosa em
+  transação, a que bloqueia parada e a transação longa parada pedem `pg_terminate_backend(pid)`, que encerra a
+  sessão e desfaz a transação. Cada um vem com o cuidado que pede, e com um filtro de situação "Copiar os N
+  comandos" copia os da lista filtrada, um por linha (S1). A sessão do Orynt nunca recebe comando.
+* **Detalhe:** PID, papel, aplicação e selos (tipo, estado, "Orynt", situações, demonstração); os avisos em frases;
+  os comandos, com "Copiar"; a linha do tempo (início da sessão, da transação, da consulta e do estado atual até
+  o retrato); a consulta, com "Copiar", "Ver plano" e "Ver histórico" quando ela está em Consultas SQL; quem ela
+  bloqueia e por quem espera, que abrem a outra sessão; os bloqueios que segura e espera; a conexão (papel, que
+  abre Papéis, banco, aplicação, endereço e processo); e a sugestão do S4 quando o papel a tem.
+* **Papéis (Q8 e S4):** o detalhe de um usuário com sessões abertas ganha "Ver as N sessões", que abre Sessões
+  filtrada pelo papel, e a seção "Configurações próprias" ganha a sugestão do S4 quando ela se aplica.
+* **Dashboard (S2):** o cartão "Conexões ativas" vira link para Sessões, como "Consultas lentas".
+* **URL:** sempre `/usuarios-e-permissoes/sessoes`, sem parâmetros. A busca, os filtros, a ordem, a página e a
+  atualização automática ficam no histórico do navegador, como nas outras telas.
+* **Sem conexão e demonstração:** o mesmo painel e o mesmo aviso "Dados demonstrativos" das outras telas.
+* **Simulação:** as sessões de cada papel são as de Papéis, e somadas dão as conexões ativas do Dashboard; o
+  `replicador` é a sessão de replicação. Uma sessão de `loja_app` atualizou um pedido e ficou parada com a
+  transação aberta, segurando o bloqueio da linha: duas de `fila_pedidos` e outra de `loja_app` esperam por ela.
+  `loja_analise` tem uma consulta de relatório rodando há mais de 5 min e outra sessão parada numa transação
+  aberta há mais de 30 min; ela fez isso nove vezes em 30 dias e não tem `idle_in_transaction_session_timeout`,
+  por isso recebe a sugestão do S4. `suporte_dba` está conectado pelo psql ao banco `postgres`. Os episódios se
+  repetem em janelas do relógio, para os tempos crescerem entre uma atualização e outra.
+  `falhar('/usuarios')` mostra o estado de erro também desta tela.
+
+## Usuários e permissões: Permissões
+
+Pedido pelo usuário em 19 de outubro de 2026: a tela "Permissões" de Usuários e permissões deixa de ser planejada.
+Mostra o que cada papel pode fazer em cada objeto do banco conectado e responde a três perguntas: o que um papel
+consegue fazer, e por qual caminho; quem consegue ler ou alterar um objeto; e quais permissões são um risco ou
+estão faltando. Completa Papéis, que mostra os atributos de cada papel mas não as permissões por objeto. As
+decisões foram as recomendadas na descoberta, com as situações a, b, d, e, f e g de Q5, e as quatro sugestões
+foram aprovadas.
+
+| # | Tema | Decisão |
+|---|---|---|
+| Q1 | Origem dos dados | `GET /usuarios/permissoes` devolve numa resposta só as permissões de todos os objetos, os papéis com as participações e os privilégios padrão; a busca, os filtros e o cálculo do acesso efetivo são feitos no navegador, como em Papéis. |
+| Q2 | Eixo da tela | Três modos num controle segmentado, sobre o mesmo DTO: "Por papel" (o que um papel alcança), "Por objeto" (quem alcança um objeto) e "Comparar papéis" (S4). |
+| Q3 | Que permissões contam | As efetivas, cada uma com a origem: direta, por um grupo (só nas participações que herdam), por PUBLIC, por ser dono ou por ser superusuário. |
+| Q4 | Objetos desta versão | O banco (`CONNECT`, `CREATE`, `TEMPORARY`), os esquemas (`USAGE`, `CREATE`), as tabelas, as visões e as visões materializadas (com as permissões por coluna), as sequências, as funções e os procedimentos (`EXECUTE`), além dos privilégios padrão. As políticas de RLS ficam fora. |
+| Q5 | Situações apontadas | Função `SECURITY DEFINER` que PUBLIC executa; PUBLIC com `CREATE` num esquema; `WITH GRANT OPTION` dado a um usuário que não é dono; escrita num grupo de leitura; privilégio num objeto sem `USAGE` no esquema dele, e `USAGE` num esquema sem nenhum objeto dele; grupo que lê um esquema sem privilégio padrão para os objetos novos. A permissão dada direto a um usuário não é apontada. |
+| Q6 | Ações sobre o banco | Só leitura, com os comandos `GRANT`, `REVOKE` e `ALTER DEFAULT PRIVILEGES` prontos para copiar. |
+| S1 | Comandos em lote | Com um filtro de situação, "Copiar os N comandos" da lista filtrada, como em Índices. Aprovada. |
+| S2 | Quem acessa | O detalhe de Tabelas, Visões e Funções ganha a seção "Quem acessa", com os papéis que alcançam o objeto, que abrem a linha em Permissões. Aprovada. |
+| S3 | Caminho a partir de Papéis | O detalhe de um papel ganha "Ver o que ele pode fazer em Permissões". Aprovada. |
+| S4 | Comparar dois papéis | O modo "Comparar papéis" mostra lado a lado o acesso de dois papéis a cada objeto, só as diferenças por padrão, e começa no papel mais parecido. Aprovada. |
+
+Regras:
+
+* **Dados:** uma rota nova, `GET /usuarios/permissoes`, devolve o banco, os esquemas fora dos do sistema, as
+  tabelas, as visões, as sequências, as funções e os procedimentos, cada um com o dono, se roda como `SECURITY
+  DEFINER` e a ACL explodida (beneficiário, privilégio, concedente, se pode repassar e as colunas, quando a
+  concessão é por coluna), com a ACL padrão do tipo quando ela é nula e sem as entradas do dono para ele mesmo.
+  Traz também os papéis (nome, descrição, login, superusuário e de quem é membro, com herança) e os privilégios
+  padrão (`pg_default_acl`).
+* **Acesso efetivo:** o superusuário pode tudo; o dono, e quem herda o papel dono, pode tudo; os outros recebem as
+  concessões feitas a eles, aos grupos que herdam e a PUBLIC. Um grupo do qual o papel participa sem herdar não
+  conta: vale só depois de `SET ROLE`, e a tela avisa isso acima da lista. O nível de cada linha é "Total" (dono
+  ou superusuário), "Leitura e escrita" ou "Escrita" (`INSERT`, `UPDATE`, `DELETE`, `TRUNCATE`, `CREATE`),
+  "Leitura", "Uso", "Conexão" ou "Execução" (`SELECT`, `USAGE`, `CONNECT`, `TEMPORARY`, `EXECUTE`, com a palavra
+  do tipo de objeto), "Manutenção" (`REFERENCES`, `TRIGGER`, `MAINTAIN`) ou "Sem acesso".
+* **Situações**, da mais urgente à menos urgente, e uma linha pode ter várias: "Aberta a todos", a função
+  `SECURITY DEFINER` que PUBLIC executa; "Todos criam aqui", o esquema em que PUBLIC tem `CREATE`; "Escrita na
+  leitura", a escrita concedida a um grupo de leitura (um grupo que lê três objetos ou mais e grava em no máximo
+  um quarto deles), também na linha de cada membro; "Pode repassar", a concessão com `WITH GRANT OPTION` feita
+  direto a um usuário que não é dono; "Sem USAGE", o privilégio próprio num objeto de um esquema em que o papel
+  não tem `USAGE`; "Sem privilégio padrão", o grupo que lê dois objetos ou mais de um esquema sem privilégio
+  padrão de `SELECT` para os donos desses objetos; "USAGE sem objetos", o `USAGE` dado direto num esquema em que
+  o papel não alcança nenhum objeto nem tem `CREATE`.
+* **Por papel:** começa no papel da conexão; o seletor tem os usuários, os grupos e PUBLIC. A lista traz cada
+  objeto, do banco às funções, com a situação mais urgente, o nível e os privilégios, e a origem resumida
+  ("Direta", "Pelo grupo leitura", "PUBLIC", "Dono", "Superusuário", "Direta e pelo grupo leitura"). Por padrão
+  mostra só os objetos com algum acesso; o filtro de acesso mostra os sem acesso.
+* **Por objeto:** começa na primeira tabela em ordem de esquema e nome. A lista traz PUBLIC na primeira linha,
+  quando PUBLIC tem algum privilégio, e os papéis com acesso próprio, do nível mais alto ao mais baixo, usuários
+  antes dos grupos. Quem só recebe o acesso de PUBLIC está na linha de PUBLIC.
+* **Comparar papéis (S4):** dois seletores e "Inverter"; o segundo começa no papel mais parecido com o primeiro
+  (o maior índice de Jaccard sobre os privilégios próprios, sem superusuários). A lista mostra, por objeto, o
+  nível e os privilégios de cada um, com os que só um dos dois tem marcados, e a chave "Só as diferenças".
+* **Filtros:** busca no nome do objeto (ou do papel e da descrição, em "Por objeto"), esquema, tipo de objeto,
+  tipo de papel, acesso e situação, conforme o modo. 15 linhas por página, com a paginação só quando há mais de
+  uma. A tabela vira cartões em telas estreitas, e o controle dos modos dá lugar a um select nas mais estreitas.
+* **Pontos de atenção:** painel acima da lista, com uma frase por caso, na ordem das situações. "Abrir" leva a
+  lista ao modo e à seleção em que o caso aparece e abre a linha; quando um papel tem o mesmo caso em vários
+  objetos, "Ver na lista" aplica o filtro de situação. A partir de três casos do mesmo tipo, eles viram uma frase
+  só, com "Abrir o primeiro". Sem nenhum ponto, o painel não aparece.
+* **Atalhos e comandos:** ao lado da contagem, um atalho por situação presente na lista, que aplica o filtro. Cada
+  situação tem o comando que a resolve (`REVOKE EXECUTE … FROM PUBLIC`, `REVOKE CREATE ON SCHEMA … FROM PUBLIC`,
+  `REVOKE … FROM` o grupo, `REVOKE GRANT OPTION FOR …`, `GRANT USAGE ON SCHEMA …`, `ALTER DEFAULT PRIVILEGES …`
+  com os `GRANT` do que já ficou de fora, `REVOKE USAGE ON SCHEMA …`), com o cuidado que pede; com o filtro de
+  situação, "Copiar os N comandos" (S1).
+* **Detalhe:** o objeto (nome, tipo e dono) e, para o papel (ou os dois, na comparação), o nível, as situações em
+  frases, os comandos, cada privilégio com o efeito e todas as origens em frases (com o caminho dos grupos, o
+  concedente, o `WITH GRANT OPTION` e as colunas), como tirar o acesso (a concessão direta, a participação no
+  grupo ou PUBLIC; o dono e o superusuário não têm um `REVOKE`) ou, sem acesso, os comandos que concedem o
+  mínimo, com o `USAGE` no esquema quando falta. "Ver também" leva a todos que acessam o objeto, a tudo o que o
+  papel acessa, à comparação, a Papéis e a Tabelas, Visões ou Funções. As setas percorrem a lista filtrada.
+* **Privilégios padrão:** painel abaixo da lista com cada privilégio padrão em frase e o comando, marcando os que
+  alcançam o papel em análise.
+* **Quem acessa (S2):** no detalhe de Tabelas, Visões e Funções, os papéis com acesso próprio, PUBLIC quando tem
+  algum privilégio, e os superusuários numa frase; cada item abre a linha em Permissões, no modo "Por objeto". As
+  permissões são pedidas uma vez, quando o primeiro detalhe abre.
+* **Papéis (S3):** a seção "Participação" do detalhe ganha "Ver o que ele pode fazer em Permissões".
+* **URL:** sempre `/usuarios-e-permissoes/permissoes`, sem parâmetros. O modo, os papéis, o objeto, a busca, os
+  filtros e a página ficam no histórico do navegador, como nas outras telas.
+* **Sem conexão e demonstração:** o mesmo painel e o mesmo aviso "Dados demonstrativos" das outras telas.
+* **Simulação:** os papéis de Papéis e os objetos de Tabelas, Visões e Funções, com os mesmos donos, mais as
+  sequências das chaves e os três esquemas. O banco veio de uma versão anterior ao PostgreSQL 15, e PUBLIC ainda
+  cria objetos em `public`; PUBLIC executa todas as funções, inclusive `arquivar_pedidos_antigos`, a `SECURITY
+  DEFINER` de `postgres`, menos `auditoria.registrar_alteracao`; o grupo `leitura` lê as tabelas e visões de
+  `loja_app` e duas visões de `relatorios`, mas `migracao` lhe deu `UPDATE` em `produtos`, e
+  `relatorios.estoque_por_categoria` ficou de fora porque `relatorios` não tem privilégio padrão para ele;
+  `integracao_erp` pode repassar o `SELECT` em `pedidos` e `pagamentos`; `relatorio_bi` lê
+  `auditoria.acoes_recentes` sem `USAGE` em `auditoria`; `relatorios_antigos` tem `USAGE` em `relatorios` e mais
+  nada; `fila_pedidos` lê e atualiza `pedidos` e `estoque`; `loja_admin` cria esquemas e mantém (`MAINTAIN`) as
+  tabelas de `loja_app`, mas `suporte_dba` participa dele sem herdar; e `suporte_dba` lê só `id`, `email` e
+  `criado_em` de `usuarios`. `falhar('/usuarios')` mostra o estado de erro também desta tela.
+
 ## Fora desta fase
 
-Backend, coleta de métricas reais, as telas de Usuários e permissões,
-modo SSL, Docker, CI e vídeo de apresentação.
+Backend, coleta de métricas reais, modo SSL, Docker, CI e vídeo de apresentação.

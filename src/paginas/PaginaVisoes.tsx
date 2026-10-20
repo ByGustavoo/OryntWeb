@@ -12,10 +12,12 @@ import { ResumoDaLista } from '@/componentes/objetos/ResumoDaLista';
 import type { AtalhoDaLista } from '@/componentes/objetos/ResumoDaLista';
 import { EsqueletoVisoes, TabelaVisoes } from '@/componentes/objetos/TabelaVisoes';
 import { Botao, ConteudoAssincrono, EstadoVazio, Nota, Paginacao, Painel } from '@/componentes/ui';
+import { QuemAcessa } from '@/componentes/usuarios/QuemAcessa';
 import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
 import { useFiltrosVisoes } from '@/ganchos/useFiltrosVisoes';
 import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
 import { useVerHistorico } from '@/ganchos/useVerHistorico';
+import { usePermissoesSobDemanda } from '@/ganchos/usePermissoesSobDemanda';
 import { useObjetoDaChegada, useVerObjeto } from '@/ganchos/useVerObjeto';
 import { useVerPlano } from '@/ganchos/useVerPlano';
 import type { ConsultaDetalhadaDTO } from '@/modelos/consultas';
@@ -115,6 +117,7 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
   const ultimaAberta = useRef<string | null>(null);
   const [busca, setBusca] = useState(filtros.busca);
   const [aberta, setAberta] = useState<VisaoDTO | null>(null);
+  const permissoes = usePermissoesSobDemanda(aberta !== null);
   const [abertaPeloPainel, setAbertaPeloPainel] = useState(false);
 
   const lista = useDadosAssincronos((signal) => servicoObjetos.listarVisoes(signal), []);
@@ -340,6 +343,8 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
         total={filtradas.length}
         aoPercorrer={percorrer}
         aoAbrirObjeto={(id: string) => (conhecidas.has(id) ? abrirObjeto(id) : irParaObjeto.tabela(id))}
+        aoAbrirPapel={irParaObjeto.papel}
+        quemAcessa={(id) => <QuemAcessa objetoId={id} permissoes={permissoes} aoVer={irParaObjeto.permissoesDoObjeto} />}
         aoVerHistorico={(consulta: ConsultaDetalhadaDTO) => irParaOHistorico(consulta.id, PERIODO_DAS_LEITURAS)}
         aoVerPlano={(consulta: ConsultaDetalhadaDTO) => irParaOPlano(consulta.id)}
         aoFechar={() => setAberta(null)}

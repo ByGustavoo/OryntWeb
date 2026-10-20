@@ -66,6 +66,11 @@ export function ResumoIndicadores({ resultado }: ResumoIndicadoresProps) {
               rotulo="Conexões ativas"
               valor={indicadores.conexoesAtivas}
               formatar={formatarNumero}
+              destino={
+                indicadores.conexoesAtivas > 0
+                  ? { para: caminhos.usuariosSessoes, descricao: 'ver quem está conectado, na lista de sessões' }
+                  : undefined
+              }
               contexto={
                 <MedidorOcupacao valor={indicadores.conexoesAtivas} limite={indicadores.limiteConexoes}>
                   de {formatarNumero(indicadores.limiteConexoes)} permitidas

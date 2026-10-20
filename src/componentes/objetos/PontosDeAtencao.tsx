@@ -14,7 +14,7 @@ export interface ItemDeAtencao {
   chave: string;
   tom: TomDoPonto;
   icone: LucideIcon;
-  objeto: { esquema: string; nome: string } | null;
+  objeto: { esquema: string | null; nome: string } | null;
   titulo: string | null;
   texto: string;
   acao: string;

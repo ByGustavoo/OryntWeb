@@ -14,10 +14,12 @@ import type { AtalhoDaLista } from '@/componentes/objetos/ResumoDaLista';
 import { iconeDaSituacaoFuncao } from '@/componentes/objetos/SeloSituacaoFuncao';
 import { EsqueletoFuncoes, TabelaFuncoes } from '@/componentes/objetos/TabelaFuncoes';
 import { Botao, ConteudoAssincrono, EstadoVazio, Nota, Paginacao, Painel } from '@/componentes/ui';
+import { QuemAcessa } from '@/componentes/usuarios/QuemAcessa';
 import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
 import { useFiltrosFuncoes } from '@/ganchos/useFiltrosFuncoes';
 import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
 import { useVerHistorico } from '@/ganchos/useVerHistorico';
+import { usePermissoesSobDemanda } from '@/ganchos/usePermissoesSobDemanda';
 import { useObjetoDaChegada, useVerObjeto } from '@/ganchos/useVerObjeto';
 import { useVerPlano } from '@/ganchos/useVerPlano';
 import type { FiltrosFuncoes, FuncaoDTO, OrdenacaoFuncoes, SituacaoFuncao } from '@/modelos/objetos';
@@ -130,6 +132,7 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
   const ultimaAberta = useRef<string | null>(null);
   const [busca, setBusca] = useState(filtros.busca);
   const [aberta, setAberta] = useState<FuncaoDTO | null>(null);
+  const permissoes = usePermissoesSobDemanda(aberta !== null);
   const [origem, setOrigem] = useState<Origem>('LISTA');
 
   const lista = useDadosAssincronos((signal) => servicoObjetos.listarFuncoes(signal), []);
@@ -410,6 +413,8 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
         aoAbrirTabela={irParaObjeto.tabela}
         aoAbrirIndice={irParaObjeto.indice}
         aoAbrirVisao={irParaObjeto.visao}
+        aoAbrirPapel={irParaObjeto.papel}
+        quemAcessa={(id) => <QuemAcessa objetoId={id} permissoes={permissoes} aoVer={irParaObjeto.permissoesDoObjeto} />}
         aoFechar={() => setAberta(null)}
         focoAoFechar={linhaDaUltimaAberta}
       />

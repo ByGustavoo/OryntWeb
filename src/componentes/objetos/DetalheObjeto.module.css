@@ -35,6 +35,42 @@
   color: var(--texto-terciario);
 }
 
+.dono {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+}
+
+.dono svg {
+  flex-shrink: 0;
+}
+
+.linkDono {
+  min-height: 24px;
+  padding-inline: 2px;
+  border-radius: var(--raio-sm);
+  color: var(--destaque);
+  font-size: var(--tamanho-sm);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--destaque) 40%, transparent);
+  text-underline-offset: 3px;
+  cursor: pointer;
+  transition: text-decoration-color var(--duracao-rapida) var(--curva-saida);
+}
+
+.linkDono:focus-visible {
+  outline: none;
+  box-shadow: var(--anel-foco);
+}
+
+@media (hover: hover) {
+  .linkDono:hover {
+    text-decoration-color: currentColor;
+  }
+}
+
 .selos {
   display: flex;
   flex-wrap: wrap;

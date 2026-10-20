@@ -1,0 +1,10 @@
+.subsecao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+  margin-top: var(--espaco-2);
+}
+
+.alternar {
+  align-self: flex-start;
+}

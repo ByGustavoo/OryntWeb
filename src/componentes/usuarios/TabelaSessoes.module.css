@@ -1,0 +1,71 @@
+.colunaEstado {
+  width: 10rem;
+}
+
+.colunaSessao,
+td.celulaSessao {
+  width: 16rem;
+  max-width: 16rem;
+}
+
+.colunaConsulta,
+td.celulaConsulta {
+  width: 100%;
+  max-width: 0;
+}
+
+.sql {
+  font-size: var(--tamanho-xs);
+}
+
+.linhaDoPid {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  min-width: 0;
+}
+
+.linhaDoPid > :first-child {
+  flex-shrink: 0;
+}
+
+.quem {
+  overflow: hidden;
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.linhaDoPid > :last-child:not(.quem) {
+  flex-shrink: 0;
+}
+
+.espera {
+  white-space: nowrap;
+}
+
+@container lista-objetos (max-width: 1000px) {
+  .colunaEstado {
+    width: auto;
+  }
+
+  .colunaSessao,
+  td.celulaSessao {
+    width: 12rem;
+    max-width: 12rem;
+  }
+}
+
+@container lista-objetos (max-width: 860px) {
+  td.celulaSessao,
+  td.celulaConsulta {
+    width: auto;
+    max-width: none;
+  }
+
+  .espera {
+    white-space: normal;
+  }
+}

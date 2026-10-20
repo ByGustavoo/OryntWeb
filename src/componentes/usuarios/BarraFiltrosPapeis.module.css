@@ -1,0 +1,49 @@
+.conteiner {
+  container: filtros-papeis / inline-size;
+}
+
+.barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-3);
+}
+
+.busca {
+  flex: 1 1 15rem;
+}
+
+.selecao {
+  flex: 0 0 11.5rem;
+}
+
+.situacao {
+  flex-basis: 16rem;
+}
+
+@container filtros-papeis (max-width: 900px) {
+  .busca {
+    flex-basis: 100%;
+  }
+
+  .selecao {
+    flex: 1 1 9rem;
+    min-width: 0;
+  }
+}
+
+@container filtros-papeis (max-width: 560px) {
+  .selecao {
+    flex: 1 1 calc(50% - var(--espaco-3) / 2);
+  }
+
+  .situacao {
+    flex-basis: 100%;
+  }
+}
+
+@container filtros-papeis (max-width: 280px) {
+  .selecao {
+    flex-basis: 100%;
+  }
+}

@@ -28,6 +28,7 @@ import { listarFuncoes, listarIndices, listarTabelas, listarVisoes } from './man
 import { redefinirSenha, solicitarRecuperacao, verificarCodigoRecuperacao } from './manipuladores/recuperacaoSenha';
 import { buscarResumoRelatorio } from './manipuladores/relatorios';
 import { buscarVersao } from './manipuladores/sistema';
+import { listarPapeis, listarPermissoes, listarSessoes } from './manipuladores/usuarios';
 import { expirarCodigoSimulado, expirarRedefinicaoSimulada } from './recuperacaoSimulada';
 import { rotaInexistente, servicoIndisponivel } from './resposta';
 import { encerrarSessaoSimulada } from './sessaoSimulada';
@@ -88,6 +89,9 @@ const rotas: Rota[] = [
   { metodo: 'GET', caminho: rotasApi.objetos.indices, manipulador: listarIndices },
   { metodo: 'GET', caminho: rotasApi.objetos.tabelas, manipulador: listarTabelas },
   { metodo: 'GET', caminho: rotasApi.objetos.funcoes, manipulador: listarFuncoes },
+  { metodo: 'GET', caminho: rotasApi.usuarios.papeis, manipulador: listarPapeis },
+  { metodo: 'GET', caminho: rotasApi.usuarios.sessoes, manipulador: listarSessoes },
+  { metodo: 'GET', caminho: rotasApi.usuarios.permissoes, manipulador: listarPermissoes },
   { metodo: 'GET', caminho: rotasApi.relatorios.resumo, manipulador: buscarResumoRelatorio },
   { metodo: 'GET', caminho: rotasApi.sistema.versao, manipulador: buscarVersao },
 ];

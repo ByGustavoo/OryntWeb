@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
   ChevronDown,
@@ -50,7 +51,7 @@ import {
   pluralizar,
 } from '@/utilitarios/formatacao';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
-import { ItemConsulta, Medida, SecaoCopiavel } from './DetalheObjeto';
+import { DonoDoObjeto, ItemConsulta, Medida, SecaoCopiavel } from './DetalheObjeto';
 import estilos from './DetalheObjeto.module.css';
 import { GraficoCrescimento } from './GraficoCrescimento';
 import { NomeObjeto } from './NomeObjeto';
@@ -64,6 +65,8 @@ interface AcoesDoDetalhe {
   aoVerIndices: (tabela: TabelaDTO) => void;
   aoAbrirVisao: (id: string) => void;
   aoAbrirFuncao: (id: string) => void;
+  aoAbrirPapel: (nome: string) => void;
+  quemAcessa?: (id: string) => ReactNode;
 }
 
 interface DetalheTabelaProps extends AcoesDoDetalhe {
@@ -172,6 +175,7 @@ function CorpoDetalhe({ tabela, contexto, simulada, ...acoes }: CorpoDetalheProp
         <p className={juntarClasses(estilos.descricao, !tabela.descricao && estilos.semDescricao)}>
           {tabela.descricao ?? 'O banco não tem uma descrição para esta tabela.'}
         </p>
+        <DonoDoObjeto dono={tabela.dono} aoAbrir={acoes.aoAbrirPapel} />
         <div className={estilos.selos}>
           {particoes > 0 ? (
             <Selo tom="neutro" icone={Layers}>
@@ -239,6 +243,7 @@ function CorpoDetalhe({ tabela, contexto, simulada, ...acoes }: CorpoDetalheProp
       <SecaoIndices tabela={tabela} aoAbrirIndice={acoes.aoAbrirIndice} aoVerIndices={acoes.aoVerIndices} />
       <SecaoGatilhos tabela={tabela} aoAbrirFuncao={acoes.aoAbrirFuncao} />
       <SecaoVisoes tabela={tabela} aoAbrirVisao={acoes.aoAbrirVisao} />
+      {acoes.quemAcessa?.(tabela.id)}
     </div>
   );
 }
@@ -280,8 +285,7 @@ function SecaoEspaco({ tabela }: { tabela: TabelaDTO }) {
         <Medida rotulo="TOAST" valor={formatarTamanho(tabela.tamanhoToastBytes)} />
       </dl>
       <p className={estilos.leitura}>
-        O TOAST guarda à parte os valores grandes, como textos longos e JSON. O dono da tabela é{' '}
-        <span className="codigo">{tabela.dono}</span>.
+        O TOAST guarda à parte os valores grandes, como textos longos e JSON.
       </p>
     </section>
   );

@@ -28,6 +28,11 @@ export const rotasApi = {
     tabelas: '/objetos/tabelas',
     funcoes: '/objetos/funcoes',
   },
+  usuarios: {
+    papeis: '/usuarios/papeis',
+    sessoes: '/usuarios/sessoes',
+    permissoes: '/usuarios/permissoes',
+  },
   relatorios: {
     resumo: '/relatorios/resumo',
   },

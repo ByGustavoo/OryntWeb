@@ -50,7 +50,7 @@ consulta que explica.
 
 * **Objetos do banco (concluído):** as telas Visões, Índices, Tabelas e Funções estão prontas, com dados demonstrativos.
 
-* **Planejado:** Usuários e permissões. As funcionalidades existem na navegação, nos grupos "Análise" e "Gerenciamento", cada uma com as suas telas, e as planejadas mostram só o que está previsto.
+* **Usuários e permissões (concluído):** as telas Papéis, Sessões e Permissões estão prontas, com dados demonstrativos.
 
 * **Pendente:** a API (OryntAPI). O contrato que ela precisa cumprir está em [`docs/api-contrato.md`](docs/api-contrato.md).
 
@@ -266,6 +266,62 @@ consulta que explica.
 
 * Aviso quando o servidor não mede as chamadas das funções (`track_functions = none`), com os comandos que ligam a medida, e as funções que o servidor não mede marcadas como "Não medida"
 
+🔹 **Usuários e permissões › Papéis**
+
+* Inventário dos usuários e dos grupos do banco, com busca pelo nome ou pela descrição e filtros de tipo, atributo e situação; o papel da conexão em uso leva o selo "Você"
+
+* Sessões abertas agora e o limite de cada usuário, o último uso visto pelo Orynt e a validade da senha, com ordenação pelas colunas e 15 papéis por página
+
+* Superusuários com login além do criado na instalação, senhas vencidas ou que vencem em até 7 dias, senhas em MD5, usuários com 80% ou mais do limite de conexões, usuários sem nenhuma sessão em 30 dias e grupos vazios em destaque, com atalhos que filtram cada caso
+
+* Pontos de atenção no topo, do mais urgente ao menos urgente, cada um com o atalho para o papel ou para a lista filtrada
+
+* Detalhe de cada papel: o comando que resolve cada ponto, pronto para copiar e sem nenhuma senha no texto; o acesso; os atributos explicados, incluindo os que ele só ganha com SET ROLE num grupo; de quem ele é membro e quem é membro dele; as configurações próprias, com aviso quando um usuário comum não tem `statement_timeout`; e os objetos de que é dono, com atalho para Tabelas, Visões e Funções
+
+* Aviso quando o papel é dono de uma função `SECURITY DEFINER` que não fixa o `search_path`
+
+* Com um filtro de situação, os comandos de todos os papéis da lista copiados de uma vez, um por linha
+
+* O dono no detalhe de uma tabela, de uma visão ou de uma função abre o papel em Papéis
+
+* O detalhe de um usuário com sessões abertas leva às sessões dele em Sessões
+
+* O detalhe de um papel leva ao que ele pode fazer em Permissões
+
+🔹 **Usuários e permissões › Sessões**
+
+* Retrato do `pg_stat_activity`: conexões sobre o `max_connections`, sessões por estado, por aplicação e por origem, com "Atualizar" e atualização automática a cada 10 segundos, que pausa com a aba oculta ou com um detalhe aberto
+
+* Cadeias de bloqueio em árvore, da sessão que segura o bloqueio até as que esperam por ela
+
+* Sessões bloqueando outras, esperando bloqueio há 30 s ou mais, com transação parada há 5 min ou mais, com consulta rodando há 5 min ou mais e com transação aberta há 30 min ou mais em destaque, com atalhos que filtram cada caso e pontos de atenção no topo
+
+* Lista com busca pelo PID, papel, aplicação, endereço ou SQL e filtros de banco, estado, situação e papel; os processos do servidor ficam atrás de uma chave
+
+* Detalhe de cada sessão: `pg_cancel_backend` e `pg_terminate_backend` prontos para copiar, a linha do tempo da sessão, a consulta com atalhos para o plano e o Histórico, quem ela bloqueia e por quem espera, os bloqueios que segura e espera, e a conexão, com atalho para o papel
+
+* Sugestão de `idle_in_transaction_session_timeout` para o papel que deixa transações paradas com frequência, também no detalhe dele em Papéis
+
+* Com um filtro de situação, os comandos de todas as sessões da lista copiados de uma vez, um por linha
+
+* O cartão "Conexões ativas" do Dashboard leva a Sessões
+
+🔹 **Usuários e permissões › Permissões**
+
+* O que cada papel pode fazer em cada objeto do banco: o banco, os esquemas, as tabelas, as visões, as sequências e as funções, com o acesso efetivo e a origem de cada privilégio (direto, por um grupo, por PUBLIC, por ser dono ou superusuário)
+
+* Três modos: tudo o que um papel alcança, todos que alcançam um objeto e dois papéis lado a lado, só com as diferenças, começando no papel mais parecido
+
+* Funções `SECURITY DEFINER` que qualquer papel executa, esquemas em que qualquer papel cria objetos, escrita num grupo de leitura, `WITH GRANT OPTION` dado a um usuário, privilégio sem `USAGE` no esquema, `USAGE` sem nenhum objeto e esquema sem privilégio padrão para o grupo que o lê, com atalhos que filtram cada caso e pontos de atenção no topo
+
+* Detalhe de cada acesso: o comando que resolve cada ponto, cada privilégio com o efeito e todas as origens, como tirar o acesso ou, sem acesso, o `GRANT` mínimo, e atalhos para o objeto, o papel e a comparação
+
+* Privilégios padrão do banco em frases, com o `ALTER DEFAULT PRIVILEGES` de cada um
+
+* Com um filtro de situação, os comandos de todas as linhas copiados de uma vez, um por linha
+
+* O detalhe de uma tabela, de uma visão ou de uma função mostra quem a acessa e leva a Permissões
+
 <br>
 
 ## ⚙️ Pré-requisitos
@@ -347,7 +403,10 @@ oryntSimulacao.latencia(8000)
 // Com '/relatorios', o resumo, a exportação e a comparação mostram o estado de erro
 oryntSimulacao.falhar('/relatorios')
 
-// Esvazia os dados do dashboard e do resumo, para ver os estados vazios (esvaziar(false) restaura)
+// Com '/objetos' ou '/usuarios', as telas de Objetos do banco ou as de Papéis, Sessões e Permissões mostram o estado de erro
+oryntSimulacao.falhar('/usuarios')
+
+// Esvazia os dados das telas, para ver os estados vazios (esvaziar(false) restaura)
 oryntSimulacao.esvaziar()
 
 // Muda o track_functions simulado do servidor ('none', 'pl' ou 'all'; o padrão é 'pl')
