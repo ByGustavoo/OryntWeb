@@ -1,6 +1,8 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
+import { LimiteDeErro } from '@/componentes/comum/LimiteDeErro';
 import { Cabecalho } from '@/componentes/layout/Cabecalho';
+import { FalhaNaTela } from '@/componentes/layout/FalhaNaTela';
 import { MenuLateral } from '@/componentes/layout/MenuLateral';
 import { EsqueletoLista } from '@/componentes/ui';
 import { CHAVE_MENU_RECOLHIDO, ID_CONTEUDO_PRINCIPAL } from '@/configuracoes/aplicacao';
@@ -61,9 +63,11 @@ export function LayoutAplicacao() {
           />
           <main className={estilos.conteudo} id={ID_CONTEUDO_PRINCIPAL} tabIndex={-1}>
             <div className={estilos.limite} key={localizacao.pathname}>
-              <Suspense fallback={<EsqueletoLista linhas={5} rotulo="Carregando a página…" />}>
-                <Outlet />
-              </Suspense>
+              <LimiteDeErro alternativa={(erro) => <FalhaNaTela erro={erro} />}>
+                <Suspense fallback={<EsqueletoLista linhas={5} rotulo="Carregando a página…" />}>
+                  <Outlet />
+                </Suspense>
+              </LimiteDeErro>
             </div>
           </main>
         </div>

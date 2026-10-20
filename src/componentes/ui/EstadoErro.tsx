@@ -1,4 +1,6 @@
 import { CloudOff, RotateCw } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { descreverFalha } from '@/api/tratamentoErros';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
 import { Botao } from './Botao';
@@ -12,6 +14,8 @@ export interface EstadoErroProps {
   erro?: unknown;
   aoTentarNovamente?: () => void;
   tentando?: boolean;
+  icone?: LucideIcon;
+  acoes?: ReactNode;
   compacto?: boolean;
   className?: string;
 }
@@ -22,6 +26,8 @@ export function EstadoErro({
   erro,
   aoTentarNovamente,
   tentando = false,
+  icone: Icone = CloudOff,
+  acoes,
   compacto = false,
   className,
 }: EstadoErroProps) {
@@ -29,13 +35,15 @@ export function EstadoErro({
   return (
     <div className={juntarClasses(estilos.estado, estilos.erro, compacto && estilos.compacto, className)} role="alert">
       <span className={estilos.icone} aria-hidden="true">
-        <CloudOff size={compacto ? 18 : 22} strokeWidth={1.75} />
+        <Icone size={compacto ? 18 : 22} strokeWidth={1.75} />
       </span>
       <div className={estilos.textos}>
         <p className={estilos.titulo}>{titulo}</p>
         <p className={estilos.descricao}>{descricao}</p>
       </div>
-      {aoTentarNovamente ? (
+      {acoes ? (
+        <div className={estilos.acoes}>{acoes}</div>
+      ) : aoTentarNovamente ? (
         <div className={estilos.acoes}>
           <Botao variante="secundario" tamanho="sm" icone={RotateCw} onClick={aoTentarNovamente} carregando={tentando}>
             Tentar novamente
