@@ -1,0 +1,5 @@
+.falha {
+  display: grid;
+  place-items: center;
+  min-height: min(32rem, calc(100dvh - var(--altura-cabecalho) - var(--espaco-16)));
+}
