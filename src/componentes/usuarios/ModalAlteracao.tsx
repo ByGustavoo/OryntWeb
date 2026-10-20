@@ -1,9 +1,10 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Lock } from 'lucide-react';
 import { ehErroApi } from '@/api/tratamentoErros';
-import { Botao, EsqueletoLista, EstadoErro, Modal } from '@/componentes/ui';
+import { Botao, EsqueletoLista, EstadoErro, Modal, Nota } from '@/componentes/ui';
 import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
 import type { AlteracaoDTO, OperacaoDTO, OrigemDaAlteracao } from '@/modelos/alteracoes';
+import { useAutenticacao } from '@/provedores/ProvedorAutenticacao';
 import { useConexao } from '@/provedores/ProvedorConexao';
 import type { PedidoDeAlteracao } from '@/provedores/ProvedorAlteracoes';
 import { nomeParaConfirmar } from '@/regras/capacidadeAlteracoes';
@@ -11,6 +12,7 @@ import { interpretarFalhaAlteracao } from '@/regras/falhaAlteracao';
 import type { FalhaAlteracao } from '@/regras/falhaAlteracao';
 import { inversasDe } from '@/regras/inversasAlteracoes';
 import { indexarPermissoes, PUBLICO } from '@/regras/permissoes';
+import { permissoesDasOperacoes, permissoesQueFaltam, rotuloDaPermissao } from '@/regras/permissoesConta';
 import { servicoUsuarios } from '@/servicos';
 import { FormularioConcessao } from './FormularioConcessao';
 import { FormularioExclusao } from './FormularioExclusao';
@@ -108,6 +110,8 @@ export default function ModalAlteracao({ pedido, aberto, simulada, aoFechar, aoA
   );
   const confirmar = revisao && estado ? nomeParaConfirmar(revisao.operacoes, estado.papeis.papelDaConexao) : null;
   const confirmado = confirmar === null || confirmacao.trim() === confirmar;
+  const { usuario } = useAutenticacao();
+  const faltando = revisao ? permissoesQueFaltam(usuario, permissoesDasOperacoes(revisao.operacoes.map((operacao) => operacao.tipo))) : [];
 
   useEffect(() => {
     if (ehErroApi(carga.erro, 'NAO_AUTORIZADO')) marcarDesconectada();
@@ -132,7 +136,7 @@ export default function ModalAlteracao({ pedido, aberto, simulada, aoFechar, aoA
   };
 
   const executar = async () => {
-    if (!revisao || !estado || enviando || !confirmado) return;
+    if (!revisao || !estado || enviando || !confirmado || faltando.length > 0) return;
     setEnviando(true);
     setFalha(null);
     let inversas: OperacaoDTO[] | null = null;
@@ -168,7 +172,7 @@ export default function ModalAlteracao({ pedido, aberto, simulada, aoFechar, aoA
       <Botao
         variante={destrutiva(revisao.operacoes, confirmar) ? 'perigo' : 'primario'}
         carregando={enviando}
-        disabled={!estado || !confirmado}
+        disabled={!estado || !confirmado || faltando.length > 0}
         onClick={() => void executar()}
       >
         {rotuloDeExecutar(revisao.operacoes, revisao.origem)}
@@ -234,6 +238,12 @@ export default function ModalAlteracao({ pedido, aberto, simulada, aoFechar, aoA
         ) : (
           <>
             {comFormulario ? <div hidden={revisao !== null}>{formulario(estado)}</div> : null}
+            {revisao && faltando.length > 0 ? (
+              <Nota tom="erro" icone={Lock} titulo="A sua conta do Orynt não pode executar isto.">
+                Falta {faltando.map((codigo) => `“${rotuloDaPermissao(codigo)}”`).join(' e ')}. Copie os comandos para rodar por outro
+                caminho ou peça a permissão a quem administra o Orynt na sua equipe.
+              </Nota>
+            ) : null}
             {revisao ? (
               <RevisaoAlteracao
                 revisao={revisao}

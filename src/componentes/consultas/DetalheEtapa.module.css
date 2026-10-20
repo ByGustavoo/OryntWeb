@@ -16,6 +16,59 @@
   font-weight: var(--peso-medio);
 }
 
+.caminho ol {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 0;
+  margin-top: var(--espaco-1);
+}
+
+.caminho li {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.passo {
+  min-height: 24px;
+  padding-inline: 4px;
+  border-radius: var(--raio-xs);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-xs);
+  line-height: var(--altura-linha-compacta);
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+
+.caminho li:first-child .passo {
+  margin-left: -4px;
+}
+
+button.passo {
+  cursor: pointer;
+  transition:
+    color var(--duracao-rapida) var(--curva-saida),
+    background-color var(--duracao-rapida) var(--curva-saida);
+}
+
+button.passo:focus-visible {
+  outline: none;
+  box-shadow: var(--anel-foco);
+}
+
+@media (hover: hover) {
+  button.passo:hover {
+    background-color: var(--superficie-suave);
+    color: var(--texto);
+  }
+}
+
+.separador {
+  flex-shrink: 0;
+  color: var(--texto-desabilitado);
+}
+
 .nome {
   color: var(--texto);
   font-size: var(--tamanho-lg);

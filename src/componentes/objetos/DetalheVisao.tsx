@@ -32,7 +32,7 @@ import {
   iniciarComMaiuscula,
 } from '@/utilitarios/formatacao';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
-import { DonoDoObjeto, ItemConsulta, Medida, SecaoCopiavel } from './DetalheObjeto';
+import { DonoDoObjeto, IndiceDoDetalhe, ItemConsulta, Medida, SecaoCopiavel } from './DetalheObjeto';
 import estilos from './DetalheObjeto.module.css';
 import { NomeObjeto } from './NomeObjeto';
 import { SeloTipoVisao } from './SeloTipoVisao';
@@ -204,6 +204,8 @@ function CorpoDetalhe({
         </div>
       </header>
 
+      <IndiceDoDetalhe raiz={raiz} />
+
       {avisos.map((aviso) => (
         <Nota key={aviso.texto} tom={aviso.tom} icone={aviso.tom === 'erro' ? OctagonAlert : TriangleAlert}>
           {aviso.texto}
@@ -216,7 +218,7 @@ function CorpoDetalhe({
 
       <SecaoDefinicao visao={visao} />
 
-      <section className={estilos.secao} aria-labelledby="titulo-colunas-visao">
+      <section className={estilos.secao} aria-labelledby="titulo-colunas-visao" data-indice="Colunas">
         <h3 className={estilos.tituloSecao} id="titulo-colunas-visao">
           Colunas <span className={`${estilos.contagem} numeros`}>{formatarNumero(visao.colunas.length)}</span>
         </h3>
@@ -230,7 +232,7 @@ function CorpoDetalhe({
         </dl>
       </section>
 
-      <section className={estilos.secao} aria-labelledby="titulo-dependencias-visao">
+      <section className={estilos.secao} aria-labelledby="titulo-dependencias-visao" data-indice="Dependências">
         <h3 className={estilos.tituloSecao} id="titulo-dependencias-visao">
           Dependências
         </h3>
@@ -252,7 +254,7 @@ function CorpoDetalhe({
         </div>
       </section>
 
-      <section className={estilos.secao} aria-labelledby="titulo-consultas-visao">
+      <section className={estilos.secao} aria-labelledby="titulo-consultas-visao" data-indice="Consultas">
         <h3 className={estilos.tituloSecao} id="titulo-consultas-visao">
           Consultas que leem a visão{' '}
           <span className={`${estilos.contagem} numeros`}>{formatarNumero(visao.consultas.length)}</span>
@@ -315,7 +317,7 @@ function SecaoMaterializacao({
   const atualizacoes = atualizacao?.quantidadeExecucoes ?? 0;
 
   return (
-    <section className={estilos.secao} aria-labelledby="titulo-materializacao-visao">
+    <section className={estilos.secao} aria-labelledby="titulo-materializacao-visao" data-indice="Dados guardados">
       <h3 className={estilos.tituloSecao} id="titulo-materializacao-visao">
         Dados guardados
       </h3>
@@ -354,6 +356,7 @@ function SecaoDefinicao({ visao }: { visao: VisaoDTO }) {
   return (
     <SecaoCopiavel
       id="titulo-definicao-visao"
+        indice="Definição"
       titulo="Definição"
       texto={definicaoLegivel(visao.definicao)}
       copiado="Copiada"

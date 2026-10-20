@@ -35,8 +35,8 @@ function CaixaEntradaSimulada({ desabilitado, aoUsarCodigo }: Pick<DemonstracaoR
           )}
         </p>
         <p className={estilosCartao.nota}>
-          Nesta demonstração só {CREDENCIAIS_DEMONSTRACAO.email} tem conta. Com a API, a tela continua igual para qualquer
-          e-mail e não revela qual existe.
+          Só recebem código {CREDENCIAIS_DEMONSTRACAO.email} e as contas ativas criadas em Administração › Usuários. Com a API, a
+          tela continua igual para qualquer e-mail e não revela qual existe.
         </p>
       </>
     );
@@ -117,8 +117,8 @@ export default function DemonstracaoRecuperacao({ etapa, desabilitado, aoPreench
 
       {etapa === 'SENHA' ? (
         <p className={estilos.unica}>
-          A senha nova é conferida e descartada: o acesso continua sendo {CREDENCIAIS_DEMONSTRACAO.email} com a senha{' '}
-          {CREDENCIAIS_DEMONSTRACAO.senha}.
+          A senha nova vale para as contas criadas em Administração › Usuários. A de {CREDENCIAIS_DEMONSTRACAO.email} continua{' '}
+          {CREDENCIAIS_DEMONSTRACAO.senha}, a do cartão do login.
         </p>
       ) : null}
     </aside>

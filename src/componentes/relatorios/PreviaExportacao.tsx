@@ -16,7 +16,7 @@ interface PreviaExportacaoProps {
   aoAbrir: (nome: string) => void;
 }
 
-const LINHAS_DA_PREVIA = 14;
+const LINHAS_DA_PREVIA = 24;
 
 function posicaoNaLista(arquivo: ArquivoExportacao): number {
   return arquivo.bloco ? blocosExportacao.indexOf(arquivo.bloco) : 0;

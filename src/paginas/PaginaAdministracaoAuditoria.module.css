@@ -1,0 +1,14 @@
+.lista {
+  transition: opacity var(--duracao-rapida) var(--curva-saida);
+}
+
+.atualizando {
+  opacity: 0.55;
+  transition-delay: var(--duracao-rapida);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .atualizando {
+    opacity: 1;
+  }
+}

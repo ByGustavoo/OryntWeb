@@ -3,13 +3,16 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { LimiteDeErro } from '@/componentes/comum/LimiteDeErro';
 import { Cabecalho } from '@/componentes/layout/Cabecalho';
 import { FalhaNaTela } from '@/componentes/layout/FalhaNaTela';
+import { GuardaDaTela, deveDesviarDaTela } from '@/componentes/layout/GuardaDaTela';
 import { MenuLateral } from '@/componentes/layout/MenuLateral';
 import { EsqueletoLista } from '@/componentes/ui';
 import { CHAVE_MENU_RECOLHIDO, ID_CONTEUDO_PRINCIPAL } from '@/configuracoes/aplicacao';
 import { useArmazenamentoLocal } from '@/ganchos/useArmazenamentoLocal';
 import { useMenuEmGaveta } from '@/ganchos/useConsultaMidia';
+import { useRegistroDaTela } from '@/ganchos/useRegistroDaTela';
 import { useTravarRolagem } from '@/ganchos/useTravarRolagem';
 import { ProvedorAlteracoes } from '@/provedores/ProvedorAlteracoes';
+import { useAutenticacao } from '@/provedores/ProvedorAutenticacao';
 import { ProvedorNovaConexao } from '@/provedores/ProvedorNovaConexao';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
 import estilos from './LayoutAplicacao.module.css';
@@ -21,6 +24,8 @@ export function LayoutAplicacao() {
   const localizacao = useLocation();
   const botaoMenuRef = useRef<HTMLButtonElement>(null);
   const primeiraRenderizacao = useRef(true);
+  const { usuario } = useAutenticacao();
+  useRegistroDaTela(!deveDesviarDaTela(usuario, localizacao.pathname));
 
   const fecharGaveta = useCallback(() => setGavetaAberta(false), []);
 
@@ -67,7 +72,9 @@ export function LayoutAplicacao() {
               <div className={estilos.limite} key={localizacao.pathname}>
                 <LimiteDeErro alternativa={(erro) => <FalhaNaTela erro={erro} />}>
                   <Suspense fallback={<EsqueletoLista linhas={5} rotulo="Carregando a página…" />}>
-                    <Outlet />
+                    <GuardaDaTela>
+                      <Outlet />
+                    </GuardaDaTela>
                   </Suspense>
                 </LimiteDeErro>
               </div>

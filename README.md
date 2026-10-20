@@ -344,6 +344,32 @@ consulta que explica.
 
 * Tudo o que o Orynt mudou nos papéis e nas permissões do servidor, aplicado ou recusado, com a conta, o papel da conexão, quando, os comandos e a resposta do banco, com busca, filtros e desfazer
 
+🔹 **Administração › Usuários**
+
+* As contas que entram no Orynt (não os papéis do banco): nome, e-mail, perfil, situação, último acesso e criação, com busca, filtros, paginação e atalhos para as contas bloqueadas, os convites expirados e as contas sem acesso há 30 dias
+
+* "Novo usuário" com perfil (Leitor, Analista ou Administrador), permissões iniciais e convite: a pessoa define a própria senha, que ninguém mais conhece
+
+* Detalhe de cada conta com as permissões agrupadas por módulo, cada uma concedida ou negada, de onde vem (do perfil ou à parte) e o que vai mudar antes de salvar
+
+* Editar, ativar, desativar, reenviar o convite, desbloquear, encerrar as sessões, ver a atividade e excluir, com confirmação e as consequências da exclusão
+
+* Proteções: ninguém desativa, exclui ou tira a gestão de usuários de si mesmo, o último administrador ativo fica protegido e só se concede o que a própria conta tem
+
+* Cada tela e cada rota pedem a sua permissão: sem ela, a tela some do menu, o endereço digitado mostra "Sem acesso" e a chamada direta à API recebe `403`
+
+* O login bloqueia por 15 minutos depois de 5 senhas erradas seguidas, e o administrador pode desbloquear
+
+🔹 **Administração › Auditoria**
+
+* O que cada conta acessou e fez: logins e logouts, tentativas recusadas, telas abertas, contas, permissões, conexões e alterações no banco, além das tentativas sem permissão
+
+* Filtros por usuário, tipo de ação, módulo, resultado e período, busca, paginação e o detalhe de cada evento, com o antes e o depois
+
+* Ao escolher um usuário, as áreas que ele acessou, o que fez e quantas vezes foi barrado
+
+* Nada é inventado nem pode ser apagado pela interface, e senhas, códigos e tokens nunca são registrados
+
 <br>
 
 ## ⚙️ Pré-requisitos
@@ -389,14 +415,16 @@ também aparecem na própria tela de login, com um botão que preenche os campos
 | E-mail | `demo@orynt.local` |
 | Senha | `orynt-demo` |
 
+Ela é a conta inicial, com perfil de Administrador. Em Administração › Usuários dá para criar outras contas: o convite aparece no detalhe da conta, no cartão "Caixa de entrada simulada", e o link abre a tela onde a pessoa define a senha. Depois disso a conta entra no login com as permissões dela, e as telas que ela não pode abrir somem do menu.
+
 Qualquer outra combinação mostra "E-mail ou senha incorretos". Para voltar à tela de login depois de
 entrar, abra o menu da conta (o círculo com a inicial, no canto superior direito) e use "Sair".
 
 O link "Esqueceu sua senha?" abre a recuperação de senha. Ela também é fictícia: nenhum e-mail é
 enviado. Informe `demo@orynt.local` e o código de verificação aparece no cartão "Caixa de entrada
 simulada", na própria tela, com o botão "Usar código". Qualquer outro e-mail passa pela mesma etapa e
-recebe a mesma resposta, mas nenhum código funciona, porque só o e-mail de demonstração tem conta. A
-senha nova é conferida e descartada: o acesso continua sendo `orynt-demo`.
+recebe a mesma resposta, mas só as contas que existem recebem um código. A senha nova vale para as contas
+criadas em Administração › Usuários; a da conta de demonstração continua `orynt-demo`.
 
 <br>
 
@@ -430,6 +458,12 @@ oryntSimulacao.falhar('/usuarios')
 
 // Esvazia os dados das telas, para ver os estados vazios (esvaziar(false) restaura)
 oryntSimulacao.esvaziar()
+
+// Com '/administracao' ou '/auditoria', as telas de Administração mostram o estado de erro
+oryntSimulacao.falhar('/auditoria')
+
+// Volta as contas do Orynt e a auditoria ao início, só com a conta de demonstração, e sai
+oryntSimulacao.restaurarAdministracao()
 
 // Desfaz todas as alterações de papéis e permissões feitas pelo Orynt no simulador
 oryntSimulacao.restaurarPapeis()
@@ -572,6 +606,8 @@ src
 ## ⚠️ Limitações
 
 * Nenhum banco real é acessado: a conexão é simulada e os números do dashboard e do resumo são fictícios.
+
+* As contas, as senhas (só o hash) e a auditoria ficam no simulador, no `localStorage` deste navegador. A autorização é verificada pelo simulador em cada requisição, como a API vai fazer, mas sem um servidor qualquer pessoa com acesso ao navegador consegue editar esses dados pelas ferramentas de desenvolvedor. O contrato das rotas está em [`docs/api-contrato.md`](docs/api-contrato.md), seções 13 e 14.
 
 * Não há modo SSL no formulário de conexão.
 

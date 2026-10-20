@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { NoPlanoDTO, PlanoExecucaoDTO, VersaoPlanoDTO } from '@/modelos/planos';
 import {
   alvoDoNo,
+  ancestraisDaEtapa,
   buffersProprios,
   condicaoPrincipal,
   descreverNo,
@@ -14,12 +15,15 @@ import {
   lerSelecaoDoPlano,
   linhasDoPlano,
   linhasLidas,
+  linhasVisiveis,
   nomeDoNo,
   planoEmJson,
   planoEmTexto,
+  quantasEtapasAbaixo,
   rotuloDaVersao,
   selecaoInicialDoPlano,
   tempoProprioMs,
+  trilhaAte,
   variacaoEntreVersoes,
 } from './planoExecucao';
 
@@ -208,6 +212,51 @@ describe('linhasDoPlano', () => {
     ]);
     expect(linhas.map((linha) => linha.parteDoTempo)).toEqual([30, 40, 20, 10]);
     expect(etapaMaisLenta(linhas)?.no.id).toBe(2);
+  });
+});
+
+describe('navegação pela árvore', () => {
+  const arvore = no({
+    id: 1,
+    filhos: [
+      no({ id: 2, filhos: [no({ id: 3 }), no({ id: 4, filhos: [no({ id: 5 })] })] }),
+      no({ id: 6, filhos: [no({ id: 7 })] }),
+    ],
+  });
+  const linhas = linhasDoPlano(plano(arvore, 10));
+  const ids = (lista: { no: NoPlanoDTO }[]) => lista.map((linha) => linha.no.id);
+
+  it('dá o caminho da raiz até o pai de cada etapa', () => {
+    expect(ancestraisDaEtapa(linhas, 1)).toEqual([]);
+    expect(ancestraisDaEtapa(linhas, 5)).toEqual([1, 2, 4]);
+    expect(ancestraisDaEtapa(linhas, 7)).toEqual([1, 6]);
+  });
+
+  it('esconde tudo o que está abaixo de uma etapa recolhida, em qualquer profundidade', () => {
+    expect(ids(linhasVisiveis(linhas, new Set()))).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    expect(ids(linhasVisiveis(linhas, new Set([2])))).toEqual([1, 2, 6, 7]);
+    expect(ids(linhasVisiveis(linhas, new Set([4, 6])))).toEqual([1, 2, 3, 4, 6]);
+    expect(ids(linhasVisiveis(linhas, new Set([3])))).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    expect(quantasEtapasAbaixo(arvore)).toBe(6);
+  });
+
+  it('marca as guias que levam da raiz até a etapa escolhida', () => {
+    const trilha = trilhaAte(linhas, 5);
+    expect(trilha.get(1)).toEqual({ passagens: [], chegada: false, desce: true });
+    expect(trilha.get(2)).toEqual({ passagens: [], chegada: true, desce: true });
+    expect(trilha.get(3)).toEqual({ passagens: [1], chegada: false, desce: false });
+    expect(trilha.get(4)).toEqual({ passagens: [], chegada: true, desce: true });
+    expect(trilha.get(5)).toEqual({ passagens: [], chegada: true, desce: false });
+    expect(trilha.has(6)).toBe(false);
+    expect(trilhaAte(linhas, 1).size).toBe(0);
+  });
+
+  it('conta as linhas visíveis ao traçar o caminho com etapas recolhidas', () => {
+    const visiveis = linhasVisiveis(linhas, new Set([2]));
+    const trilha = trilhaAte(visiveis, 7);
+    expect(trilha.get(2)).toEqual({ passagens: [0], chegada: false, desce: false });
+    expect(trilha.get(6)).toEqual({ passagens: [], chegada: true, desce: true });
+    expect(trilha.get(7)).toEqual({ passagens: [], chegada: true, desce: false });
   });
 });
 

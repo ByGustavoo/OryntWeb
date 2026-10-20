@@ -1,18 +1,22 @@
-import { useRef } from 'react';
-import type { CSSProperties, KeyboardEvent } from 'react';
-import { TriangleAlert } from 'lucide-react';
+import { useMemo, useRef, useState } from 'react';
+import type { CSSProperties, KeyboardEvent, MouseEvent } from 'react';
+import { ChevronRight, TriangleAlert } from 'lucide-react';
 import { Esqueleto, Selo } from '@/componentes/ui';
 import type { PlanoExecucaoDTO } from '@/modelos/planos';
 import {
   alvoDoNo,
+  ancestraisDaEtapa,
   condicaoPrincipal,
   estimativaErrada,
   linhasDevolvidas,
   linhasDoPlano,
   linhasEsperadas,
+  linhasVisiveis,
   nomeDoNo,
+  quantasEtapasAbaixo,
+  trilhaAte,
 } from '@/regras/planoExecucao';
-import type { GuiaDaArvore, LinhaDoPlano } from '@/regras/planoExecucao';
+import type { GuiaDaArvore, LinhaDoPlano, TrilhaDaEtapa } from '@/regras/planoExecucao';
 import { formatarDuracaoMs, formatarNumero, formatarPercentual, pluralizar } from '@/utilitarios/formatacao';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
 import estilos from './ArvorePlano.module.css';
@@ -32,21 +36,45 @@ const classeDaGuia: Record<GuiaDaArvore, string | undefined> = {
   ULTIMO: estilos.guiaUltimo,
 };
 
-function destinoDaTecla(linhas: LinhaDoPlano[], atual: number, tecla: string): number | null {
+const SEM_RECOLHIDAS: ReadonlySet<number> = new Set();
+
+type Movimento = { tipo: 'IR'; id: number } | { tipo: 'RECOLHER'; id: number } | { tipo: 'EXPANDIR'; id: number };
+
+function movimentoDaTecla(
+  linhas: LinhaDoPlano[],
+  recolhidas: ReadonlySet<number>,
+  atual: number,
+  tecla: string,
+): Movimento | null {
   const indice = linhas.findIndex((linha) => linha.no.id === atual);
   const linha = linhas[indice];
   if (!linha) return null;
-  if (tecla === 'ArrowDown') return linhas[indice + 1]?.no.id ?? null;
-  if (tecla === 'ArrowUp') return linhas[indice - 1]?.no.id ?? null;
-  if (tecla === 'Home') return linhas[0]?.no.id ?? null;
-  if (tecla === 'End') return linhas[linhas.length - 1]?.no.id ?? null;
-  if (tecla === 'ArrowRight') return linha.no.filhos[0]?.id ?? null;
-  if (tecla === 'ArrowLeft') return linha.idDoPai;
+  const ir = (id: number | null | undefined): Movimento | null => (id === null || id === undefined ? null : { tipo: 'IR', id });
+  const temFilhos = linha.no.filhos.length > 0;
+  const recolhida = recolhidas.has(linha.no.id);
+  if (tecla === 'ArrowDown') return ir(linhas[indice + 1]?.no.id);
+  if (tecla === 'ArrowUp') return ir(linhas[indice - 1]?.no.id);
+  if (tecla === 'Home') return ir(linhas[0]?.no.id);
+  if (tecla === 'End') return ir(linhas[linhas.length - 1]?.no.id);
+  if (tecla === 'ArrowRight') {
+    if (temFilhos && recolhida) return { tipo: 'EXPANDIR', id: linha.no.id };
+    return ir(linha.no.filhos[0]?.id);
+  }
+  if (tecla === 'ArrowLeft') {
+    if (temFilhos && !recolhida) return { tipo: 'RECOLHER', id: linha.no.id };
+    return ir(linha.idDoPai);
+  }
   return null;
 }
 
 export function idDaEtapa(id: number): string {
   return `etapa-do-plano-${id}`;
+}
+
+function semIds(conjunto: ReadonlySet<number>, ids: number[]): ReadonlySet<number> {
+  const novo = new Set(conjunto);
+  ids.forEach((id) => novo.delete(id));
+  return novo;
 }
 
 export function ArvorePlano({
@@ -57,16 +85,51 @@ export function ArvorePlano({
   rotulo = 'Etapas do plano',
 }: ArvorePlanoProps) {
   const arvore = useRef<HTMLDivElement>(null);
-  const linhas = linhasDoPlano(plano);
+  const todas = useMemo(() => linhasDoPlano(plano), [plano]);
   const interativa = aoSelecionar !== undefined;
+  const [recolhidas, setRecolhidas] = useState<ReadonlySet<number>>(SEM_RECOLHIDAS);
+  const [revelada, setRevelada] = useState<number | null>(null);
+  const [selecaoVista, setSelecaoVista] = useState(selecionado);
+
+  if (selecionado !== selecaoVista) {
+    setSelecaoVista(selecionado);
+    if (selecionado !== null) {
+      const ancestrais = ancestraisDaEtapa(todas, selecionado);
+      if (ancestrais.some((id) => recolhidas.has(id))) setRecolhidas(semIds(recolhidas, ancestrais));
+    }
+  }
+
+  const linhas = interativa ? linhasVisiveis(todas, recolhidas) : todas;
+  const trilha = interativa && selecionado !== null ? trilhaAte(linhas, selecionado) : null;
+  const posicaoDaRevelada = revelada === null ? -1 : linhas.findIndex((linha) => linha.no.id === revelada);
+
+  const focar = (id: number) => arvore.current?.querySelector<HTMLElement>(`#${idDaEtapa(id)}`)?.focus();
+
+  const recolher = (id: number) => {
+    setRecolhidas((atuais) => new Set(atuais).add(id));
+    if (selecionado !== null && selecionado !== id && ancestraisDaEtapa(todas, selecionado).includes(id)) {
+      aoSelecionar?.(id);
+      requestAnimationFrame(() => focar(id));
+    }
+  };
+
+  const expandir = (id: number) => {
+    setRecolhidas((atuais) => semIds(atuais, [id]));
+    setRevelada(id);
+  };
+
+  const alternar = (id: number) => (recolhidas.has(id) ? expandir(id) : recolher(id));
 
   const andar = (evento: KeyboardEvent<HTMLDivElement>) => {
     if (!aoSelecionar || selecionado === null) return;
-    const destino = destinoDaTecla(linhas, selecionado, evento.key);
     if (evento.key.startsWith('Arrow') || evento.key === 'Home' || evento.key === 'End') evento.preventDefault();
-    if (destino === null || destino === selecionado) return;
-    aoSelecionar(destino);
-    arvore.current?.querySelector<HTMLElement>(`#${idDaEtapa(destino)}`)?.focus();
+    const movimento = movimentoDaTecla(linhas, recolhidas, selecionado, evento.key);
+    if (!movimento) return;
+    if (movimento.tipo === 'RECOLHER') return recolher(movimento.id);
+    if (movimento.tipo === 'EXPANDIR') return expandir(movimento.id);
+    if (movimento.id === selecionado) return;
+    aoSelecionar(movimento.id);
+    focar(movimento.id);
   };
 
   return (
@@ -88,10 +151,13 @@ export function ArvorePlano({
           <Etapa
             key={linha.no.id}
             linha={linha}
-            ordem={posicao}
+            ordem={posicaoDaRevelada >= 0 && posicao > posicaoDaRevelada ? posicao - posicaoDaRevelada - 1 : posicao}
             selecionada={linha.no.id === selecionado}
             alterada={alteradas.includes(linha.no.id)}
+            recolhida={recolhidas.has(linha.no.id)}
+            trilha={trilha?.get(linha.no.id) ?? null}
             aoSelecionar={aoSelecionar}
+            aoAlternar={interativa ? alternar : undefined}
           />
         ))}
       </div>
@@ -104,14 +170,25 @@ interface EtapaProps {
   ordem: number;
   selecionada: boolean;
   alterada: boolean;
+  recolhida: boolean;
+  trilha: TrilhaDaEtapa | null;
   aoSelecionar?: (id: number) => void;
+  aoAlternar?: (id: number) => void;
 }
 
-function Etapa({ linha, ordem, selecionada, alterada, aoSelecionar }: EtapaProps) {
+function Etapa({ linha, ordem, selecionada, alterada, recolhida, trilha, aoSelecionar, aoAlternar }: EtapaProps) {
   const { no, guias, profundidade, parteDoTempo, tempoProprioMs, abaixoDeLimite } = linha;
   const alvo = alvoDoNo(no);
   const condicao = condicaoPrincipal(no);
   const errada = estimativaErrada(no, abaixoDeLimite);
+  const temFilhos = no.filhos.length > 0;
+  const ocultas = recolhida ? quantasEtapasAbaixo(no) : 0;
+  const ultimaGuia = guias.length - 1;
+
+  const alternar = (evento: MouseEvent<HTMLSpanElement>) => {
+    evento.stopPropagation();
+    aoAlternar?.(no.id);
+  };
 
   return (
     <div
@@ -119,12 +196,14 @@ function Etapa({ linha, ordem, selecionada, alterada, aoSelecionar }: EtapaProps
       role={aoSelecionar ? 'treeitem' : 'listitem'}
       aria-level={profundidade + 1}
       aria-selected={aoSelecionar ? selecionada : undefined}
-      aria-expanded={aoSelecionar && no.filhos.length > 0 ? true : undefined}
+      aria-expanded={aoSelecionar && temFilhos ? !recolhida : undefined}
       tabIndex={aoSelecionar ? (selecionada ? 0 : -1) : undefined}
       className={juntarClasses(
         estilos.etapa,
         selecionada && estilos.selecionada,
-        no.filhos.length > 0 && estilos.comFilhos,
+        temFilhos && !recolhida && estilos.comFilhos,
+        aoAlternar && temFilhos && estilos.alternavel,
+        trilha?.desce && estilos.desceNaTrilha,
         !aoSelecionar && estilos.estatica,
         alterada && estilos.alterada,
       )}
@@ -133,11 +212,29 @@ function Etapa({ linha, ordem, selecionada, alterada, aoSelecionar }: EtapaProps
     >
       <span className={estilos.guias} aria-hidden="true">
         {guias.map((guia, nivel) => (
-          <span key={nivel} className={juntarClasses(estilos.guia, classeDaGuia[guia])} />
+          <span
+            key={nivel}
+            className={juntarClasses(
+              estilos.guia,
+              classeDaGuia[guia],
+              trilha?.passagens.includes(nivel) && estilos.passagemDaTrilha,
+              trilha?.chegada && nivel === ultimaGuia && estilos.chegadaDaTrilha,
+            )}
+          />
         ))}
       </span>
 
       <span className={estilos.conteudo}>
+        {aoAlternar && temFilhos ? (
+          <span
+            className={juntarClasses(estilos.alternador, recolhida && estilos.alternadorRecolhido)}
+            aria-hidden="true"
+            title={recolhida ? 'Mostrar as etapas abaixo' : 'Recolher as etapas abaixo'}
+            onClick={alternar}
+          >
+            <ChevronRight size={12} strokeWidth={2.5} />
+          </span>
+        ) : null}
         <span className={estilos.textos}>
           <span className={estilos.cabecaDaEtapa}>
             <span className={estilos.nome}>{nomeDoNo(no)}</span>
@@ -145,6 +242,12 @@ function Etapa({ linha, ordem, selecionada, alterada, aoSelecionar }: EtapaProps
               <Selo tom="info" className={estilos.seloDaEtapa}>
                 Mudou
               </Selo>
+            ) : null}
+            {ocultas > 0 ? (
+              <span className={estilos.ocultas}>
+                <span className="numeros">{formatarNumero(ocultas)}</span>{' '}
+                {pluralizar(ocultas, 'etapa recolhida', 'etapas recolhidas')}
+              </span>
             ) : null}
           </span>
           {alvo || no.lacos > 1 ? (

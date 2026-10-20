@@ -1,0 +1,30 @@
+.conteudo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--espaco-2);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  border-radius: var(--raio-sm);
+  color: var(--destaque);
+  font-weight: var(--peso-medio);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--destaque) 40%, transparent);
+  text-underline-offset: 3px;
+}
+
+.link:focus-visible {
+  outline: none;
+  box-shadow: var(--anel-foco);
+}
+
+@media (hover: hover) {
+  .link:hover {
+    text-decoration-color: currentColor;
+  }
+}

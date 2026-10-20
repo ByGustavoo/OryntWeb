@@ -27,7 +27,7 @@ const VALIDADE_REDEFINICAO_MS = 10 * 60_000;
 const ESPERA_REENVIO_MS = ESPERA_REENVIO_SEGUNDOS * 1000;
 
 const pedidos = new Map<string, PedidoSimulado>();
-const redefinicoes = new Map<string, number>();
+const redefinicoes = new Map<string, { email: string; expiraEm: number }>();
 const ouvintes = new Set<() => void>();
 let chaveDaUltimaMensagem: string | null = null;
 let ultimaMensagem: MensagemSimulada | null = null;
@@ -90,15 +90,15 @@ export function conferirCodigoSimulado(email: string, codigo: string, agora: num
   return pedido.tentativas >= LIMITE_TENTATIVAS_CODIGO ? 'ESGOTADO' : 'RECUSADO';
 }
 
-export function abrirRedefinicaoSimulada(agora: number): string {
+export function abrirRedefinicaoSimulada(email: string, agora: number): string {
   const token = crypto.randomUUID();
-  redefinicoes.set(token, agora + VALIDADE_REDEFINICAO_MS);
+  redefinicoes.set(token, { email: chaveDoEmail(email), expiraEm: agora + VALIDADE_REDEFINICAO_MS });
   return token;
 }
 
-export function redefinicaoSimuladaValida(token: string, agora: number): boolean {
-  const expiraEm = redefinicoes.get(token);
-  return expiraEm !== undefined && agora < expiraEm;
+export function emailDaRedefinicaoSimulada(token: string, agora: number): string | null {
+  const redefinicao = redefinicoes.get(token);
+  return redefinicao !== undefined && agora < redefinicao.expiraEm ? redefinicao.email : null;
 }
 
 export function encerrarRedefinicaoSimulada(token: string): void {
@@ -113,7 +113,7 @@ export function expirarCodigoSimulado(): void {
 }
 
 export function expirarRedefinicaoSimulada(): void {
-  redefinicoes.forEach((_, token) => redefinicoes.set(token, 0));
+  redefinicoes.forEach((redefinicao, token) => redefinicoes.set(token, { ...redefinicao, expiraEm: 0 }));
 }
 
 export function reiniciarRecuperacaoSimulada(): void {

@@ -13,6 +13,7 @@ import { BotaoDeAlteracao } from '@/componentes/usuarios/BotaoDeAlteracao';
 import { DetalhePapel } from '@/componentes/usuarios/DetalhePapel';
 import { iconeDaSituacaoPapel } from '@/componentes/usuarios/SeloSituacaoPapel';
 import { EsqueletoPapeis, TabelaPapeis } from '@/componentes/usuarios/TabelaPapeis';
+import { PermissaoDasAlteracoes } from '@/componentes/usuarios/BotaoDeAlteracao';
 import { Botao, ConteudoAssincrono, EstadoVazio, Nota, Paginacao, Painel } from '@/componentes/ui';
 import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
 import { useFiltrosPapeis } from '@/ganchos/useFiltrosPapeis';
@@ -97,7 +98,7 @@ export default function PaginaPapeis() {
   const [criacao, setCriacao] = useState<Capacidade | null>(null);
 
   return (
-    <>
+    <PermissaoDasAlteracoes.Provider value="BANCO_PAPEIS_ALTERAR">
       <CabecalhoPagina
         titulo="Papéis"
         descricao={
@@ -124,7 +125,7 @@ export default function PaginaPapeis() {
       ) : (
         <PainelSemConexao />
       )}
-    </>
+    </PermissaoDasAlteracoes.Provider>
   );
 }
 

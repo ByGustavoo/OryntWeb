@@ -51,7 +51,7 @@ import {
   pluralizar,
 } from '@/utilitarios/formatacao';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
-import { DonoDoObjeto, ItemConsulta, Medida, SecaoCopiavel } from './DetalheObjeto';
+import { DonoDoObjeto, IndiceDoDetalhe, ItemConsulta, Medida, SecaoCopiavel } from './DetalheObjeto';
 import estilos from './DetalheObjeto.module.css';
 import { GraficoCrescimento } from './GraficoCrescimento';
 import { NomeObjeto } from './NomeObjeto';
@@ -108,7 +108,7 @@ export function DetalheTabela({
       aoFechar={aoFechar}
       titulo="Detalhes da tabela"
       descricao={exibida ? descreverTabela(exibida) : undefined}
-      tamanho="lg"
+      tamanho="xl"
       focoAoFechar={focoAoFechar}
       rodape={
         <div className={estilos.navegacao}>
@@ -193,6 +193,8 @@ function CorpoDetalhe({ tabela, contexto, simulada, ...acoes }: CorpoDetalheProp
         </div>
       </header>
 
+      <IndiceDoDetalhe raiz={raiz} />
+
       {avisos.map((aviso) => (
         <Nota key={aviso.texto} tom={aviso.tom} icone={aviso.tom === 'erro' ? OctagonAlert : TriangleAlert}>
           {aviso.texto}
@@ -251,7 +253,7 @@ function CorpoDetalhe({ tabela, contexto, simulada, ...acoes }: CorpoDetalheProp
 function SecaoCrescimento({ tabela }: { tabela: TabelaDTO }) {
   const resumo = resumirCrescimento(tabela);
   return (
-    <section className={estilos.secao} aria-labelledby="titulo-crescimento-tabela">
+    <section className={estilos.secao} aria-labelledby="titulo-crescimento-tabela" data-indice="Crescimento">
       <h3 className={estilos.tituloSecao} id="titulo-crescimento-tabela">
         Crescimento em 30 dias
       </h3>
@@ -274,7 +276,7 @@ function SecaoCrescimento({ tabela }: { tabela: TabelaDTO }) {
 
 function SecaoEspaco({ tabela }: { tabela: TabelaDTO }) {
   return (
-    <section className={estilos.secao} aria-labelledby="titulo-espaco-tabela">
+    <section className={estilos.secao} aria-labelledby="titulo-espaco-tabela" data-indice="Espaço">
       <h3 className={estilos.tituloSecao} id="titulo-espaco-tabela">
         Espaço em disco
       </h3>
@@ -312,7 +314,7 @@ function SecaoManutencao({ tabela, contexto }: { tabela: TabelaDTO; contexto: Co
   const ultimoAnalyze = maisRecente(tabela.ultimoAnalyze, tabela.ultimoAutoanalyze);
 
   return (
-    <section className={estilos.secao} aria-labelledby="titulo-manutencao-tabela">
+    <section className={estilos.secao} aria-labelledby="titulo-manutencao-tabela" data-indice="Manutenção">
       <h3 className={estilos.tituloSecao} id="titulo-manutencao-tabela">
         Linhas e manutenção
       </h3>
@@ -362,7 +364,7 @@ function SecaoAutovacuum({ tabela }: { tabela: TabelaDTO }) {
   const restaurar = comandoQueRestauraOsAjustes(tabela);
 
   return (
-    <section className={estilos.secao} aria-labelledby="titulo-autovacuum-tabela">
+    <section className={estilos.secao} aria-labelledby="titulo-autovacuum-tabela" data-indice="Autovacuum">
       <h3 className={estilos.tituloSecao} id="titulo-autovacuum-tabela">
         Autovacuum desta tabela
       </h3>
@@ -416,7 +418,7 @@ function SecaoUso({ tabela }: { tabela: TabelaDTO }) {
   const linhasLidas = tabela.linhasLidasSequencialmente + tabela.linhasLidasPorIndice;
 
   return (
-    <section className={estilos.secao} aria-labelledby="titulo-uso-tabela">
+    <section className={estilos.secao} aria-labelledby="titulo-uso-tabela" data-indice="Uso">
       <h3 className={estilos.tituloSecao} id="titulo-uso-tabela">
         Uso nos últimos 30 dias
       </h3>
@@ -450,7 +452,7 @@ function SecaoConsultas({
   aoVerPlano,
 }: Pick<AcoesDoDetalhe, 'aoVerHistorico' | 'aoVerPlano'> & { tabela: TabelaDTO }) {
   return (
-    <section className={estilos.secao} aria-labelledby="titulo-consultas-tabela">
+    <section className={estilos.secao} aria-labelledby="titulo-consultas-tabela" data-indice="Consultas">
       <h3 className={estilos.tituloSecao} id="titulo-consultas-tabela">
         Consultas cujo plano lê a tabela{' '}
         <span className={`${estilos.contagem} numeros`}>{formatarNumero(tabela.leituras.length)}</span>
@@ -497,7 +499,7 @@ function SecaoParticoes({ tabela, contexto }: { tabela: TabelaDTO; contexto: Con
   const estrategia = { RANGE: 'faixas', LIST: 'listas de valores', HASH: 'hash' }[particionamento.estrategia];
 
   return (
-    <section className={estilos.secao} aria-labelledby="titulo-particoes-tabela">
+    <section className={estilos.secao} aria-labelledby="titulo-particoes-tabela" data-indice="Partições">
       <h3 className={estilos.tituloSecao} id="titulo-particoes-tabela">
         Partições <span className={`${estilos.contagem} numeros`}>{formatarNumero(particionamento.particoes.length)}</span>
       </h3>
@@ -547,7 +549,7 @@ function SecaoColunas({ tabela }: { tabela: TabelaDTO }) {
   const chave = new Set(tabela.chavePrimaria ?? []);
 
   return (
-    <section className={estilos.secao} aria-labelledby="titulo-colunas-tabela">
+    <section className={estilos.secao} aria-labelledby="titulo-colunas-tabela" data-indice="Colunas">
       <h3 className={estilos.tituloSecao} id="titulo-colunas-tabela">
         Colunas <span className={`${estilos.contagem} numeros`}>{formatarNumero(tabela.colunas.length)}</span>
       </h3>
@@ -587,7 +589,7 @@ function SecaoIndices({
   aoVerIndices,
 }: Pick<AcoesDoDetalhe, 'aoAbrirIndice' | 'aoVerIndices'> & { tabela: TabelaDTO }) {
   return (
-    <section className={estilos.secao} aria-labelledby="titulo-indices-tabela">
+    <section className={estilos.secao} aria-labelledby="titulo-indices-tabela" data-indice="Índices">
       <div className={estilos.cabecalhoSecao}>
         <h3 className={estilos.tituloSecao} id="titulo-indices-tabela">
           Índices <span className={`${estilos.contagem} numeros`}>{formatarNumero(tabela.indices.length)}</span>
@@ -639,7 +641,7 @@ function descreverIndice(indice: IndiceDaTabelaDTO): string {
 
 function SecaoGatilhos({ tabela, aoAbrirFuncao }: Pick<AcoesDoDetalhe, 'aoAbrirFuncao'> & { tabela: TabelaDTO }) {
   return (
-    <section className={estilos.secao} aria-labelledby="titulo-gatilhos-tabela">
+    <section className={estilos.secao} aria-labelledby="titulo-gatilhos-tabela" data-indice="Gatilhos">
       <h3 className={estilos.tituloSecao} id="titulo-gatilhos-tabela">
         Gatilhos <span className={`${estilos.contagem} numeros`}>{formatarNumero(tabela.gatilhos.length)}</span>
       </h3>
@@ -679,7 +681,7 @@ function SecaoGatilhos({ tabela, aoAbrirFuncao }: Pick<AcoesDoDetalhe, 'aoAbrirF
 
 function SecaoVisoes({ tabela, aoAbrirVisao }: Pick<AcoesDoDetalhe, 'aoAbrirVisao'> & { tabela: TabelaDTO }) {
   return (
-    <section className={estilos.secao} aria-labelledby="titulo-visoes-tabela">
+    <section className={estilos.secao} aria-labelledby="titulo-visoes-tabela" data-indice="Visões">
       <h3 className={estilos.tituloSecao} id="titulo-visoes-tabela">
         Visões que dependem dela <span className={`${estilos.contagem} numeros`}>{formatarNumero(tabela.usadaPor.length)}</span>
       </h3>

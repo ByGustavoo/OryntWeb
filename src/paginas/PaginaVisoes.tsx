@@ -17,6 +17,7 @@ import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
 import { useFiltrosVisoes } from '@/ganchos/useFiltrosVisoes';
 import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
 import { useVerHistorico } from '@/ganchos/useVerHistorico';
+import { usePermissao } from '@/ganchos/usePermissao';
 import { usePermissoesSobDemanda } from '@/ganchos/usePermissoesSobDemanda';
 import { useObjetoDaChegada, useVerObjeto } from '@/ganchos/useVerObjeto';
 import { useVerPlano } from '@/ganchos/useVerPlano';
@@ -117,7 +118,8 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
   const ultimaAberta = useRef<string | null>(null);
   const [busca, setBusca] = useState(filtros.busca);
   const [aberta, setAberta] = useState<VisaoDTO | null>(null);
-  const permissoes = usePermissoesSobDemanda(aberta !== null);
+  const veAcessos = usePermissao('BANCO_ACESSOS_VER');
+  const permissoes = usePermissoesSobDemanda(aberta !== null && veAcessos);
   const [abertaPeloPainel, setAbertaPeloPainel] = useState(false);
 
   const lista = useDadosAssincronos((signal) => servicoObjetos.listarVisoes(signal), []);
@@ -344,7 +346,9 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
         aoPercorrer={percorrer}
         aoAbrirObjeto={(id: string) => (conhecidas.has(id) ? abrirObjeto(id) : irParaObjeto.tabela(id))}
         aoAbrirPapel={irParaObjeto.papel}
-        quemAcessa={(id) => <QuemAcessa objetoId={id} permissoes={permissoes} aoVer={irParaObjeto.permissoesDoObjeto} />}
+        quemAcessa={
+          veAcessos ? (id) => <QuemAcessa objetoId={id} permissoes={permissoes} aoVer={irParaObjeto.permissoesDoObjeto} /> : undefined
+        }
         aoVerHistorico={(consulta: ConsultaDetalhadaDTO) => irParaOHistorico(consulta.id, PERIODO_DAS_LEITURAS)}
         aoVerPlano={(consulta: ConsultaDetalhadaDTO) => irParaOPlano(consulta.id)}
         aoFechar={() => setAberta(null)}

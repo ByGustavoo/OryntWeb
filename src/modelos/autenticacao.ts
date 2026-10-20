@@ -1,3 +1,5 @@
+import type { CodigoPermissao, PerfilConta } from './administracao';
+
 export interface CredenciaisAcessoDTO {
   email: string;
   senha: string;
@@ -7,7 +9,24 @@ export interface UsuarioDTO {
   id: string;
   nome: string;
   email: string;
+  perfil: PerfilConta;
+  permissoes: CodigoPermissao[];
   simulado: boolean;
+}
+
+export interface VerificacaoConviteDTO {
+  token: string;
+}
+
+export interface ConviteValidoDTO {
+  nome: string;
+  email: string;
+  expiraEm: string;
+}
+
+export interface AceiteConviteDTO {
+  token: string;
+  senha: string;
 }
 
 export interface PedidoRecuperacaoDTO {

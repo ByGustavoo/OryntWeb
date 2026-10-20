@@ -10,6 +10,7 @@ import { caminhos } from './caminhos';
 const LayoutAcesso = lazy(() => import('@/layouts/LayoutAcesso'));
 const PaginaLogin = lazy(() => import('@/paginas/PaginaLogin'));
 const PaginaRecuperacaoSenha = lazy(() => import('@/paginas/PaginaRecuperacaoSenha'));
+const PaginaAtivarConta = lazy(() => import('@/paginas/PaginaAtivarConta'));
 const PaginaDashboard = lazy(() => import('@/paginas/PaginaDashboard'));
 const PaginaResumoRelatorio = lazy(() => import('@/paginas/PaginaResumoRelatorio'));
 const PaginaExportacaoRelatorio = lazy(() => import('@/paginas/PaginaExportacaoRelatorio'));
@@ -25,6 +26,8 @@ const PaginaPapeis = lazy(() => import('@/paginas/PaginaPapeis'));
 const PaginaSessoes = lazy(() => import('@/paginas/PaginaSessoes'));
 const PaginaPermissoes = lazy(() => import('@/paginas/PaginaPermissoes'));
 const PaginaAlteracoes = lazy(() => import('@/paginas/PaginaAlteracoes'));
+const PaginaAdministracaoUsuarios = lazy(() => import('@/paginas/PaginaAdministracaoUsuarios'));
+const PaginaAdministracaoAuditoria = lazy(() => import('@/paginas/PaginaAdministracaoAuditoria'));
 const PaginaFuncionalidadePlanejada = lazy(() => import('@/paginas/PaginaFuncionalidadePlanejada'));
 const PaginaConfiguracoes = lazy(() => import('@/paginas/PaginaConfiguracoes'));
 const PaginaNaoEncontrada = lazy(() => import('@/paginas/PaginaNaoEncontrada'));
@@ -43,6 +46,16 @@ export function RotasAplicacao() {
           <Route path={caminhos.login} element={<PaginaLogin />} />
           <Route path={caminhos.recuperarSenha} element={<PaginaRecuperacaoSenha />} />
         </Route>
+      </Route>
+
+      <Route
+        element={
+          <Suspense fallback={null}>
+            <LayoutAcesso />
+          </Suspense>
+        }
+      >
+        <Route path={caminhos.ativarConta} element={<PaginaAtivarConta />} />
       </Route>
 
       <Route element={<RotaAutenticada />}>
@@ -64,6 +77,9 @@ export function RotasAplicacao() {
             <Route path={caminhos.usuariosSessoes} element={<PaginaSessoes />} />
             <Route path={caminhos.usuariosPermissoes} element={<PaginaPermissoes />} />
             <Route path={caminhos.usuariosAlteracoes} element={<PaginaAlteracoes />} />
+            <Route path={caminhos.administracaoUsuarios} element={<PaginaAdministracaoUsuarios />} />
+            <Route path={caminhos.administracaoAuditoria} element={<PaginaAdministracaoAuditoria />} />
+            <Route path={caminhos.administracao} element={<Navigate to={caminhos.administracaoUsuarios} replace />} />
             {funcionalidades.map((funcionalidade) => (
               <Route
                 key={funcionalidade.destino}

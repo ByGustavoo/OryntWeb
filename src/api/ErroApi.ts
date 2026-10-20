@@ -5,6 +5,7 @@ export type TipoErroApi =
   | 'TEMPO_ESGOTADO'
   | 'VALIDACAO'
   | 'NAO_AUTORIZADO'
+  | 'PROIBIDO'
   | 'NAO_ENCONTRADO'
   | 'CONFLITO'
   | 'LIMITE_EXCEDIDO'
@@ -38,7 +39,8 @@ export function ehCancelamento(erro: unknown): boolean {
 
 export function tipoPorStatus(status: number): TipoErroApi {
   if (status === 400 || status === 422) return 'VALIDACAO';
-  if (status === 401 || status === 403) return 'NAO_AUTORIZADO';
+  if (status === 401) return 'NAO_AUTORIZADO';
+  if (status === 403) return 'PROIBIDO';
   if (status === 404) return 'NAO_ENCONTRADO';
   if (status === 409) return 'CONFLITO';
   if (status === 429) return 'LIMITE_EXCEDIDO';

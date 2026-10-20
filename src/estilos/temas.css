@@ -22,6 +22,7 @@
   --borda: #e4e7ec;
   --borda-forte: #cdd2da;
   --borda-controle: #7b8494;
+  --guia-arvore: #aab1bd;
 
   --texto: #0f1115;
   --texto-secundario: #4a5160;
@@ -95,6 +96,7 @@
     --borda: #1f1f1f;
     --borda-forte: #2e2e2e;
     --borda-controle: #6e6e6e;
+    --guia-arvore: #4d4d4d;
 
     --texto: #fafafa;
     --texto-secundario: #a3a3a3;

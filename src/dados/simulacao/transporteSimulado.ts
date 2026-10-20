@@ -1,6 +1,8 @@
 import { rotasApi } from '@/api/rotasApi';
 import type { MetodoHttp, RequisicaoTransporte, RespostaTransporte, Transporte } from '@/api/transporte';
 import { ambiente } from '@/configuracoes/ambiente';
+import type { CodigoPermissao } from '@/modelos/administracao';
+import { permissoesDasOperacoes } from '@/regras/permissoesConta';
 import {
   definirCenarioConexao,
   definirDadosVazios,
@@ -10,7 +12,24 @@ import {
   deveFalhar,
   latenciaConfigurada,
 } from './controles';
-import { buscarUsuarioAtual, entrar, esperaDoAcesso, sair, sairDoAcessoSimulado } from './manipuladores/autenticacao';
+import { encerrarAcessoSimulado } from './acessoSimulado';
+import { restaurarAuditoriaSimulada } from './auditoriaSimulada';
+import type { ContextoSimulado, ExigenciaDaRota } from './autorizacaoSimulada';
+import { autorizar } from './autorizacaoSimulada';
+import { restaurarContasSimuladas } from './contasSimuladas';
+import { reiniciarConvitesSimulados } from './convitesSimulados';
+import {
+  criarConta,
+  desbloquearConta,
+  editarConta,
+  encerrarSessoes,
+  excluirConta,
+  listarContas,
+  mudarPermissoes,
+  reenviarConvite,
+} from './manipuladores/administracao';
+import { listarAuditoria } from './manipuladores/auditoria';
+import { buscarUsuarioAtual, entrar, esperaDoAcesso, registrarAcessoATela, sair, sairDoAcessoSimulado } from './manipuladores/autenticacao';
 import {
   ativarConexao,
   buscarConexaoAtual,
@@ -23,6 +42,7 @@ import {
   testarConexao,
 } from './manipuladores/conexoes';
 import { buscarHistoricoDaConsulta, buscarPlanoDaConsulta, listarConsultas } from './manipuladores/consultas';
+import { aceitarConvite, verificarConvite } from './manipuladores/convite';
 import { buscarAtividade, buscarConsultas, buscarIndicadores } from './manipuladores/dashboard';
 import { listarFuncoes, listarIndices, listarTabelas, listarVisoes } from './manipuladores/objetos';
 import { redefinirSenha, solicitarRecuperacao, verificarCodigoRecuperacao } from './manipuladores/recuperacaoSenha';
@@ -35,10 +55,19 @@ import { expirarCodigoSimulado, expirarRedefinicaoSimulada } from './recuperacao
 import { rotaInexistente, servicoIndisponivel } from './resposta';
 import { encerrarSessaoSimulada } from './sessaoSimulada';
 
+type Manipulador = (
+  requisicao: RequisicaoTransporte,
+  agora: Date,
+  parametros: Record<string, string>,
+  contexto: ContextoSimulado,
+) => RespostaTransporte | Promise<RespostaTransporte>;
+
 interface Rota {
   metodo: MetodoHttp;
   caminho: string;
-  manipulador: (requisicao: RequisicaoTransporte, agora: Date, parametros: Record<string, string>) => RespostaTransporte;
+  manipulador: Manipulador;
+  acesso: ExigenciaDaRota;
+  descricao?: string;
   espera?: () => number;
 }
 
@@ -48,6 +77,7 @@ interface RotaEncontrada {
 }
 
 const MARCA_PARAMETRO = ':';
+const ID = `${MARCA_PARAMETRO}id`;
 
 const LATENCIA_MINIMA_MS = 200;
 const LATENCIA_MAXIMA_MS = 500;
@@ -56,52 +86,247 @@ function esperaDaAlteracao(): number {
   return 600 + Math.random() * 500;
 }
 
+function esperaDaAdministracao(): number {
+  return 450 + Math.random() * 350;
+}
+
+export function permissoesDaAlteracao(requisicao: RequisicaoTransporte): CodigoPermissao[] {
+  const corpo = requisicao.corpo && typeof requisicao.corpo === 'object' ? (requisicao.corpo as Record<string, unknown>) : {};
+  const operacoes: unknown[] = Array.isArray(corpo.operacoes) ? corpo.operacoes : [];
+  return permissoesDasOperacoes(
+    operacoes.map((operacao) => (operacao && typeof operacao === 'object' ? (operacao as Record<string, unknown>).tipo : undefined)),
+  );
+}
+
 const rotas: Rota[] = [
-  { metodo: 'POST', caminho: rotasApi.autenticacao.sessao, manipulador: entrar, espera: esperaDoAcesso },
-  { metodo: 'GET', caminho: rotasApi.autenticacao.sessao, manipulador: buscarUsuarioAtual },
-  { metodo: 'DELETE', caminho: rotasApi.autenticacao.sessao, manipulador: sair },
-  { metodo: 'POST', caminho: rotasApi.autenticacao.recuperacao, manipulador: solicitarRecuperacao, espera: esperaDoAcesso },
+  { metodo: 'POST', caminho: rotasApi.autenticacao.sessao, manipulador: entrar, acesso: 'PUBLICA', espera: esperaDoAcesso },
+  { metodo: 'GET', caminho: rotasApi.autenticacao.sessao, manipulador: buscarUsuarioAtual, acesso: 'PUBLICA' },
+  { metodo: 'DELETE', caminho: rotasApi.autenticacao.sessao, manipulador: sair, acesso: 'PUBLICA' },
+  {
+    metodo: 'POST',
+    caminho: rotasApi.autenticacao.recuperacao,
+    manipulador: solicitarRecuperacao,
+    acesso: 'PUBLICA',
+    espera: esperaDoAcesso,
+  },
   {
     metodo: 'POST',
     caminho: rotasApi.autenticacao.verificacaoRecuperacao,
     manipulador: verificarCodigoRecuperacao,
+    acesso: 'PUBLICA',
     espera: esperaDoAcesso,
   },
-  { metodo: 'POST', caminho: rotasApi.autenticacao.novaSenha, manipulador: redefinirSenha, espera: esperaDoAcesso },
-  { metodo: 'POST', caminho: rotasApi.conexoes.teste, manipulador: testarConexao, espera: esperaDaTentativa },
-  { metodo: 'POST', caminho: rotasApi.conexoes.lista, manipulador: criarConexao, espera: esperaDaTentativa },
-  { metodo: 'GET', caminho: rotasApi.conexoes.lista, manipulador: listarConexoes },
-  { metodo: 'GET', caminho: rotasApi.conexoes.atual, manipulador: buscarConexaoAtual },
-  { metodo: 'DELETE', caminho: rotasApi.conexoes.atual, manipulador: encerrarConexao },
+  { metodo: 'POST', caminho: rotasApi.autenticacao.novaSenha, manipulador: redefinirSenha, acesso: 'PUBLICA', espera: esperaDoAcesso },
   {
     metodo: 'POST',
-    caminho: rotasApi.conexoes.ativacao(`${MARCA_PARAMETRO}id`),
-    manipulador: ativarConexao,
+    caminho: rotasApi.autenticacao.verificacaoConvite,
+    manipulador: verificarConvite,
+    acesso: 'PUBLICA',
+    espera: esperaDoAcesso,
+  },
+  { metodo: 'POST', caminho: rotasApi.autenticacao.convite, manipulador: aceitarConvite, acesso: 'PUBLICA', espera: esperaDoAcesso },
+  {
+    metodo: 'POST',
+    caminho: rotasApi.conexoes.teste,
+    manipulador: testarConexao,
+    acesso: ['CONEXOES_USAR'],
+    descricao: 'testar uma conexão',
     espera: esperaDaTentativa,
   },
-  { metodo: 'PATCH', caminho: rotasApi.conexoes.salva(`${MARCA_PARAMETRO}id`), manipulador: renomearConexao },
-  { metodo: 'DELETE', caminho: rotasApi.conexoes.salva(`${MARCA_PARAMETRO}id`), manipulador: excluirConexao },
-  { metodo: 'GET', caminho: rotasApi.dashboard.indicadores, manipulador: buscarIndicadores },
-  { metodo: 'GET', caminho: rotasApi.dashboard.atividade, manipulador: buscarAtividade },
-  { metodo: 'GET', caminho: rotasApi.dashboard.consultas, manipulador: buscarConsultas },
-  { metodo: 'GET', caminho: rotasApi.consultas.lista, manipulador: listarConsultas },
+  {
+    metodo: 'POST',
+    caminho: rotasApi.conexoes.lista,
+    manipulador: criarConexao,
+    acesso: ['CONEXOES_USAR'],
+    descricao: 'conectar a um banco novo',
+    espera: esperaDaTentativa,
+  },
+  { metodo: 'GET', caminho: rotasApi.conexoes.lista, manipulador: listarConexoes, acesso: 'AUTENTICADA' },
+  { metodo: 'GET', caminho: rotasApi.conexoes.atual, manipulador: buscarConexaoAtual, acesso: 'AUTENTICADA' },
+  { metodo: 'DELETE', caminho: rotasApi.conexoes.atual, manipulador: encerrarConexao, acesso: 'AUTENTICADA' },
+  {
+    metodo: 'POST',
+    caminho: rotasApi.conexoes.ativacao(ID),
+    manipulador: ativarConexao,
+    acesso: ['CONEXOES_USAR'],
+    descricao: 'conectar a uma conexão salva',
+    espera: esperaDaTentativa,
+  },
+  {
+    metodo: 'PATCH',
+    caminho: rotasApi.conexoes.salva(ID),
+    manipulador: renomearConexao,
+    acesso: ['CONEXOES_USAR'],
+    descricao: 'renomear uma conexão salva',
+  },
+  {
+    metodo: 'DELETE',
+    caminho: rotasApi.conexoes.salva(ID),
+    manipulador: excluirConexao,
+    acesso: ['CONEXOES_USAR'],
+    descricao: 'excluir uma conexão salva',
+  },
   {
     metodo: 'GET',
-    caminho: rotasApi.consultas.historico(`${MARCA_PARAMETRO}id`),
-    manipulador: buscarHistoricoDaConsulta,
+    caminho: rotasApi.dashboard.indicadores,
+    manipulador: buscarIndicadores,
+    acesso: ['DASHBOARD_VER'],
+    descricao: 'ler os indicadores do dashboard',
   },
-  { metodo: 'GET', caminho: rotasApi.consultas.plano(`${MARCA_PARAMETRO}id`), manipulador: buscarPlanoDaConsulta },
-  { metodo: 'GET', caminho: rotasApi.objetos.visoes, manipulador: listarVisoes },
-  { metodo: 'GET', caminho: rotasApi.objetos.indices, manipulador: listarIndices },
-  { metodo: 'GET', caminho: rotasApi.objetos.tabelas, manipulador: listarTabelas },
-  { metodo: 'GET', caminho: rotasApi.objetos.funcoes, manipulador: listarFuncoes },
-  { metodo: 'GET', caminho: rotasApi.usuarios.papeis, manipulador: listarPapeis },
-  { metodo: 'GET', caminho: rotasApi.usuarios.sessoes, manipulador: listarSessoes },
-  { metodo: 'GET', caminho: rotasApi.usuarios.permissoes, manipulador: listarPermissoes },
-  { metodo: 'GET', caminho: rotasApi.usuarios.alteracoes, manipulador: listarAlteracoes },
-  { metodo: 'POST', caminho: rotasApi.usuarios.alteracoes, manipulador: aplicarAlteracao, espera: esperaDaAlteracao },
-  { metodo: 'GET', caminho: rotasApi.relatorios.resumo, manipulador: buscarResumoRelatorio },
-  { metodo: 'GET', caminho: rotasApi.sistema.versao, manipulador: buscarVersao },
+  {
+    metodo: 'GET',
+    caminho: rotasApi.dashboard.atividade,
+    manipulador: buscarAtividade,
+    acesso: ['DASHBOARD_VER'],
+    descricao: 'ler a atividade do dashboard',
+  },
+  {
+    metodo: 'GET',
+    caminho: rotasApi.dashboard.consultas,
+    manipulador: buscarConsultas,
+    acesso: ['DASHBOARD_VER'],
+    descricao: 'ler as consultas do dashboard',
+  },
+  {
+    metodo: 'GET',
+    caminho: rotasApi.consultas.lista,
+    manipulador: listarConsultas,
+    acesso: ['CONSULTAS_VER'],
+    descricao: 'listar as consultas SQL',
+  },
+  {
+    metodo: 'GET',
+    caminho: rotasApi.consultas.historico(ID),
+    manipulador: buscarHistoricoDaConsulta,
+    acesso: ['CONSULTAS_VER'],
+    descricao: 'ler o histórico de uma consulta',
+  },
+  {
+    metodo: 'GET',
+    caminho: rotasApi.consultas.plano(ID),
+    manipulador: buscarPlanoDaConsulta,
+    acesso: ['CONSULTAS_VER'],
+    descricao: 'ler o plano de execução de uma consulta',
+  },
+  { metodo: 'GET', caminho: rotasApi.objetos.visoes, manipulador: listarVisoes, acesso: ['OBJETOS_VER'], descricao: 'listar as visões' },
+  { metodo: 'GET', caminho: rotasApi.objetos.indices, manipulador: listarIndices, acesso: ['OBJETOS_VER'], descricao: 'listar os índices' },
+  { metodo: 'GET', caminho: rotasApi.objetos.tabelas, manipulador: listarTabelas, acesso: ['OBJETOS_VER'], descricao: 'listar as tabelas' },
+  { metodo: 'GET', caminho: rotasApi.objetos.funcoes, manipulador: listarFuncoes, acesso: ['OBJETOS_VER'], descricao: 'listar as funções' },
+  {
+    metodo: 'GET',
+    caminho: rotasApi.usuarios.papeis,
+    manipulador: listarPapeis,
+    acesso: ['BANCO_ACESSOS_VER'],
+    descricao: 'listar os papéis do banco',
+  },
+  {
+    metodo: 'GET',
+    caminho: rotasApi.usuarios.sessoes,
+    manipulador: listarSessoes,
+    acesso: ['BANCO_ACESSOS_VER'],
+    descricao: 'listar as sessões do banco',
+  },
+  {
+    metodo: 'GET',
+    caminho: rotasApi.usuarios.permissoes,
+    manipulador: listarPermissoes,
+    acesso: ['BANCO_ACESSOS_VER'],
+    descricao: 'ler as permissões do banco',
+  },
+  {
+    metodo: 'GET',
+    caminho: rotasApi.usuarios.alteracoes,
+    manipulador: listarAlteracoes,
+    acesso: ['BANCO_ACESSOS_VER'],
+    descricao: 'listar as alterações do banco',
+  },
+  {
+    metodo: 'POST',
+    caminho: rotasApi.usuarios.alteracoes,
+    manipulador: aplicarAlteracao,
+    acesso: permissoesDaAlteracao,
+    descricao: 'alterar papéis ou permissões do banco',
+    espera: esperaDaAlteracao,
+  },
+  {
+    metodo: 'GET',
+    caminho: rotasApi.relatorios.resumo,
+    manipulador: buscarResumoRelatorio,
+    acesso: ['RELATORIOS_VER'],
+    descricao: 'ler um relatório',
+  },
+  { metodo: 'GET', caminho: rotasApi.sistema.versao, manipulador: buscarVersao, acesso: 'AUTENTICADA' },
+  {
+    metodo: 'GET',
+    caminho: rotasApi.administracao.contas,
+    manipulador: listarContas,
+    acesso: ['ADMIN_USUARIOS'],
+    descricao: 'listar as contas do Orynt',
+  },
+  {
+    metodo: 'POST',
+    caminho: rotasApi.administracao.contas,
+    manipulador: criarConta,
+    acesso: ['ADMIN_USUARIOS'],
+    descricao: 'criar uma conta',
+    espera: esperaDaAdministracao,
+  },
+  {
+    metodo: 'PATCH',
+    caminho: rotasApi.administracao.conta(ID),
+    manipulador: editarConta,
+    acesso: ['ADMIN_USUARIOS'],
+    descricao: 'editar uma conta',
+    espera: esperaDaAdministracao,
+  },
+  {
+    metodo: 'DELETE',
+    caminho: rotasApi.administracao.conta(ID),
+    manipulador: excluirConta,
+    acesso: ['ADMIN_USUARIOS'],
+    descricao: 'excluir uma conta',
+    espera: esperaDaAdministracao,
+  },
+  {
+    metodo: 'PUT',
+    caminho: rotasApi.administracao.permissoes(ID),
+    manipulador: mudarPermissoes,
+    acesso: ['ADMIN_USUARIOS'],
+    descricao: 'mudar as permissões de uma conta',
+    espera: esperaDaAdministracao,
+  },
+  {
+    metodo: 'POST',
+    caminho: rotasApi.administracao.convite(ID),
+    manipulador: reenviarConvite,
+    acesso: ['ADMIN_USUARIOS'],
+    descricao: 'reenviar um convite',
+    espera: esperaDaAdministracao,
+  },
+  {
+    metodo: 'DELETE',
+    caminho: rotasApi.administracao.sessoes(ID),
+    manipulador: encerrarSessoes,
+    acesso: ['ADMIN_USUARIOS'],
+    descricao: 'encerrar as sessões de uma conta',
+    espera: esperaDaAdministracao,
+  },
+  {
+    metodo: 'DELETE',
+    caminho: rotasApi.administracao.bloqueio(ID),
+    manipulador: desbloquearConta,
+    acesso: ['ADMIN_USUARIOS'],
+    descricao: 'desbloquear uma conta',
+    espera: esperaDaAdministracao,
+  },
+  {
+    metodo: 'GET',
+    caminho: rotasApi.auditoria.eventos,
+    manipulador: listarAuditoria,
+    acesso: ['ADMIN_AUDITORIA'],
+    descricao: 'consultar a auditoria',
+  },
+  { metodo: 'POST', caminho: rotasApi.auditoria.acessos, manipulador: registrarAcessoATela, acesso: 'AUTENTICADA', espera: () => 0 },
 ];
 
 function lerParametros(modelo: string, caminho: string): Record<string, string> | null {
@@ -142,6 +367,7 @@ function esperar(milissegundos: number, signal: AbortSignal): Promise<void> {
 }
 
 function latenciaDaRota(rota: Rota | undefined): number {
+  if (rota?.caminho === rotasApi.auditoria.acessos) return 0;
   const configurada = latenciaConfigurada();
   if (configurada !== null) return configurada;
   if (rota?.espera) return rota.espera();
@@ -163,17 +389,29 @@ function completarErro(resposta: RespostaTransporte, caminho: string): RespostaT
   return { ...resposta, corpo: { ...corpo, instance: `${base}${caminho}`, type: `${base}${corpo.type ?? ''}` } };
 }
 
-function atender(requisicao: RequisicaoTransporte, encontrada: RotaEncontrada | undefined): RespostaTransporte {
+export async function atenderNoSimulador(requisicao: RequisicaoTransporte, agora: Date = new Date()): Promise<RespostaTransporte> {
+  const encontrada = encontrarRota(requisicao);
   if (deveFalhar(requisicao.caminho)) return servicoIndisponivel('Falha simulada pelo modo de desenvolvimento.');
   if (!encontrada) return rotaInexistente(`Rota ${requisicao.metodo} ${requisicao.caminho} não existe no simulador.`);
-  return encontrada.rota.manipulador(requisicao, new Date(), encontrada.parametros);
+  const autorizacao = autorizar(requisicao, encontrada.rota.acesso, encontrada.rota.descricao, agora);
+  if ('recusa' in autorizacao) return autorizacao.recusa;
+  return encontrada.rota.manipulador(requisicao, agora, encontrada.parametros, autorizacao.contexto);
 }
 
 export const transporteSimulado: Transporte = async (requisicao) => {
   const encontrada = encontrarRota(requisicao);
   await esperar(latenciaDaRota(encontrada?.rota), requisicao.signal);
-  return completarErro(atender(requisicao, encontrada), requisicao.caminho);
+  return completarErro(await atenderNoSimulador(requisicao), requisicao.caminho);
 };
+
+function restaurarAdministracao(): void {
+  restaurarContasSimuladas();
+  restaurarAuditoriaSimulada();
+  reiniciarConvitesSimulados();
+  encerrarSessaoSimulada();
+  encerrarAcessoSimulado();
+  window.location.reload();
+}
 
 if (ambiente.desenvolvimento) {
   Object.assign(window, {
@@ -185,6 +423,7 @@ if (ambiente.desenvolvimento) {
       rastrearFuncoes: definirRastreamentoDasFuncoes,
       recusarAlteracoes: (recusar = true) => definirRecusaDeAlteracoes(recusar),
       restaurarPapeis: restaurarPapeisSimulados,
+      restaurarAdministracao,
       encerrarSessao: encerrarSessaoSimulada,
       expirarCodigo: expirarCodigoSimulado,
       expirarRedefinicao: expirarRedefinicaoSimulada,

@@ -60,7 +60,7 @@ import estilos from './PaginaObjetos.module.css';
 const ESPERA_DA_BUSCA_MS = 250;
 const LINHAS_DO_ESQUELETO = 8;
 const DESCRICAO_DOS_PONTOS = 'O que merece um olhar nas sessões agora, do mais urgente ao menos urgente';
-const LINHAS_POR_FRASE_EM_ESPERA = [3, 2, 2, 2];
+const LINHAS_POR_FRASE_EM_ESPERA = [3, 1, 2, 1, 3];
 const ERRO_AO_COPIAR = 'O navegador bloqueou a área de transferência. Abra cada sessão e copie o comando pelo detalhe.';
 
 type Origem = 'LISTA' | 'PAINEL';

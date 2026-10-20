@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { ChevronDown, ChevronRight, ChevronUp, FlaskConical, OctagonAlert, Undo2 } from 'lucide-react';
-import { Medida, SecaoCopiavel } from '@/componentes/objetos/DetalheObjeto';
+import { SecaoCopiavel } from '@/componentes/objetos/DetalheObjeto';
 import estilos from '@/componentes/objetos/DetalheObjeto.module.css';
 import { BotaoIcone, Modal, Nota, Selo } from '@/componentes/ui';
 import type { AlteracaoDTO } from '@/modelos/alteracoes';
@@ -174,11 +174,23 @@ function CorpoDetalhe({ alteracao, todas, simulada, aoAbrirAlteracao }: CorpoDet
         <h3 className={estilos.tituloSecao} id="titulo-autoria-alteracao">
           Quem e onde
         </h3>
-        <dl className={estilos.medidas}>
-          <Medida rotulo="Conta do Orynt" valor={alteracao.conta || 'Não informada'} dica={alteracao.conta || undefined} />
-          <Medida rotulo="Papel no banco" valor={alteracao.papelDaConexao} />
-          <Medida rotulo="Banco" valor={alteracao.banco} />
-          <Medida rotulo="Comandos" valor={formatarNumero(alteracao.comandos.length)} />
+        <dl className={estilos.pares}>
+          <div>
+            <dt>Conta do Orynt</dt>
+            <dd className={alteracao.conta ? 'codigo' : undefined}>{alteracao.conta || 'Não informada'}</dd>
+          </div>
+          <div>
+            <dt>Papel no banco</dt>
+            <dd className="codigo">{alteracao.papelDaConexao}</dd>
+          </div>
+          <div>
+            <dt>Banco</dt>
+            <dd className="codigo">{alteracao.banco}</dd>
+          </div>
+          <div>
+            <dt>Comandos</dt>
+            <dd className="numeros">{formatarNumero(alteracao.comandos.length)}</dd>
+          </div>
         </dl>
       </section>
 

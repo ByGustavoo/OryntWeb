@@ -1,5 +1,6 @@
-import { Plus, Unplug } from 'lucide-react';
+import { Lock, Plus, Unplug } from 'lucide-react';
 import { Botao, EstadoErro, EstadoVazio, IndicadorGiratorio, Painel } from '@/componentes/ui';
+import { usePermissao } from '@/ganchos/usePermissao';
 import { useConexao } from '@/provedores/ProvedorConexao';
 import { useNovaConexao } from '@/provedores/ProvedorNovaConexao';
 import { enderecoConexao } from '@/regras/conexoesSalvas';
@@ -10,6 +11,19 @@ export function PainelSemConexao() {
   const { situacao, salvas, alvo, falhaReconexao, erroVerificacao, verificandoDeNovo, ativarConexao, verificarNovamente } =
     useConexao();
   const { abrir: abrirNovaConexao } = useNovaConexao();
+  const podeConectar = usePermissao('CONEXOES_USAR');
+
+  if (situacao === 'DESCONECTADA' && !podeConectar) {
+    return (
+      <Painel aria-label="Conexão com o banco">
+        <EstadoVazio
+          icone={Lock}
+          titulo="Sua conta não conecta bancos"
+          descricao="A permissão “Conectar a bancos” não foi concedida à sua conta. Fale com quem administra o Orynt na sua equipe."
+        />
+      </Painel>
+    );
+  }
 
   if (situacao === 'INDISPONIVEL') {
     return (

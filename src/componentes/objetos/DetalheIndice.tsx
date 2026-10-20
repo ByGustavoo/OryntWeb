@@ -39,7 +39,7 @@ import {
   pluralizar,
 } from '@/utilitarios/formatacao';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
-import { ItemConsulta, Medida, SecaoCopiavel } from './DetalheObjeto';
+import { IndiceDoDetalhe, ItemConsulta, Medida, SecaoCopiavel } from './DetalheObjeto';
 import estilos from './DetalheObjeto.module.css';
 import { NomeObjeto } from './NomeObjeto';
 import { SeloSituacaoIndice, temSelo } from './SeloSituacaoIndice';
@@ -210,6 +210,8 @@ function CorpoDetalhe({
         </div>
       </header>
 
+      <IndiceDoDetalhe raiz={raiz} />
+
       {avisos.map((aviso) => (
         <Nota key={aviso.texto} tom={aviso.tom} icone={aviso.tom === 'erro' ? OctagonAlert : TriangleAlert}>
           {aviso.texto}
@@ -234,6 +236,7 @@ function CorpoDetalhe({
 
       <SecaoCopiavel
         id="titulo-definicao-indice"
+        indice="Definição"
         titulo="Definição"
         texto={`${indice.definicao};`}
         copiado="Copiada"
@@ -245,7 +248,7 @@ function CorpoDetalhe({
       <SecaoEstrutura indice={indice} />
       {indice.funcoes.length > 0 ? <SecaoFuncoes indice={indice} aoAbrirFuncao={aoAbrirFuncao} /> : null}
 
-      <section className={estilos.secao} aria-labelledby="titulo-consultas-indice">
+      <section className={estilos.secao} aria-labelledby="titulo-consultas-indice" data-indice="Consultas">
         <h3 className={estilos.tituloSecao} id="titulo-consultas-indice">
           Consultas cujo plano lê o índice{' '}
           <span className={`${estilos.contagem} numeros`}>{formatarNumero(indice.usos.length)}</span>
@@ -269,7 +272,7 @@ function CorpoDetalhe({
         )}
       </section>
 
-      <section className={estilos.secao} aria-labelledby="titulo-tabela-indice">
+      <section className={estilos.secao} aria-labelledby="titulo-tabela-indice" data-indice="Tabela">
         <h3 className={estilos.tituloSecao} id="titulo-tabela-indice">
           {rotuloTipoObjeto[tabela.tipo]}
         </h3>
@@ -295,7 +298,7 @@ function CorpoDetalhe({
         </button>
       </section>
 
-      <section className={estilos.secao} aria-labelledby="titulo-outros-indices">
+      <section className={estilos.secao} aria-labelledby="titulo-outros-indices" data-indice="Outros índices">
         <h3 className={estilos.tituloSecao} id="titulo-outros-indices">
           Outros índices de {tabela.nome}{' '}
           <span className={`${estilos.contagem} numeros`}>{formatarNumero(daMesmaTabela.length)}</span>
@@ -333,7 +336,7 @@ function CorpoDetalhe({
 
 function SecaoFuncoes({ indice, aoAbrirFuncao }: { indice: IndiceDTO; aoAbrirFuncao: (id: string) => void }) {
   return (
-    <section className={estilos.secao} aria-labelledby="titulo-funcoes-indice">
+    <section className={estilos.secao} aria-labelledby="titulo-funcoes-indice" data-indice="Funções">
       <h3 className={estilos.tituloSecao} id="titulo-funcoes-indice">
         Funções que ele usa <span className={`${estilos.contagem} numeros`}>{formatarNumero(indice.funcoes.length)}</span>
       </h3>
@@ -378,7 +381,7 @@ function SecaoUso({ indice }: { indice: IndiceDTO }) {
   const composicao = `${formatarNumero(insercoes)} ${pluralizar(insercoes, 'inserção', 'inserções')} e ${formatarNumero(foraDoHot)} ${pluralizar(foraDoHot, 'atualização', 'atualizações')} fora do HOT`;
 
   return (
-    <section className={estilos.secao} aria-labelledby="titulo-uso-indice">
+    <section className={estilos.secao} aria-labelledby="titulo-uso-indice" data-indice="Uso">
       <h3 className={estilos.tituloSecao} id="titulo-uso-indice">
         Uso nos últimos 30 dias
       </h3>
@@ -408,7 +411,7 @@ function SecaoEstrutura({ indice }: { indice: IndiceDTO }) {
   ];
 
   return (
-    <section className={estilos.secao} aria-labelledby="titulo-estrutura-indice">
+    <section className={estilos.secao} aria-labelledby="titulo-estrutura-indice" data-indice="Colunas">
       <h3 className={estilos.tituloSecao} id="titulo-estrutura-indice">
         Colunas <span className={`${estilos.contagem} numeros`}>{formatarNumero(indice.colunas.length)}</span>
       </h3>

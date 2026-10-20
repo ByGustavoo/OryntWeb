@@ -59,16 +59,31 @@
   max-height: calc(100dvh - var(--altura-cabecalho) - var(--espaco-8));
   overflow-y: auto;
   overscroll-behavior: contain;
+  border: 1px solid var(--borda);
   border-radius: var(--raio-lg);
+  background-color: var(--superficie);
+  box-shadow: var(--sombra-cartao);
   scrollbar-width: thin;
+}
+
+.fixo > * {
+  border: none;
+  border-radius: 0;
+  background-color: transparent;
+  box-shadow: none;
 }
 
 .extras {
   display: flex;
   grid-area: extras;
   flex-direction: column;
+  align-self: stretch;
   gap: var(--espaco-5);
   min-width: 0;
+}
+
+.extras > :last-child {
+  flex: 1 0 auto;
 }
 
 .detalheEmEspera {
@@ -109,6 +124,10 @@
     position: static;
     max-height: none;
     overflow: visible;
+  }
+
+  .extras > :last-child {
+    flex: none;
   }
 }
 

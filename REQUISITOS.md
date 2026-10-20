@@ -39,7 +39,7 @@ silenciosa no resto.
 * **Navegação:** menu lateral recolhível no desktop e gaveta abaixo de 1100px.
 * **Tipo de banco:** aparece como campo já resolvido (PostgreSQL), não como lista de uma opção.
 * **Rótulos:** capitalização de frase ("Usuários e permissões", "Objetos do banco"), como nos outros projetos.
-* **Navegação em grupos e subgrupos:** pedido do usuário em 11 de outubro de 2026, no modelo do PrismaWeb. O menu tem o Dashboard, o grupo "Análise" (Relatórios e Consultas SQL) e o grupo "Gerenciamento" (Objetos do banco e Usuários e permissões); Configurações segue no rodapé. Cada item de grupo abre as suas telas: Relatórios (Resumo, Exportação, Comparação), Consultas SQL (Todas, Histórico, Planos de execução), Objetos do banco (Visões, Índices, Tabelas, Funções) e Usuários e permissões (Papéis, Sessões, Alterações, Permissões; Alterações entrou em 20 de outubro de 2026). Os nomes dos grupos e das telas foram escolhidos por boa prática, a partir do que já estava previsto para cada funcionalidade.
+* **Navegação em grupos e subgrupos:** pedido do usuário em 11 de outubro de 2026, no modelo do PrismaWeb. O menu tem o Dashboard, o grupo "Análise" (Relatórios e Consultas SQL), o grupo "Gerenciamento" (Objetos do banco e Usuários e permissões) e, desde 20 de outubro de 2026, o grupo "Administração" (Usuários e Auditoria), que só aparece para quem tem as permissões; Configurações segue no rodapé. O menu mostra só as telas que a conta pode abrir. Cada item de grupo abre as suas telas: Relatórios (Resumo, Exportação, Comparação), Consultas SQL (Todas, Histórico, Planos de execução), Objetos do banco (Visões, Índices, Tabelas, Funções) e Usuários e permissões (Papéis, Sessões, Alterações, Permissões; Alterações entrou em 20 de outubro de 2026). Os nomes dos grupos e das telas foram escolhidos por boa prática, a partir do que já estava previsto para cada funcionalidade.
 * **Telas planejadas:** o grupo em que nada está pronto leva o selo "Em breve" ao lado do título (antes havia um único grupo chamado "Em breve"). Num grupo que já tem tela pronta, a marca "Em breve" desce para cada tela planejada. Não sobrou nenhuma: Papéis, Sessões e Permissões ficaram prontas em 19 de outubro de 2026. Objetos do banco não tem mais tela planejada: Visões e Índices ficaram prontas em 18 de outubro de 2026, e Tabelas e Funções, em 19 de outubro. O item em que nada está pronto não leva a marca ao lado do nome desde então: "Usuários e permissões" com a marca não cabia no menu e aparecia cortado; as telas dele, ao abrir o item, mostram a marca uma a uma. Cada tela planejada tem a própria rota, mostra o que está previsto para a funcionalidade, com a tela aberta em evidência, e não simula nada.
 * **Demonstração:** selo "Demonstração" no menu da conta enquanto há uma conexão simulada ativa e aviso "Dados demonstrativos" no dashboard. Sem conexão, o selo não aparece. O selo saiu do cabeçalho a pedido do usuário em 11 de outubro de 2026.
 * **Dashboard:** períodos de 1 h, 24 h, 7 dias e 30 dias; a tabela vira cartões em telas estreitas.
@@ -56,7 +56,7 @@ de entrada e a paleta do produto muda.
 |---|---|
 | Rota inicial | `/login` é a primeira tela. Sem login, qualquer outra rota leva a ela. |
 | Depois do login | O usuário vai direto para `/dashboard`, com ou sem conexão. Quem já está logado e abre `/login` também vai para lá. |
-| Autenticação | Fictícia nesta fase: um e-mail e uma senha de teste definidos no projeto, conferidos pelo simulador. Sem cadastro e sem API. A recuperação de senha tem tela e fluxo próprios, também simulados (ver "Recuperação de senha"). Não é apresentada como segura. |
+| Autenticação | Fictícia nesta fase: um e-mail e uma senha de teste definidos no projeto, conferidos pelo simulador. Sem API. Desde 20 de outubro de 2026 as contas criadas em Administração › Usuários também entram, com a senha que a pessoa definiu pelo convite. A recuperação de senha tem tela e fluxo próprios, também simulados (ver "Recuperação de senha"). Não é apresentada como segura. |
 | Credenciais de teste | `demo@orynt.local` e `orynt-demo`, em `src/dados/simulacao/credenciaisDemonstracao.ts`, no README e na própria tela de login. |
 | Campos | E-mail e senha, ambos obrigatórios. A senha tem mostrar e ocultar. |
 | Validação | Campo vazio só é cobrado no envio; formato do e-mail, ao sair do campo; depois de um erro, a cada tecla. No envio, o foco vai ao primeiro campo com problema. |
@@ -69,7 +69,8 @@ de entrada e a paleta do produto muda.
 | Tema | Alternância entre escuro e claro na tela de login, com a escolha lembrada no navegador. O modo automático continua nas configurações (Q6). |
 | Paleta | Escuro: fundo `#0A0A0A`, superfícies `#111111` e `#171717`, texto branco. Claro: fundo branco levemente acinzentado, superfícies brancas, texto escuro. Azul como cor de destaque nos dois temas, no lugar do ciano. Vale para o produto inteiro. No tema escuro, o card de notificação usa `#1B1B1B` com borda `#272727`, para se destacar do fundo como no OrbitWeb (pedido do usuário em 11 de outubro de 2026). |
 
-Ficaram de fora: cadastro de usuários, envio real de e-mail e autenticação real. O botão "Sair"
+Ficaram de fora: envio real de e-mail e autenticação real. O cadastro de contas entrou em 20 de outubro de 2026, com
+convite e senha definida pela pessoa, no simulador (ver "Administração: Usuários e Auditoria"). O botão "Sair"
 entrou em 11 de outubro de 2026 (S1 de "Conexões salvas") e a tela de recuperação de senha, em 12 de
 outubro de 2026.
 
@@ -345,7 +346,7 @@ Regras:
 * **Dados:** uma rota nova, `GET /consultas/{id}/plano`, devolve numa resposta só a consulta com os números dos últimos 30 dias, a posição por peso com as vizinhas, as versões do plano e o plano escolhido, com os índices sugeridos. O simulador implementa a rota. Os índices sugeridos vêm da API, como o desempenho da consulta (Q3 da descoberta inicial).
 * **Janela:** a posição por peso, as sugestões do seletor e as mudanças de plano usam os últimos 30 dias, a maior janela das outras telas (decidido por boa prática, porque a tela não tem período). O "Ver histórico" da tela abre o Histórico nesses 30 dias.
 * **Ao abrir pelo menu:** a tela mostra a consulta que mais pesa nos últimos 30 dias, nunca uma tela vazia. O seletor e as setas são os do Histórico ("Consulta 3 de 42 por peso em 30 dias").
-* **Árvore:** de cima para baixo, como o `EXPLAIN` em texto; cada etapa recebe as linhas das que estão abaixo dela. Cada linha mostra o nome da etapa como o PostgreSQL o escreve (Seq Scan, Hash Right Join, HashAggregate), a tabela e o índice, a condição principal, o tempo gasto na própria etapa (sem as de baixo, somando todas as execuções dela), a parte do tempo de execução, as linhas devolvidas e as que o planejador esperava. Abre com a etapa mais lenta escolhida. Setas do teclado: para cima e para baixo andam pelas etapas, para a esquerda vai à etapa de cima e para a direita, à primeira de baixo.
+* **Árvore:** de cima para baixo, como o `EXPLAIN` em texto; cada etapa recebe as linhas das que estão abaixo dela. Cada linha mostra o nome da etapa como o PostgreSQL o escreve (Seq Scan, Hash Right Join, HashAggregate), a tabela e o índice, a condição principal, o tempo gasto na própria etapa (sem as de baixo, somando todas as execuções dela), a parte do tempo de execução, as linhas devolvidas e as que o planejador esperava. Abre com a etapa mais lenta escolhida. Setas do teclado: para cima e para baixo andam pelas etapas, para a esquerda recolhe a etapa aberta ou vai à etapa de cima e para a direita abre a etapa recolhida ou vai à primeira de baixo. Desde 20 de outubro de 2026, a pedido do usuário, cada etapa com etapas abaixo tem uma seta que recolhe e abre esse ramo, e a recolhida diz quantas etapas esconde; o caminho da primeira etapa até a escolhida fica destacado nas guias, e o detalhe da etapa mostra esse caminho, com cada etapa clicável. Recolher o ramo da etapa escolhida escolhe a etapa que recolheu, e "Ver X na árvore" reabre o que estiver recolhido no caminho.
 * **Detalhe da etapa:** o que ela faz, em uma frase; o tempo próprio; linhas devolvidas, esperadas, lidas e descartadas pelo filtro e execuções da etapa; todas as condições; os blocos lidos do cache, do disco e de arquivos temporários só dela; a memória da ordenação ou da tabela hash; o tempo com as etapas de baixo, o tempo até a primeira linha, o custo estimado e a largura média da linha.
 * **Diagnóstico:** a etapa que mais pesa, sempre; a varredura sequencial que lê 10.000 linhas ou mais (até duas), que pede atenção quando o filtro descarta 90% ou mais; o filtro de outra etapa que descarta 90% ou mais de pelo menos 1.000 linhas; o pior erro de estimativa, de 10 vezes ou mais, ignorando a etapa que um `LIMIT` interrompeu antes do fim; a maior gravação em disco por falta de memória, com a sugestão de aumentar o `work_mem`; e a etapa executada 1.000 vezes ou mais dentro de outra. Sem nenhum desses sinais, a frase diz que o plano está saudável. A primeira frase de cada etapa leva a ela na árvore, quando o plano tem mais de uma etapa.
 * **Erro de estimativa:** marcado com o ícone de alerta na árvore e no detalhe, sem depender só da cor.
@@ -826,6 +827,82 @@ Regras:
   falta de permissão, dependências sem herdeiro, ciclo de grupos, excluir ou renomear o papel da conexão.
   `oryntSimulacao.restaurarPapeis()` volta ao início e `oryntSimulacao.recusarAlteracoes()` recusa tudo (`false`
   desliga).
+
+## Administração: Usuários e Auditoria
+
+Pedido pelo usuário em 20 de outubro de 2026: uma área para o administrador gerenciar as contas do Orynt (quem entra
+na aplicação, não os papéis do PostgreSQL, que continuam em Usuários e permissões), com as permissões de cada conta,
+e uma tela de auditoria do que cada conta acessou e fez. Os dados continuam no simulador do front ("por enquanto
+deixa os dados mocados pelo front, iremos fazer a api mais tarde"), que faz o papel do servidor também na
+autorização: ele recusa com `403` a chamada direta sem permissão, não só o botão. As decisões foram as recomendadas
+na descoberta.
+
+| # | Tema | Decisão |
+|---|---|---|
+| Q1 | Perfil e permissões | Três perfis (Leitor, Analista, Administrador) trazem um conjunto de permissões, e cada permissão pode ser concedida ou revogada à parte. A conta que foge do perfil leva o selo "Personalizado" e "Voltar ao do perfil". |
+| Q2 | Catálogo | Permissões reais por módulo, as que o servidor consegue fazer valer: ver o dashboard, ver os relatórios, ver as consultas, ver os objetos, ver papéis, sessões e permissões do banco, alterar papéis do banco, conceder e revogar no banco, conectar a bancos, gerenciar usuários e ver a auditoria. |
+| Q3 | Senha inicial | Convite: a pessoa recebe um link e define a própria senha. O administrador nunca conhece a senha. O convite vale 7 dias e é de uso único. |
+| Q4 | Contas criadas entram | Sim. O simulador guarda só o hash (PBKDF2-SHA-256, 210.000 iterações, com sal) em `orynt:simulacao:contas`. |
+| Q5 | Excluir | Permitido, com o e-mail digitado. A auditoria guarda o nome e o e-mail de cada evento e não perde nada; as conexões salvas da conta são apagadas; o histórico de Alterações continua. |
+| Q6 | Branch | A ORY-14 foi fechada (PR #12) e a área entrou na ORY-15. |
+| Q7 | Acesso a telas | Um evento por tela aberta, não por troca de filtro ou de página. |
+| Q8 | Tela sem permissão | Some do menu; a rota digitada mostra "Sem acesso" e registra a tentativa. Quem não vê o Dashboard entra na primeira tela que pode abrir. |
+| Q9 | Revogação | Vale na próxima requisição: o servidor lê as permissões a cada chamada e o front as relê a cada tela aberta. Desativar encerra as sessões. |
+| S1 | Ver atividade | No detalhe da conta, abre a Auditoria filtrada por ela. Aprovada. |
+| S2 | Encerrar sessões | No detalhe da conta, com confirmação. Aprovada. |
+| S3 | Exportar CSV da auditoria | Recusada. |
+| S4 | Bloqueio por tentativas | Cinco senhas erradas do mesmo e-mail em 15 minutos bloqueiam o login por 15 minutos, tenha o e-mail conta ou não, e o administrador pode desbloquear. Aprovada. |
+| S5 | Atalhos de atenção | "N bloqueadas", "N convites expirados" e "N sem acesso há 30 dias" ao lado da contagem, como filtros. Aprovada. |
+
+Regras:
+
+* **Duas permissões ficaram diferentes do que a descoberta listou, por uma razão de segurança:** "exportar
+  relatórios" saiu do catálogo, porque o arquivo é montado no navegador com os mesmos dados que a conta já lê, e o
+  servidor não teria como impedir; seria um botão escondido, não uma permissão. Conexões têm uma permissão só,
+  "Conectar a bancos", porque as conexões salvas são da conta e uma conta sem poder criar a própria conexão ficaria
+  sem nenhuma.
+* **Dependências:** alterar papéis e conceder e revogar no banco só valem com ver papéis, sessões e permissões.
+  Marcar uma marca a outra; desmarcar a de que dependem desmarca as duas.
+* **Elevação:** só se concede o que a própria conta tem; a caixa de uma permissão que o administrador não tem fica
+  travada com o motivo, e o servidor recusa com `403` se a chamada vier direto. Revogar é livre.
+* **Proteções:** ninguém desativa, exclui nem tira de si "Gerenciar usuários"; a última conta ativa que gerencia
+  usuários não pode ser desativada, excluída nem perder a permissão; a conta de demonstração, criada na
+  instalação, não pode ser desativada nem excluída; não se encerram as sessões da própria conta pela Administração
+  ("Sair" faz isso). Os botões ficam visíveis e bloqueados, com o motivo.
+* **Usuários de banco e contas do Orynt são coisas separadas:** a conta do Orynt decide o que a pessoa pode fazer no
+  Orynt; o papel da conexão decide o que o banco aceita. Papéis e Permissões exigem as duas coisas: a revisão de
+  uma alteração diz qual permissão da conta falta, e os botões avisam antes.
+* **Situação da conta:** decidida no front, nesta ordem: Desativada, Bloqueada, Convite pendente, Convite expirado,
+  Ativa. "Sem acesso há 30 dias" é um atalho de atenção, contado da criação quando a pessoa nunca entrou.
+* **Detalhe da conta:** modal com os dados, a situação, as ações, as medidas (último acesso, sessões, conexões e
+  permissões) e as permissões agrupadas por módulo, cada uma com "Concedida" ou "Negada" e a origem (do perfil,
+  concedida à parte, revogada do perfil). As mudanças ficam pendentes numa barra com "Descartar" e "Salvar
+  permissões"; com mudanças pendentes as setas travam, e fechar pergunta se descarta.
+* **Auditoria:** do mais recente ao mais antigo, 25 por página, com os filtros e a busca feitos pelo servidor
+  (usuário, tipo de ação, módulo, resultado e período). Escolher um usuário mostra "Atividade de", com as áreas
+  acessadas, o que fez e as tentativas negadas. Nenhum evento é inventado: a lista começa vazia e só tem o que
+  aconteceu neste navegador. Não há editar nem apagar pela interface. Senhas, códigos e tokens nunca entram.
+* **Caixa de entrada simulada:** o link do convite aparece no detalhe da conta pendente, só na memória da aba. Ele
+  abre `/ativar-conta#convite=…`, que fica fora do login e funciona com outra conta aberta; o token sai do endereço
+  assim que é lido.
+* **Simulação:** as contas e as tentativas de login ficam em `orynt:simulacao:contas` e
+  `orynt:simulacao:tentativas-de-login`, a auditoria em `orynt:simulacao:auditoria` (os 5.000 eventos mais
+  recentes) e as conexões salvas passaram a ser por conta (a lista antiga foi para a conta de demonstração).
+  `oryntSimulacao.restaurarAdministracao()` volta ao início, só com a conta de demonstração.
+
+## Revisão de interface (20 de outubro de 2026)
+
+Pedida pelo usuário: composição de cada tela, espaços vazios, modais e a árvore do plano, sem inventar conteúdo nem mudar o que cada tela faz.
+
+* **Pontos de atenção:** com mais de quatro pontos, o painel mostra os três mais urgentes e "Mostrar os outros N pontos" abre o resto, na mesma ordem; "Mostrar só os 3 mais urgentes" recolhe de novo. Assim a lista de Papéis, Permissões, Sessões, Índices e Tabelas começa na primeira tela. Com quatro ou menos, todos aparecem.
+* **Detalhes longos:** os detalhes de Tabelas, Funções, Índices, Visões, Papéis e Sessões ganham, abaixo da identificação, uma linha de atalhos para as seções, que fica fixa no topo do modal ao rolar e marca a seção em tela. O detalhe da tabela usa o modal largo.
+* **Exportação:** a prévia acompanha a altura de "O que exportar" e mostra até 24 linhas de cada arquivo.
+* **Histórico, Por intervalo:** a coluna de execuções vira uma barra larga, e a hora deixa de ocupar metade da tabela.
+* **Comparação de planos:** os dois planos lado a lado têm a mesma altura.
+* **Usuários do Orynt:** as permissões do formulário e do detalhe viram uma lista só, com o grupo à esquerda e uma linha por permissão, e a origem (do perfil, fora do perfil, concedida à parte, revogada do perfil) à direita; o selo "Concedida"/"Negada", que repetia a caixa marcada, sai. O detalhe da conta deixa de repetir o e-mail no topo.
+* **Planos de execução:** "Mudanças de plano" termina na mesma linha do detalhe da etapa.
+* **Sessões, cadeias de bloqueio:** cada cadeia abre com uma frase (quantas sessões, em quantos níveis, a espera mais longa), e cada sessão mostra o que espera e de quem, o que segura e o tempo, alinhado à direita.
+* **Cabeçalho das telas:** a descrição ocupa uma linha ao lado das ações nas telas largas, e trocar entre uma tela curta e uma longa não desloca mais o conteúdo para o lado.
 
 ## Fora desta fase
 

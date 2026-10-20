@@ -74,6 +74,11 @@
   border-bottom: none;
 }
 
+.tabela thead tr:first-child .colunaFaixa {
+  padding-bottom: var(--espaco-2);
+  border-bottom: 1px solid var(--borda);
+}
+
 .tabela thead .grupoColunas {
   padding-left: var(--espaco-5);
   color: var(--texto-secundario);

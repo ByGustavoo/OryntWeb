@@ -3,6 +3,8 @@ import { ErroApi } from '@/api/ErroApi';
 export type MotivoFalhaAcesso =
   | 'CREDENCIAIS_INCORRETAS'
   | 'DADOS_INVALIDOS'
+  | 'CONTA_DESATIVADA'
+  | 'MUITAS_TENTATIVAS'
   | 'SEM_RESPOSTA'
   | 'TEMPO_ESGOTADO'
   | 'DESCONHECIDO';
@@ -17,6 +19,8 @@ function motivoDoErro(erro: unknown): MotivoFalhaAcesso {
   if (!(erro instanceof ErroApi)) return 'DESCONHECIDO';
   if (erro.tipo === 'NAO_AUTORIZADO') return 'CREDENCIAIS_INCORRETAS';
   if (erro.tipo === 'VALIDACAO') return 'DADOS_INVALIDOS';
+  if (erro.tipo === 'PROIBIDO') return 'CONTA_DESATIVADA';
+  if (erro.tipo === 'LIMITE_EXCEDIDO') return 'MUITAS_TENTATIVAS';
   if (erro.tipo === 'REDE') return 'SEM_RESPOSTA';
   if (erro.tipo === 'TEMPO_ESGOTADO') return 'TEMPO_ESGOTADO';
   return 'DESCONHECIDO';
@@ -37,6 +41,21 @@ export function interpretarFalhaAcesso(erro: unknown): FalhaAcesso {
         motivo,
         titulo: 'Os dados não foram aceitos',
         descricao: 'Revise os campos destacados e tente de novo.',
+      };
+    case 'CONTA_DESATIVADA':
+      return {
+        motivo,
+        titulo: 'Esta conta está desativada',
+        descricao: 'Quem administra o Orynt na sua equipe desativou o acesso. Fale com essa pessoa para reativar a conta.',
+      };
+    case 'MUITAS_TENTATIVAS':
+      return {
+        motivo,
+        titulo: 'Login bloqueado por alguns minutos',
+        descricao:
+          erro instanceof ErroApi && erro.resposta?.detail
+            ? `${erro.resposta.detail} Espere ou troque a senha em “Esqueceu sua senha?”.`
+            : 'Foram várias tentativas erradas seguidas. Espere alguns minutos ou troque a senha em “Esqueceu sua senha?”.',
       };
     case 'SEM_RESPOSTA':
       return {

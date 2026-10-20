@@ -320,6 +320,65 @@ export function linhasDoPlano(plano: PlanoExecucaoDTO): LinhaDoPlano[] {
   return linhas;
 }
 
+export function ancestraisDaEtapa(linhas: LinhaDoPlano[], id: number): number[] {
+  const paiDe = new Map(linhas.map((linha) => [linha.no.id, linha.idDoPai]));
+  const caminho: number[] = [];
+  let atual = paiDe.get(id) ?? null;
+  while (atual !== null) {
+    caminho.unshift(atual);
+    atual = paiDe.get(atual) ?? null;
+  }
+  return caminho;
+}
+
+export function linhasVisiveis(linhas: LinhaDoPlano[], recolhidas: ReadonlySet<number>): LinhaDoPlano[] {
+  if (recolhidas.size === 0) return linhas;
+  const visiveis: LinhaDoPlano[] = [];
+  let ocultandoAbaixoDe: number | null = null;
+  for (const linha of linhas) {
+    if (ocultandoAbaixoDe !== null && linha.profundidade > ocultandoAbaixoDe) continue;
+    ocultandoAbaixoDe = null;
+    visiveis.push(linha);
+    if (linha.no.filhos.length > 0 && recolhidas.has(linha.no.id)) ocultandoAbaixoDe = linha.profundidade;
+  }
+  return visiveis;
+}
+
+export function quantasEtapasAbaixo(no: NoPlanoDTO): number {
+  return no.filhos.reduce((soma, filho) => soma + 1 + quantasEtapasAbaixo(filho), 0);
+}
+
+export interface TrilhaDaEtapa {
+  passagens: number[];
+  chegada: boolean;
+  desce: boolean;
+}
+
+export function trilhaAte(linhas: LinhaDoPlano[], id: number): Map<number, TrilhaDaEtapa> {
+  const cadeia = [...ancestraisDaEtapa(linhas, id), id];
+  const posicaoDe = new Map(linhas.map((linha, posicao) => [linha.no.id, posicao]));
+  const trilha = new Map<number, TrilhaDaEtapa>();
+  const daLinha = (chave: number) => {
+    const existente = trilha.get(chave);
+    if (existente) return existente;
+    const nova: TrilhaDaEtapa = { passagens: [], chegada: false, desce: false };
+    trilha.set(chave, nova);
+    return nova;
+  };
+
+  for (let nivel = 0; nivel < cadeia.length - 1; nivel += 1) {
+    const deCima = posicaoDe.get(cadeia[nivel] ?? -1);
+    const deBaixo = posicaoDe.get(cadeia[nivel + 1] ?? -1);
+    if (deCima === undefined || deBaixo === undefined) return new Map();
+    daLinha(linhas[deCima]?.no.id ?? -1).desce = true;
+    for (let posicao = deCima + 1; posicao < deBaixo; posicao += 1) {
+      daLinha(linhas[posicao]?.no.id ?? -1).passagens.push(nivel);
+    }
+    daLinha(linhas[deBaixo]?.no.id ?? -1).chegada = true;
+  }
+  return trilha;
+}
+
 export function etapaMaisLenta(linhas: LinhaDoPlano[]): LinhaDoPlano | null {
   return linhas.reduce<LinhaDoPlano | null>(
     (maior, linha) => (linha.tempoProprioMs > (maior?.tempoProprioMs ?? -1) ? linha : maior),

@@ -4,6 +4,7 @@ import { Menu, Plus, Settings2 } from 'lucide-react';
 import { MarcaOrynt } from '@/componentes/comum/MarcaOrynt';
 import { Botao, BotaoIcone } from '@/componentes/ui';
 import { NOME_APLICACAO } from '@/configuracoes/aplicacao';
+import { usePermissao } from '@/ganchos/usePermissao';
 import { useNovaConexao } from '@/provedores/ProvedorNovaConexao';
 import { caminhos } from '@/rotas/caminhos';
 import { BotaoTema } from './BotaoTema';
@@ -21,6 +22,7 @@ export const Cabecalho = forwardRef<HTMLButtonElement, CabecalhoProps>(function 
   botaoMenuRef,
 ) {
   const { abrir: abrirNovaConexao } = useNovaConexao();
+  const podeConectar = usePermissao('CONEXOES_USAR');
   const navegar = useNavigate();
 
   return (
@@ -44,10 +46,14 @@ export const Cabecalho = forwardRef<HTMLButtonElement, CabecalhoProps>(function 
         ) : null}
 
         <div className={estilos.acoes}>
-          <Botao tamanho="sm" variante="secundario" icone={Plus} className={estilos.novaConexao} onClick={abrirNovaConexao}>
-            Nova conexão
-          </Botao>
-          <BotaoIcone icone={Plus} rotulo="Nova conexão" className={estilos.novaConexaoCompacta} onClick={abrirNovaConexao} />
+          {podeConectar ? (
+            <>
+              <Botao tamanho="sm" variante="secundario" icone={Plus} className={estilos.novaConexao} onClick={abrirNovaConexao}>
+                Nova conexão
+              </Botao>
+              <BotaoIcone icone={Plus} rotulo="Nova conexão" className={estilos.novaConexaoCompacta} onClick={abrirNovaConexao} />
+            </>
+          ) : null}
           <BotaoIcone
             icone={Settings2}
             rotulo="Configurações"

@@ -17,7 +17,7 @@
 .colunas {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
-  align-items: start;
+  align-items: stretch;
   gap: var(--espaco-5);
 }
 
@@ -33,6 +33,7 @@
 @container exportacao (max-width: 900px) {
   .colunas {
     grid-template-columns: minmax(0, 1fr);
+    align-items: start;
   }
 }
 

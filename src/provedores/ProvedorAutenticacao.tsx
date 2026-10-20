@@ -1,6 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
+import { aoPerderOAcesso } from '@/api/clienteHttp';
 import { ehCancelamento } from '@/api/ErroApi';
+import { ehErroApi } from '@/api/tratamentoErros';
 import type { UsuarioDTO } from '@/modelos/autenticacao';
 import { servicoAutenticacao } from '@/servicos';
 import { atravessar } from '@/utilitarios/travessia';
@@ -14,6 +16,7 @@ interface EstadoAutenticacao {
 
 interface ValorContextoAutenticacao extends EstadoAutenticacao {
   registrarUsuario: (usuario: UsuarioDTO) => void;
+  atualizarUsuario: () => Promise<void>;
   marcarAnonima: () => void;
   sair: () => Promise<void>;
 }
@@ -41,6 +44,17 @@ export function ProvedorAutenticacao({ children }: { children: ReactNode }) {
 
   const marcarAnonima = useCallback(() => setEstado(ANONIMA), []);
 
+  useEffect(() => aoPerderOAcesso(() => setEstado((atual) => (atual.situacao === 'AUTENTICADA' ? ANONIMA : atual))), []);
+
+  const atualizarUsuario = useCallback(async () => {
+    try {
+      const usuario = await servicoAutenticacao.buscarUsuarioAtual();
+      setEstado((atual) => (atual.situacao === 'AUTENTICADA' ? { situacao: 'AUTENTICADA', usuario } : atual));
+    } catch (erro) {
+      if (ehErroApi(erro, 'NAO_AUTORIZADO')) setEstado((atual) => (atual.situacao === 'AUTENTICADA' ? ANONIMA : atual));
+    }
+  }, []);
+
   const sair = useCallback(async () => {
     await servicoAutenticacao.sair();
     await Promise.allSettled([import('@/layouts/LayoutAcesso'), import('@/paginas/PaginaLogin')]);
@@ -48,8 +62,8 @@ export function ProvedorAutenticacao({ children }: { children: ReactNode }) {
   }, []);
 
   const valor = useMemo<ValorContextoAutenticacao>(
-    () => ({ ...estado, registrarUsuario, marcarAnonima, sair }),
-    [estado, registrarUsuario, marcarAnonima, sair],
+    () => ({ ...estado, registrarUsuario, atualizarUsuario, marcarAnonima, sair }),
+    [estado, registrarUsuario, atualizarUsuario, marcarAnonima, sair],
   );
 
   return <ContextoAutenticacao.Provider value={valor}>{children}</ContextoAutenticacao.Provider>;

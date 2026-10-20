@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { ChevronDown, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
 import { MarcaOrynt } from '@/componentes/comum/MarcaOrynt';
@@ -8,11 +8,12 @@ import {
   contemCaminho,
   destinoInicial,
   itemPlanejado,
-  navegacaoPrincipal,
+  navegacaoDaConta,
   navegacaoRodape,
   secaoPlanejada,
 } from '@/configuracoes/navegacao';
 import type { ItemNavegacao } from '@/configuracoes/navegacao';
+import { useAutenticacao } from '@/provedores/ProvedorAutenticacao';
 import { caminhos } from '@/rotas/caminhos';
 import { manterTabDentro } from '@/utilitarios/foco';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
@@ -27,6 +28,8 @@ interface MenuLateralProps {
 }
 
 export function MenuLateral({ recolhido, emGaveta, abertoEmGaveta, aoAlternarRecolhido, aoFecharGaveta }: MenuLateralProps) {
+  const { usuario } = useAutenticacao();
+  const navegacao = useMemo(() => navegacaoDaConta(usuario), [usuario]);
   const menuRef = useRef<HTMLElement>(null);
   const botaoFecharRef = useRef<HTMLButtonElement>(null);
   const recolhidoVisivel = recolhido && !emGaveta;
@@ -96,7 +99,7 @@ export function MenuLateral({ recolhido, emGaveta, abertoEmGaveta, aoAlternarRec
         </div>
 
         <nav className={estilos.navegacao} aria-label="Seções">
-          {navegacaoPrincipal.map((secao, indice) => (
+          {navegacao.map((secao, indice) => (
             <div className={estilos.secao} key={secao.titulo ?? `secao-${indice}`}>
               {secao.titulo ? (
                 recolhidoVisivel ? (

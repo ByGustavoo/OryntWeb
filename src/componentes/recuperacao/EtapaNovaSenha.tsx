@@ -19,11 +19,24 @@ interface EtapaNovaSenhaProps {
   aoAlterar: (campo: CampoNovaSenha, valor: string) => void;
   aoSair: (campo: CampoNovaSenha) => void;
   aoSalvar: () => void;
+  observacao?: string;
+  textoDoBotao?: string;
 }
 
 const ORIENTACAO_INICIAL = `Use pelo menos ${TAMANHO_MINIMO_SENHA} caracteres. Frases longas são melhores.`;
 
-export function EtapaNovaSenha({ email, senhas, erros, salvando, falha, aoAlterar, aoSair, aoSalvar }: EtapaNovaSenhaProps) {
+export function EtapaNovaSenha({
+  email,
+  senhas,
+  erros,
+  salvando,
+  falha,
+  aoAlterar,
+  aoSair,
+  aoSalvar,
+  observacao = 'Ao salvar, as outras sessões abertas desta conta são encerradas.',
+  textoDoBotao = 'Salvar nova senha',
+}: EtapaNovaSenhaProps) {
   const termosPessoais = useMemo(() => termosDoEmail(email), [email]);
   const forca = avaliarForcaSenha(senhas.senha, termosPessoais);
 
@@ -75,7 +88,7 @@ export function EtapaNovaSenha({ email, senhas, erros, salvando, falha, aoAltera
       </div>
 
       <Nota tom="neutro" icone={ShieldCheck} className={estilos.observacao}>
-        Ao salvar, as outras sessões abertas desta conta são encerradas.
+        {observacao}
       </Nota>
 
       <p className="visualmente-oculto" role="status">
@@ -83,7 +96,7 @@ export function EtapaNovaSenha({ email, senhas, erros, salvando, falha, aoAltera
       </p>
 
       <Botao type="submit" tamanho="lg" larguraTotal carregando={salvando} iconeDireita={ArrowRight} className={estilos.enviar}>
-        {salvando ? 'Salvando…' : 'Salvar nova senha'}
+        {salvando ? 'Salvando…' : textoDoBotao}
       </Botao>
     </form>
   );

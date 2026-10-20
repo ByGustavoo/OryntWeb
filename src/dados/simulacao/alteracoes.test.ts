@@ -15,9 +15,27 @@ import { aplicarAlteracao, listarAlteracoes } from './manipuladores/alteracoes';
 import { listarTabelas } from './manipuladores/objetos';
 import { listarPapeis, listarPermissoes, listarSessoes } from './manipuladores/usuarios';
 import { definirRecusaDeAlteracoes, restaurarPapeisSimulados } from './alteracoesSimuladas';
+import type { ContaSimulada } from './contasSimuladas';
 import { conexoesNoInstante } from './series';
 
 const agora = new Date(2026, 9, 19, 15, 7, 23);
+const contaDaDemonstracao: ContaSimulada = {
+  id: 'u1',
+  nome: 'Demonstração',
+  email: 'demo@orynt.local',
+  perfil: 'ADMINISTRADOR',
+  permissoes: [],
+  ativa: true,
+  inicial: true,
+  criadaEm: agora.toISOString(),
+  criadaPor: null,
+  atualizadaEm: agora.toISOString(),
+  ultimoAcessoEm: null,
+  senha: null,
+  convite: null,
+  bloqueadaAte: null,
+  sessoes: [],
+};
 const armazenamento = new Map<string, string>();
 let usuarioDaConexao = 'postgres';
 
@@ -69,6 +87,8 @@ function aplicar(operacoes: OperacaoDTO[], extra: { inversas?: OperacaoDTO[] | n
       origem: extra.origem ?? 'FORMULARIO',
     }),
     agora,
+    {},
+    { conta: contaDaDemonstracao },
   );
 }
 

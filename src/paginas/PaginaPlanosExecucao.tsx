@@ -29,10 +29,12 @@ import type { SituacaoConexao } from '@/provedores/ProvedorConexao';
 import { rotuloVerHistorico } from '@/regras/historicoConsulta';
 import {
   PERIODO_DOS_PLANOS,
+  ancestraisDaEtapa,
   descreverNo,
   diagnosticarPlano,
   etapaMaisLenta,
   linhasDoPlano,
+  nomeDoNo,
   periodoDaVersao,
   rotuloDaVersao,
 } from '@/regras/planoExecucao';
@@ -392,6 +394,11 @@ function ConteudoDoPlano({ planos, plano, aoEscolherVersao, aoComparar }: Conteu
               abaixoDeLimite={linha?.abaixoDeLimite ?? false}
               posicao={posicao + 1}
               total={linhas.length}
+              caminho={ancestraisDaEtapa(linhas, no.id).map((id) => ({
+                id,
+                nome: nomeDoNo(linhas.find((outra) => outra.no.id === id)?.no ?? no),
+              }))}
+              aoIrParaEtapa={irParaEtapa}
             />
           </div>
         </div>
