@@ -68,6 +68,7 @@ interface SecaoCopiavelProps {
   anuncio: string;
   tituloDoErro: string;
   descricaoDoErro: string;
+  acao?: ReactNode;
   children?: ReactNode;
 }
 
@@ -79,6 +80,7 @@ export function SecaoCopiavel({
   anuncio,
   tituloDoErro,
   descricaoDoErro,
+  acao,
   children,
 }: SecaoCopiavelProps) {
   const notificacoes = useNotificacoes();
@@ -104,9 +106,12 @@ export function SecaoCopiavel({
         <h3 className={estilos.tituloSecao} id={id}>
           {titulo}
         </h3>
-        <Botao variante="secundario" tamanho="sm" icone={copiou ? Check : Copy} onClick={() => void copiar()}>
-          {copiou ? copiado : 'Copiar'}
-        </Botao>
+        <div className={estilos.acoesSecao}>
+          {acao}
+          <Botao variante="secundario" tamanho="sm" icone={copiou ? Check : Copy} onClick={() => void copiar()}>
+            {copiou ? copiado : 'Copiar'}
+          </Botao>
+        </div>
         <span className="visualmente-oculto" role="status">
           {copiou ? anuncio : ''}
         </span>

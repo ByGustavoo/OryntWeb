@@ -1,3 +1,4 @@
+import type { OperacaoDTO } from '@/modelos/alteracoes';
 import type { DirecaoOrdenacao } from '@/modelos/consultas';
 import type { PeriodoDashboard } from '@/modelos/dashboard';
 import type { PapelDTO } from '@/modelos/papeis';
@@ -153,6 +154,7 @@ export interface SugestaoDeTempoOcioso {
   comando: string;
   explicacao: string;
   frase: string;
+  operacoes: OperacaoDTO[];
 }
 
 function lerDaLista<T extends string>(lista: readonly T[], valor: unknown): T | null {
@@ -674,8 +676,9 @@ export function sugestaoDeTempoOcioso(
   return {
     papel: papel.nome,
     vezes: papel.ociosasEmTransacao30Dias,
+    operacoes: [{ tipo: 'CONFIGURAR_PAPEL', papel: papel.nome, parametro: PARAMETRO_TEMPO_OCIOSO, valor: TEMPO_OCIOSO_SUGERIDO }],
     comando: `ALTER ROLE ${identificadorSql(papel.nome)} SET ${PARAMETRO_TEMPO_OCIOSO} = '${TEMPO_OCIOSO_SUGERIDO}';`,
-    explicacao: `O PostgreSQL passa a encerrar a sessão de ${papel.nome} que ficar parada mais de 5 minutos com uma transação aberta, e desfaz essa transação. Vale para as próximas sessões. Confira antes se a aplicação não segura transações de propósito, como um relatório que lê em várias etapas. O Orynt não executa nada no banco.`,
+    explicacao: `O PostgreSQL passa a encerrar a sessão de ${papel.nome} que ficar parada mais de 5 minutos com uma transação aberta, e desfaz essa transação. Vale para as próximas sessões. Confira antes se a aplicação não segura transações de propósito, como um relatório que lê em várias etapas. Nada roda sem você revisar o comando antes.`,
     frase: `Deixou uma transação parada por ${MINUTOS_OCIOSA_EM_TRANSACAO} minutos ou mais em ${vezes} ocasiões nos últimos 30 dias, e nem o papel nem o servidor têm ${PARAMETRO_TEMPO_OCIOSO}.`,
   };
 }

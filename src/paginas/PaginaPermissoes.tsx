@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeftRight, FlaskConical, Globe, Info, OctagonAlert, SearchX, ShieldCheck, UserRound, UsersRound } from 'lucide-react';
+import { ArrowLeftRight, FlaskConical, Globe, Info, KeyRound, OctagonAlert, Play, SearchX, ShieldCheck, UserRound, UsersRound } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { ehErroApi } from '@/api/tratamentoErros';
 import { PainelSemConexao } from '@/componentes/conexao/PainelSemConexao';
@@ -10,6 +10,7 @@ import type { ItemDeAtencao } from '@/componentes/objetos/PontosDeAtencao';
 import { ResumoDaLista } from '@/componentes/objetos/ResumoDaLista';
 import type { AtalhoDaLista } from '@/componentes/objetos/ResumoDaLista';
 import { BarraPermissoes } from '@/componentes/usuarios/BarraPermissoes';
+import { BotaoDeAlteracao } from '@/componentes/usuarios/BotaoDeAlteracao';
 import { DetalheAcesso } from '@/componentes/usuarios/DetalheAcesso';
 import { PrivilegiosPadrao } from '@/componentes/usuarios/PrivilegiosPadrao';
 import { iconeDaSituacaoPermissao, iconeDoTipoObjetoPermissao } from '@/componentes/usuarios/SeloSituacaoPermissao';
@@ -21,9 +22,12 @@ import { lerLinhaDaChegada, useFiltrosPermissoes } from '@/ganchos/useFiltrosPer
 import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
 import { useVerObjeto } from '@/ganchos/useVerObjeto';
 import type { FiltrosPermissoes, Privilegio, SituacaoPermissao } from '@/modelos/permissoes';
+import { useAlteracoes } from '@/provedores/ProvedorAlteracoes';
 import { useConexao } from '@/provedores/ProvedorConexao';
 import type { SituacaoConexao } from '@/provedores/ProvedorConexao';
 import { limparBusca } from '@/regras/buscaConsultas';
+import { capacidadeDasOperacoes, contextoDasPermissoes } from '@/regras/capacidadeAlteracoes';
+import type { CamposConcessao } from '@/regras/formularioConcessao';
 import type { SentidoDoPasso } from '@/regras/filtrosConsultas';
 import { paginaDaPosicao, paginarLista } from '@/regras/paginacaoLocal';
 import {
@@ -96,6 +100,8 @@ export default function PaginaPermissoes() {
   useTituloDocumento('Usuários e permissões: Permissões');
   const { situacao, conexao } = useConexao();
   const { filtros, mudarFiltros } = useFiltrosPermissoes(caminhos.usuariosPermissoes);
+  const { abrir } = useAlteracoes();
+  const [inicialDaConcessao, setInicialDaConcessao] = useState<Partial<CamposConcessao>>({});
 
   return (
     <>
@@ -106,9 +112,22 @@ export default function PaginaPermissoes() {
             ? 'O que cada papel pode fazer em cada objeto do banco, de onde vem cada permissão e quais são um risco.'
             : descreverSemConexao(situacao)
         }
+        acoes={
+          conexao ? (
+            <Botao icone={KeyRound} onClick={() => abrir({ tipo: 'CONCESSAO', inicial: inicialDaConcessao })}>
+              Conceder ou revogar
+            </Botao>
+          ) : undefined
+        }
       />
       {conexao ? (
-        <ListaConectada key={conexao.id} simulada={conexao.simulada} filtros={filtros} mudarFiltros={mudarFiltros} />
+        <ListaConectada
+          key={conexao.id}
+          simulada={conexao.simulada}
+          filtros={filtros}
+          mudarFiltros={mudarFiltros}
+          aoMudarSelecao={setInicialDaConcessao}
+        />
       ) : (
         <PainelSemConexao />
       )}
@@ -120,6 +139,7 @@ interface ListaConectadaProps {
   simulada: boolean;
   filtros: FiltrosPermissoes;
   mudarFiltros: (mudanca: Partial<FiltrosPermissoes>) => void;
+  aoMudarSelecao: (inicial: Partial<CamposConcessao>) => void;
 }
 
 interface Selecao {
@@ -174,7 +194,7 @@ function linhaDoLado(acesso: Acesso, indice: IndiceDasPermissoes): LinhaPermissa
   return { chave: acesso.sujeito, acesso, situacoes: situacoesDoAcesso(acesso, indice) };
 }
 
-function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps) {
+function ListaConectada({ simulada, filtros, mudarFiltros, aoMudarSelecao }: ListaConectadaProps) {
   const { marcarDesconectada } = useConexao();
   const irParaObjeto = useVerObjeto();
   const localizacao = useLocation();
@@ -187,7 +207,8 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
   const [origem, setOrigem] = useState<Origem>('LISTA');
   const [levarAPagina, setLevarAPagina] = useState(false);
 
-  const lista = useDadosAssincronos((signal) => servicoUsuarios.listarPermissoes(signal), []);
+  const { abrir: alterar, versao } = useAlteracoes();
+  const lista = useDadosAssincronos((signal) => servicoUsuarios.listarPermissoes(signal), [versao]);
   const sessaoEncerrada = ehErroApi(lista.erro, 'NAO_AUTORIZADO');
   const indice = useMemo(() => (lista.dados ? indexarPermissoes(lista.dados) : null), [lista.dados]);
   const carregado = indice !== null;
@@ -241,6 +262,12 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
   useEffect(() => {
     if (sessaoEncerrada) marcarDesconectada();
   }, [sessaoEncerrada, marcarDesconectada]);
+
+  useEffect(() => {
+    if (!selecao) return;
+    if (modo === 'OBJETO') aoMudarSelecao({ alcance: 'OBJETO', objeto: selecao.objetoId });
+    else aoMudarSelecao({ beneficiario: selecao.sujeito });
+  }, [selecao, modo, aoMudarSelecao]);
 
   useEffect(() => {
     if (buscaDigitada === filtros.busca) return;
@@ -545,7 +572,21 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
             emEspera={lista.dados === null && lista.carregando}
             rotuloDosAtalhos="Linhas que pedem atenção"
             atalhos={modo === 'COMPARACAO' ? [] : (Object.keys(textosDosAtalhos) as SituacaoPermissao[]).map(atalho)}
-            acao={lote ? <CopiarComandos key={lote.comandos.join(' ')} lote={lote} seFalhar={ERRO_AO_COPIAR} /> : null}
+            acao={
+              lote && indice ? (
+                <>
+                  <CopiarComandos key={lote.comandos.join(' ')} lote={lote} seFalhar={ERRO_AO_COPIAR} />
+                  <BotaoDeAlteracao
+                    tamanho="sm"
+                    icone={Play}
+                    capacidade={capacidadeDasOperacoes(lote.operacoes, contextoDasPermissoes(indice), indice)}
+                    onClick={() => alterar({ tipo: 'OPERACOES', operacoes: lote.operacoes, origem: 'LOTE' })}
+                  >
+                    {lote.comandos.length === 1 ? 'Executar' : `Executar os ${formatarNumero(lote.comandos.length)}`}
+                  </BotaoDeAlteracao>
+                </>
+              ) : null
+            }
             mostrarLimpar={temFiltroAtivoPermissoes(filtros) && chaves.length > 0}
             aoLimpar={limparFiltros}
           />
@@ -581,6 +622,8 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
           padroes={indice.dados.privilegiosPadrao}
           sujeito={modo === 'OBJETO' ? null : (selecao?.sujeito ?? null)}
           alcanca={(padrao) => (selecao ? padraoAlcancaSujeito(padrao, selecao.sujeito, indice) : false)}
+          indice={indice}
+          aoAlterar={alterar}
         />
       ) : null}
 
@@ -601,6 +644,7 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
         aoVerPorPapel={(sujeito) => trocarSelecao({ modo: 'PAPEL', papel: sujeito })}
         aoVerPorObjeto={(objetoId) => trocarSelecao({ modo: 'OBJETO', objeto: objetoId })}
         aoComparar={(sujeito) => trocarSelecao({ modo: 'COMPARACAO', papel: sujeito, comparado: null })}
+        aoAlterar={alterar}
       />
     </div>
   );

@@ -32,6 +32,7 @@ export const rotasApi = {
     papeis: '/usuarios/papeis',
     sessoes: '/usuarios/sessoes',
     permissoes: '/usuarios/permissoes',
+    alteracoes: '/usuarios/alteracoes',
   },
   relatorios: {
     resumo: '/relatorios/resumo',

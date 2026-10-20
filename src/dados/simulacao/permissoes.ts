@@ -98,7 +98,7 @@ export const privilegiosPadraoFicticios: PrivilegioPadraoDTO[] = [
 
 function esbocos(agora: Date, banco: string): Esboco[] {
   const tabelas = gerarTabelas(agora).tabelas;
-  const base: Esboco = { id: '', tipo: 'BANCO', esquema: null, nome: '', dono: '', segurancaDefinidor: false };
+  const base: Esboco = { id: '', tipo: 'BANCO', esquema: null, nome: '', dono: '', segurancaDefinidor: false, colunas: [] };
 
   const sequencias = tabelas.flatMap((tabela) =>
     tabela.colunas.flatMap((coluna): Esboco[] => {
@@ -118,6 +118,7 @@ function esbocos(agora: Date, banco: string): Esboco[] {
       esquema: tabela.esquema,
       nome: tabela.nome,
       dono: tabela.dono,
+      colunas: tabela.colunas.map((coluna) => coluna.nome),
     })),
     ...gerarVisoes(agora).visoes.map((visao): Esboco => ({
       ...base,
@@ -126,6 +127,7 @@ function esbocos(agora: Date, banco: string): Esboco[] {
       esquema: visao.esquema,
       nome: visao.nome,
       dono: visao.dono,
+      colunas: visao.colunas.map((coluna) => coluna.nome),
     })),
     ...sequencias,
     ...gerarFuncoes(agora).funcoes.map((funcao): Esboco => ({

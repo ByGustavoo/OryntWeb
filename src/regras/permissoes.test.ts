@@ -56,7 +56,7 @@ function objeto(
   const ponto = id.indexOf('.');
   const esquema = tipo === 'ESQUEMA' || tipo === 'BANCO' ? null : id.slice(0, ponto);
   const nome = tipo === 'ESQUEMA' ? id.slice('esquema:'.length) : tipo === 'BANCO' ? id.slice('banco:'.length) : id.slice(ponto + 1);
-  return { id, tipo, esquema, nome, dono: 'dono', segurancaDefinidor: false, concessoes, ...extra };
+  return { id, tipo, esquema, nome, dono: 'dono', segurancaDefinidor: false, colunas: [], concessoes, ...extra };
 }
 
 function leitura(...ids: string[]): ObjetoComPermissoesDTO[] {

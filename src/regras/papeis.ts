@@ -1,3 +1,4 @@
+import type { OperacaoDTO } from '@/modelos/alteracoes';
 import type { DirecaoOrdenacao } from '@/modelos/consultas';
 import type {
   AtributoPapel,
@@ -17,6 +18,7 @@ import { descreverConfiguracao, temSearchPathFixo } from './funcoes';
 import { DIAS_DE_OBSERVACAO } from './indices';
 import type { LoteDeComandos } from './indices';
 import { lerPagina, paginaAposMudanca } from './paginacaoLocal';
+import { comandosDasOperacoes } from './sqlAlteracoes';
 import type { TomDoAviso } from './visoes';
 
 export const DIAS_ATE_VENCER = 7;
@@ -146,6 +148,7 @@ export interface ComandoDoPapel {
   rotulo: string;
   comando: string;
   explicacao: string;
+  operacoes: OperacaoDTO[] | null;
 }
 
 export type EstadoDaSenha = 'SEM_SENHA' | 'SEM_VALIDADE' | 'VALIDA' | 'A_VENCER' | 'VENCIDA';
@@ -693,27 +696,38 @@ export function novoLimiteDeConexoes(papel: PapelDTO): number {
   return Math.max(limite + 1, Math.ceil(limite * 1.5));
 }
 
+const NAO_EXECUTA_SEM_REVISAO = 'Nada roda sem você revisar o comando antes.';
+
 export function comandosDoPapel(papel: PapelDTO, contexto: ContextoDosPapeis): ComandoDoPapel[] {
   const nome = identificadorSql(papel.nome);
   const situacoes = situacoesDoPapel(papel, contexto);
   const comandos: ComandoDoPapel[] = [];
+  const alterar = (mudanca: Omit<Extract<OperacaoDTO, { tipo: 'ALTERAR_PAPEL' }>, 'tipo' | 'papel'>): OperacaoDTO[] => [
+    { tipo: 'ALTERAR_PAPEL', papel: papel.nome, ...mudanca },
+  ];
+  const comOperacoes = (
+    item: Omit<ComandoDoPapel, 'comando'> & { operacoes: OperacaoDTO[] },
+  ): ComandoDoPapel => ({ ...item, comando: comandosDasOperacoes(item.operacoes).join('\n') });
 
   if (situacoes.includes('SUPERUSUARIO')) {
-    comandos.push({
-      situacao: 'SUPERUSUARIO',
-      rotulo: 'Comando que tira o superusuário',
-      comando: `ALTER ROLE ${nome} NOSUPERUSER;`,
-      explicacao:
-        'Antes de rodar, confira o que este usuário faz que exige superusuário, como criar extensões ou mudar configurações do servidor, e conceda só isso. O Orynt não executa nada no banco.',
-    });
+    comandos.push(
+      comOperacoes({
+        situacao: 'SUPERUSUARIO',
+        rotulo: 'Comando que tira o superusuário',
+        operacoes: alterar({ atributos: { superusuario: false } }),
+        explicacao: `Antes de rodar, confira o que este usuário faz que exige superusuário, como criar extensões ou mudar configurações do servidor, e conceda só isso. ${NAO_EXECUTA_SEM_REVISAO}`,
+      }),
+    );
   }
   if (situacoes.includes('VALIDADE_DA_SENHA')) {
-    comandos.push({
-      situacao: 'VALIDADE_DA_SENHA',
-      rotulo: 'Comando que renova a validade',
-      comando: `ALTER ROLE ${nome} VALID UNTIL '${dataDaNovaValidade(contexto)}';`,
-      explicacao: `Leva a validade para ${DIAS_DA_NOVA_VALIDADE} dias à frente. Se a senha também precisa mudar, troque-a no psql com \\password ${nome}, que não deixa a senha no histórico nem no registro do servidor. O Orynt não executa nada no banco.`,
-    });
+    comandos.push(
+      comOperacoes({
+        situacao: 'VALIDADE_DA_SENHA',
+        rotulo: 'Comando que renova a validade',
+        operacoes: alterar({ atributos: {}, validadeSenha: dataDaNovaValidade(contexto) }),
+        explicacao: `Leva a validade para ${DIAS_DA_NOVA_VALIDADE} dias à frente. Se a senha também precisa mudar, troque-a em "Editar", que calcula o verificador SCRAM no navegador, ou no psql com \\password ${nome}. ${NAO_EXECUTA_SEM_REVISAO}`,
+      }),
+    );
   }
   if (situacoes.includes('SENHA_MD5')) {
     comandos.push({
@@ -721,34 +735,39 @@ export function comandosDoPapel(papel: PapelDTO, contexto: ContextoDosPapeis): C
       rotulo: 'Comandos que passam a senha para SCRAM',
       comando: `SET password_encryption = 'scram-sha-256';\n\\password ${nome}`,
       explicacao:
-        'A senha só muda de formato quando é definida de novo. Rode os dois no psql: o \\password pede a senha sem mostrá-la. Depois, troque md5 por scram-sha-256 no pg_hba.conf. O Orynt não executa nada no banco.',
+        'A senha só muda de formato quando é definida de novo. "Trocar a senha" faz isso aqui, com o verificador SCRAM calculado no navegador; no psql, o \\password pede a senha sem mostrá-la. Depois, troque md5 por scram-sha-256 no pg_hba.conf.',
+      operacoes: null,
     });
   }
   if (situacoes.includes('PERTO_DO_LIMITE')) {
-    comandos.push({
-      situacao: 'PERTO_DO_LIMITE',
-      rotulo: 'Comando que sobe o limite',
-      comando: `ALTER ROLE ${nome} CONNECTION LIMIT ${novoLimiteDeConexoes(papel)};`,
-      explicacao:
-        'Antes de subir o limite, confira se o serviço não está deixando conexões abertas: um pool de conexões costuma resolver sem aumentar. O Orynt não executa nada no banco.',
-    });
+    comandos.push(
+      comOperacoes({
+        situacao: 'PERTO_DO_LIMITE',
+        rotulo: 'Comando que sobe o limite',
+        operacoes: alterar({ atributos: {}, limiteConexoes: novoLimiteDeConexoes(papel) }),
+        explicacao: `Antes de subir o limite, confira se o serviço não está deixando conexões abertas: um pool de conexões costuma resolver sem aumentar. ${NAO_EXECUTA_SEM_REVISAO}`,
+      }),
+    );
   }
   if (situacoes.includes('SEM_USO')) {
-    comandos.push({
-      situacao: 'SEM_USO',
-      rotulo: 'Comando que desliga o login',
-      comando: `ALTER ROLE ${nome} NOLOGIN;`,
-      explicacao: `Desliga o login sem apagar o papel nem as permissões: se algo parar, ALTER ROLE ${nome} LOGIN volta tudo como estava. O Orynt não executa nada no banco.`,
-    });
+    comandos.push(
+      comOperacoes({
+        situacao: 'SEM_USO',
+        rotulo: 'Comando que desliga o login',
+        operacoes: alterar({ atributos: { login: false } }),
+        explicacao: `Desliga o login sem apagar o papel nem as permissões: se algo parar, ALTER ROLE ${nome} LOGIN volta tudo como estava. ${NAO_EXECUTA_SEM_REVISAO}`,
+      }),
+    );
   }
   if (situacoes.includes('GRUPO_VAZIO')) {
-    comandos.push({
-      situacao: 'GRUPO_VAZIO',
-      rotulo: 'Comando que remove o grupo',
-      comando: `DROP ROLE ${nome};`,
-      explicacao:
-        'Se o grupo tiver objetos ou permissões em outros bancos do servidor, o PostgreSQL recusa a remoção até eles saírem: rode REASSIGN OWNED e DROP OWNED em cada banco antes. O Orynt não executa nada no banco.',
-    });
+    comandos.push(
+      comOperacoes({
+        situacao: 'GRUPO_VAZIO',
+        rotulo: 'Comando que remove o grupo',
+        operacoes: [{ tipo: 'EXCLUIR_PAPEL', papel: papel.nome, herdeiro: null, removerPermissoes: false, encerrarSessoes: false }],
+        explicacao: `Se o grupo tiver objetos ou permissões em outros bancos do servidor, o PostgreSQL recusa a remoção até eles saírem: rode REASSIGN OWNED e DROP OWNED em cada banco antes. ${NAO_EXECUTA_SEM_REVISAO}`,
+      }),
+    );
   }
 
   return comandos;
@@ -773,6 +792,16 @@ export function loteDeComandosDosPapeis(
     descricao:
       comandos.length === 1 ? 'Copiar o comando do papel da lista' : `Copiar os ${quantidade} comandos dos papéis da lista, um por linha`,
   };
+}
+
+export function operacoesDoLoteDosPapeis(
+  papeis: PapelDTO[],
+  situacao: SituacaoPapel,
+  contexto: ContextoDosPapeis,
+): OperacaoDTO[] | null {
+  const comandos = papeis.flatMap((papel) => comandosDoPapel(papel, contexto).filter((comando) => comando.situacao === situacao));
+  if (comandos.length === 0 || comandos.some((comando) => comando.operacoes === null)) return null;
+  return comandos.flatMap((comando) => comando.operacoes ?? []);
 }
 
 export function contarObjetosPorTipo(papel: PapelDTO): { tipo: TipoObjetoDoPapel; quantidade: number }[] {

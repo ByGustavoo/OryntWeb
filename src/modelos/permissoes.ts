@@ -42,6 +42,7 @@ export interface ObjetoComPermissoesDTO {
   nome: string;
   dono: string;
   segurancaDefinidor: boolean;
+  colunas: string[];
   concessoes: ConcessaoDTO[];
 }
 

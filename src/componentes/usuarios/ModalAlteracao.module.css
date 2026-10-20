@@ -1,0 +1,6 @@
+.corpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-5);
+  padding-top: var(--espaco-2);
+}

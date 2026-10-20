@@ -1,15 +1,18 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import { ArrowLeftRight, ChevronDown, ChevronRight, ChevronUp, FlaskConical, Info, OctagonAlert, TriangleAlert } from 'lucide-react';
+import { ArrowLeftRight, ChevronDown, ChevronRight, ChevronUp, FlaskConical, Info, KeyRound, OctagonAlert, Play, TriangleAlert } from 'lucide-react';
 import { SecaoCopiavel } from '@/componentes/objetos/DetalheObjeto';
 import estilos from '@/componentes/objetos/DetalheObjeto.module.css';
 import proprios from '@/componentes/objetos/DetalheTabela.module.css';
 import { NomeObjeto } from '@/componentes/objetos/NomeObjeto';
 import { Botao, BotaoIcone, Modal, Nota, Selo } from '@/componentes/ui';
 import type { ModoPermissoes, Privilegio } from '@/modelos/permissoes';
+import type { PedidoDeAlteracao } from '@/provedores/ProvedorAlteracoes';
+import { capacidadeDasOperacoes, contextoDasPermissoes } from '@/regras/capacidadeAlteracoes';
 import type { SentidoDoPasso } from '@/regras/filtrosConsultas';
 import {
   comandosDoAcesso,
   comandosParaConceder,
+  operacoesParaConceder,
   efeitoDoPrivilegio,
   formasDeTirar,
   fraseDaOrigem,
@@ -23,6 +26,7 @@ import {
 } from '@/regras/permissoes';
 import type { Acesso, IndiceDasPermissoes, LinhaPermissao } from '@/regras/permissoes';
 import { formatarNumero } from '@/utilitarios/formatacao';
+import { BotaoDeAlteracao } from './BotaoDeAlteracao';
 import locais from './DetalheAcesso.module.css';
 import { iconeDoTipoObjetoPermissao, SeloNivel, SeloSituacaoPermissao } from './SeloSituacaoPermissao';
 
@@ -40,6 +44,7 @@ export interface AcoesDoDetalheAcesso {
   aoVerPorPapel: (sujeito: string) => void;
   aoVerPorObjeto: (objetoId: string) => void;
   aoComparar: (sujeito: string) => void;
+  aoAlterar: (pedido: PedidoDeAlteracao) => void;
 }
 
 interface DetalheAcessoProps extends AcoesDoDetalheAcesso {
@@ -206,6 +211,7 @@ function CorpoDetalhe({ modo, linhas, diferencas, indice, papelDaConexao, simula
           indice={indice}
           papelDaConexao={papelDaConexao}
           aoAbrirPapel={acoes.aoAbrirPapel}
+          aoAlterar={acoes.aoAlterar}
         />
       ))}
 
@@ -260,15 +266,19 @@ interface LadoDoAcessoProps {
   indice: IndiceDasPermissoes;
   papelDaConexao: string;
   aoAbrirPapel: (nome: string) => void;
+  aoAlterar: (pedido: PedidoDeAlteracao) => void;
 }
 
-function LadoDoAcesso({ linha, diferenca, comparando, indice, papelDaConexao, aoAbrirPapel }: LadoDoAcessoProps) {
+function LadoDoAcesso({ linha, diferenca, comparando, indice, papelDaConexao, aoAbrirPapel, aoAlterar }: LadoDoAcessoProps) {
   const { acesso } = linha;
   const { sujeito } = acesso;
   const papel = indice.papeis.get(sujeito);
   const comandos = comandosDoAcesso(linha, indice);
   const formas = acesso.nivel === 'NENHUM' ? [] : formasDeTirar(acesso);
   const conceder = acesso.nivel === 'NENHUM' ? comandosParaConceder(acesso, indice) : [];
+  const operacoesDeConceder = acesso.nivel === 'NENHUM' ? operacoesParaConceder(acesso, indice) : [];
+  const contexto = contextoDasPermissoes(indice);
+  const capacidadeDe = (operacoes: Parameters<typeof capacidadeDasOperacoes>[0]) => capacidadeDasOperacoes(operacoes, contexto, indice);
   const idBase = `acesso-${sujeito.replace(/[^\w-]/g, '_')}`;
   const semUsage = acesso.nivel !== 'NENHUM' && !linha.situacoes.includes('SEM_USAGE') && semUsageNoEsquema(acesso, indice);
 
@@ -294,17 +304,34 @@ function LadoDoAcesso({ linha, diferenca, comparando, indice, papelDaConexao, ao
             ? 'Vale para todos os papéis do servidor que conectam a este banco.'
             : `${papel?.login ? 'Usuário' : 'Grupo'}${papel?.superusuario ? ' superusuário' : ''}${papel?.descricao ? `: ${papel.descricao}` : '.'}`}
         </p>
-        {papel ? (
-          <Botao
-            variante="terciario"
-            tamanho="sm"
-            iconeDireita={ChevronRight}
-            className={locais.abrirPapel}
-            onClick={() => aoAbrirPapel(sujeito)}
-          >
-            Abrir {sujeito} em Papéis
-          </Botao>
-        ) : null}
+        <div className={locais.acoesDoLado}>
+          {papel ? (
+            <Botao
+              variante="terciario"
+              tamanho="sm"
+              iconeDireita={ChevronRight}
+              className={locais.abrirPapel}
+              onClick={() => aoAbrirPapel(sujeito)}
+            >
+              Abrir {sujeito} em Papéis
+            </Botao>
+          ) : null}
+          {acesso.nivel !== 'TOTAL' ? (
+            <Botao
+              variante="secundario"
+              tamanho="sm"
+              icone={KeyRound}
+              onClick={() =>
+                aoAlterar({
+                  tipo: 'CONCESSAO',
+                  inicial: { beneficiario: sujeito, alcance: 'OBJETO', objeto: acesso.objeto.id },
+                })
+              }
+            >
+              Conceder ou revogar
+            </Botao>
+          ) : null}
+        </div>
       </div>
 
       {linha.situacoes.map((situacao) => (
@@ -334,6 +361,16 @@ function LadoDoAcesso({ linha, diferenca, comparando, indice, papelDaConexao, ao
           anuncio="Comando copiado para a área de transferência."
           tituloDoErro="Não foi possível copiar o comando"
           descricaoDoErro="O navegador bloqueou a área de transferência. Selecione o texto do comando e copie por lá."
+          acao={
+            <BotaoDeAlteracao
+              tamanho="sm"
+              icone={Play}
+              capacidade={capacidadeDe(comando.operacoes)}
+              onClick={() => aoAlterar({ tipo: 'OPERACOES', operacoes: comando.operacoes, origem: 'PONTO_DE_ATENCAO' })}
+            >
+              Executar
+            </BotaoDeAlteracao>
+          }
         >
           <p className={estilos.leitura}>{comando.explicacao}</p>
         </SecaoCopiavel>
@@ -385,13 +422,26 @@ function LadoDoAcesso({ linha, diferenca, comparando, indice, papelDaConexao, ao
             {formas.map((forma) => (
               <li key={forma.texto} className={locais.forma}>
                 <Info size={14} strokeWidth={2} aria-hidden="true" className={locais.iconeForma} />
-                <span>
-                  {forma.texto}
-                  {forma.comando ? (
-                    <>
-                      {' '}
-                      <span className="codigo">{forma.comando}</span>
-                    </>
+                <span className={locais.textoDaForma}>
+                  <span>
+                    {forma.texto}
+                    {forma.comando ? (
+                      <>
+                        {' '}
+                        <span className="codigo">{forma.comando}</span>
+                      </>
+                    ) : null}
+                  </span>
+                  {forma.operacoes && forma.rotulo ? (
+                    <BotaoDeAlteracao
+                      variante="secundario"
+                      tamanho="sm"
+                      className={locais.botaoDaForma}
+                      capacidade={capacidadeDe(forma.operacoes)}
+                      onClick={() => forma.operacoes && aoAlterar({ tipo: 'OPERACOES', operacoes: forma.operacoes, origem: 'DETALHE' })}
+                    >
+                      {forma.rotulo}
+                    </BotaoDeAlteracao>
                   ) : null}
                 </span>
               </li>
@@ -409,13 +459,23 @@ function LadoDoAcesso({ linha, diferenca, comparando, indice, papelDaConexao, ao
           anuncio="Comando copiado para a área de transferência."
           tituloDoErro="Não foi possível copiar o comando"
           descricaoDoErro="O navegador bloqueou a área de transferência. Selecione o texto do comando e copie por lá."
+          acao={
+            <BotaoDeAlteracao
+              tamanho="sm"
+              icone={Play}
+              capacidade={capacidadeDe(operacoesDeConceder)}
+              onClick={() => aoAlterar({ tipo: 'OPERACOES', operacoes: operacoesDeConceder, origem: 'DETALHE' })}
+            >
+              Conceder
+            </BotaoDeAlteracao>
+          }
         >
           <p className={estilos.leitura}>
             {conceder.length > 1
               ? `Sem USAGE no esquema ${acesso.objeto.esquema}, o privilégio no objeto não funcionaria, por isso ele vem primeiro. `
               : ''}
-            Conceda a um grupo, e não ao usuário, quando mais de um papel precisa do mesmo acesso. O Orynt não executa nada no
-            banco.
+            Conceda a um grupo, e não ao usuário, quando mais de um papel precisa do mesmo acesso. Nada roda sem você revisar o
+            comando antes.
           </p>
         </SecaoCopiavel>
       ) : null}

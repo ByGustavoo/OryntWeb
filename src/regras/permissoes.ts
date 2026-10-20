@@ -1,4 +1,10 @@
 import type {
+  ConcederPrivilegiosDTO,
+  OperacaoDTO,
+  ReferenciaObjetoDTO,
+  RevogarPrivilegiosDTO,
+} from '@/modelos/alteracoes';
+import type {
   ConcessaoDTO,
   FiltroDeAcesso,
   FiltroDePapel,
@@ -20,6 +26,7 @@ import { lerIdDaFuncao } from './funcoes';
 import { lerTabela } from './indices';
 import { lerPagina, paginaAposMudanca } from './paginacaoLocal';
 import { identificadorSql, lerNomeDoPapel } from './papeis';
+import { comandosDasOperacoes } from './sqlAlteracoes';
 import type { TomDoAviso } from './visoes';
 import { lerEsquema } from './visoes';
 
@@ -188,7 +195,7 @@ const palavraDoTipoSql: Record<TipoObjetoPermissao, string> = {
   PROCEDIMENTO: 'PROCEDURE',
 };
 
-const palavraDoPadraoSql: Record<TipoPrivilegioPadrao, string> = {
+export const palavraDoPadraoSql: Record<TipoPrivilegioPadrao, string> = {
   TABELAS: 'TABLES',
   SEQUENCIAS: 'SEQUENCES',
   FUNCOES: 'FUNCTIONS',
@@ -1024,80 +1031,136 @@ export interface ComandoDePermissao {
   rotulo: string;
   comando: string;
   explicacao: string;
+  operacoes: OperacaoDTO[];
 }
 
-const NAO_EXECUTA = 'O Orynt não executa nada no banco.';
+const NAO_EXECUTA = 'Nada roda sem você revisar o comando antes.';
+
+export function referenciaDoObjeto(objeto: ObjetoComPermissoesDTO): ReferenciaObjetoDTO {
+  return { id: objeto.id, tipo: objeto.tipo, esquema: objeto.esquema, nome: objeto.nome };
+}
+
+function concedentesAlheios(objeto: ObjetoComPermissoesDTO, concessoes: ConcessaoDTO[]): string[] {
+  const concedentes = [...new Set(concessoes.map((concessao) => concessao.concedente))];
+  return concedentes.every((concedente) => concedente === objeto.dono) ? [] : concedentes.sort(compararNomes);
+}
+
+export function revogacaoDe(
+  objeto: ObjetoComPermissoesDTO,
+  beneficiario: string,
+  privilegios: Privilegio[],
+  concessoes: ConcessaoDTO[],
+  soRepasse = false,
+): RevogarPrivilegiosDTO {
+  return {
+    tipo: 'REVOGAR',
+    alvo: { tipo: 'OBJETO', objeto: referenciaDoObjeto(objeto) },
+    beneficiario,
+    privilegios: privilegiosDoTipo[objeto.tipo].filter((privilegio) => privilegios.includes(privilegio)),
+    colunas: null,
+    soRepasse,
+    concedentes: concedentesAlheios(objeto, concessoes),
+    cascata: false,
+  };
+}
+
+export function concessaoDe(objeto: ObjetoComPermissoesDTO, beneficiario: string, privilegios: Privilegio[]): ConcederPrivilegiosDTO {
+  return {
+    tipo: 'CONCEDER',
+    alvo: { tipo: 'OBJETO', objeto: referenciaDoObjeto(objeto) },
+    beneficiario,
+    privilegios,
+    colunas: null,
+    repassavel: false,
+  };
+}
+
+function comComando(item: Omit<ComandoDePermissao, 'comando'>): ComandoDePermissao {
+  return { ...item, comando: comandosDasOperacoes(item.operacoes).join('\n') };
+}
+
+function concessoesDiretasDos(objeto: ObjetoComPermissoesDTO, beneficiario: string, privilegios: Privilegio[]): ConcessaoDTO[] {
+  return concessoesDiretas(objeto, beneficiario).filter((item) => privilegios.includes(item.privilegio));
+}
 
 function comandoDaSituacao(situacao: SituacaoPermissao, acesso: Acesso, indice: IndiceDasPermissoes): ComandoDePermissao | null {
   const { sujeito, objeto } = acesso;
-  const alvo = referenciaSql(objeto);
 
   if (situacao === 'DEFINIDOR_ABERTO') {
-    return {
+    return comComando({
       situacao,
       rotulo: 'Comando que fecha a execução',
-      comando: `REVOKE EXECUTE ON ${alvo} FROM PUBLIC;`,
+      operacoes: [revogacaoDe(objeto, PUBLICO, ['EXECUTE'], concessoesDiretasDos(objeto, PUBLICO, ['EXECUTE']))],
       explicacao: `Antes, conceda EXECUTE pelo nome a quem precisa chamar ${artigoDoTipo(objeto.tipo)} ${nomeDoTipo(objeto.tipo)}. Fixar o search_path, em Funções, fecha o outro lado do risco. ${NAO_EXECUTA}`,
-    };
+    });
   }
   if (situacao === 'TODOS_CRIAM') {
-    return {
+    return comComando({
       situacao,
       rotulo: 'Comando que tira o CREATE de todos',
-      comando: `REVOKE CREATE ON ${alvo} FROM PUBLIC;`,
+      operacoes: [revogacaoDe(objeto, PUBLICO, ['CREATE'], concessoesDiretasDos(objeto, PUBLICO, ['CREATE']))],
       explicacao: `Os objetos que já existem continuam onde estão. Quem cria objetos em ${objeto.nome} de propósito, como uma ferramenta de migrações, precisa receber CREATE pelo nome. ${NAO_EXECUTA}`,
-    };
+    });
   }
   if (situacao === 'ESCRITA_NA_LEITURA') {
     const concessoes = concessoesDeEscritaNaLeitura(acesso, indice);
     const grupo = concessoes[0]?.beneficiario ?? sujeito;
-    return {
+    const privilegios = [...new Set(concessoes.map((item) => item.privilegio))];
+    return comComando({
       situacao,
       rotulo: 'Comando que tira a escrita do grupo',
-      comando: `REVOKE ${privilegiosDasConcessoes(concessoes)} ON ${alvo} FROM ${beneficiarioSql(grupo)};`,
-      explicacao: `O grupo continua lendo. Se um membro precisa mesmo gravar nesse objeto, conceda a ele pelo nome. ${NAO_EXECUTA}`,
-    };
+      operacoes: [revogacaoDe(objeto, grupo, privilegios, concessoes)],
+      explicacao: `O grupo continua lendo. Se um membro precisa mesmo gravar nesse objeto, conceda a ele pelo nome. Quando quem concedeu não é o dono, o comando leva GRANTED BY, porque o PostgreSQL só revoga a concessão em nome de quem a fez. ${NAO_EXECUTA}`,
+    });
   }
   if (situacao === 'REPASSE') {
-    return {
+    const concessoes = concessoesRepassaveis(acesso, indice);
+    const privilegios = [...new Set(concessoes.map((item) => item.privilegio))];
+    return comComando({
       situacao,
       rotulo: 'Comando que tira o repasse',
-      comando: `REVOKE GRANT OPTION FOR ${privilegiosDasConcessoes(concessoesRepassaveis(acesso, indice))} ON ${alvo} FROM ${beneficiarioSql(sujeito)};`,
+      operacoes: [revogacaoDe(objeto, sujeito, privilegios, concessoes, true)],
       explicacao: `Tira só o poder de repassar: o acesso dele continua. Se ele já repassou a alguém, o PostgreSQL recusa o comando até ele levar CASCADE, que também tira o que foi repassado. ${NAO_EXECUTA}`,
-    };
+    });
   }
   if (situacao === 'SEM_USAGE') {
-    const esquema = objeto.esquema ?? '';
-    return {
+    const esquema = objeto.esquema ? indice.esquemas.get(objeto.esquema) : undefined;
+    if (!esquema) return null;
+    return comComando({
       situacao,
       rotulo: 'Comando que libera o esquema',
-      comando: `GRANT USAGE ON SCHEMA ${identificadorSql(esquema)} TO ${beneficiarioSql(sujeito)};`,
+      operacoes: [concessaoDe(esquema, sujeito, ['USAGE'])],
       explicacao: `USAGE só deixa ver os nomes do esquema e usar o que ele já pode. Se ${sujeito} não deveria ler esse objeto, revogue a permissão no objeto em vez disso. ${NAO_EXECUTA}`,
-    };
+    });
   }
   if (situacao === 'SEM_PRIVILEGIO_PADRAO') {
     const falta = faltaDePadraoDoAcesso(acesso, indice);
     if (!falta) return null;
     const padroes = falta.criadores.map(
-      (criador) =>
-        `ALTER DEFAULT PRIVILEGES FOR ROLE ${identificadorSql(criador)} IN SCHEMA ${identificadorSql(falta.esquema)} GRANT SELECT ON TABLES TO ${beneficiarioSql(falta.grupo)};`,
+      (criador): OperacaoDTO => ({
+        tipo: 'PRIVILEGIO_PADRAO',
+        acao: 'CONCEDER',
+        criador,
+        esquema: falta.esquema,
+        tipoDeObjeto: 'TABELAS',
+        beneficiario: falta.grupo,
+        privilegios: ['SELECT'],
+      }),
     );
-    const concessoes = falta.foraDoAlcance.map(
-      (fora) => `GRANT SELECT ON ${referenciaSql(fora)} TO ${beneficiarioSql(falta.grupo)};`,
-    );
-    return {
+    const concessoes = falta.foraDoAlcance.map((fora): OperacaoDTO => concessaoDe(fora, falta.grupo, ['SELECT']));
+    return comComando({
       situacao,
       rotulo: concessoes.length > 0 ? 'Comandos que fecham a lacuna' : 'Comando que define o privilégio padrão',
-      comando: [...padroes, ...concessoes].join('\n'),
+      operacoes: [...padroes, ...concessoes],
       explicacao: `O privilégio padrão vale só para o que ${listarTextos(falta.criadores)} criar daqui em diante${concessoes.length > 0 ? ': os GRANT seguintes alcançam o que já ficou de fora' : ''}. ${NAO_EXECUTA}`,
-    };
+    });
   }
-  return {
+  return comComando({
     situacao,
     rotulo: 'Comando que tira o USAGE',
-    comando: `REVOKE USAGE ON ${alvo} FROM ${beneficiarioSql(sujeito)};`,
+    operacoes: [revogacaoDe(objeto, sujeito, ['USAGE'], concessoesDiretasDos(objeto, sujeito, ['USAGE']))],
     explicacao: `Se ${sujeito} deveria ler algo do esquema, conceda o objeto em vez de tirar o USAGE. ${NAO_EXECUTA}`,
-  };
+  });
 }
 
 export function comandosDoAcesso(linhaDoAcesso: LinhaPermissao, indice: IndiceDasPermissoes): ComandoDePermissao[] {
@@ -1108,6 +1171,11 @@ export interface LoteDePermissoes {
   comandos: string[];
   rotulo: string;
   descricao: string;
+  operacoes: OperacaoDTO[];
+}
+
+function chaveDaOperacao(operacao: OperacaoDTO): string {
+  return comandosDasOperacoes([operacao]).join('\n');
 }
 
 export function loteDeComandosDasPermissoes(
@@ -1115,17 +1183,21 @@ export function loteDeComandosDasPermissoes(
   situacao: SituacaoPermissao,
   indice: IndiceDasPermissoes,
 ): LoteDePermissoes | null {
-  const comandos = [
-    ...new Set(
-      linhas.flatMap((item) =>
-        item.situacoes.includes(situacao) ? (comandoDaSituacao(situacao, item.acesso, indice)?.comando.split('\n') ?? []) : [],
-      ),
-    ),
-  ];
+  const vistas = new Map<string, OperacaoDTO>();
+  for (const item of linhas) {
+    if (!item.situacoes.includes(situacao)) continue;
+    for (const operacao of comandoDaSituacao(situacao, item.acesso, indice)?.operacoes ?? []) {
+      const chave = chaveDaOperacao(operacao);
+      if (!vistas.has(chave)) vistas.set(chave, operacao);
+    }
+  }
+  const operacoes = [...vistas.values()];
+  const comandos = comandosDasOperacoes(operacoes);
   if (comandos.length === 0) return null;
   const quantidade = formatarNumero(comandos.length);
   return {
     comandos,
+    operacoes,
     rotulo: comandos.length === 1 ? 'Copiar o comando' : `Copiar os ${quantidade} comandos`,
     descricao:
       comandos.length === 1 ? 'Copiar o comando da lista' : `Copiar os ${quantidade} comandos da lista, um por linha`,
@@ -1135,45 +1207,52 @@ export function loteDeComandosDasPermissoes(
 export interface FormaDeTirar {
   texto: string;
   comando: string | null;
+  operacoes: OperacaoDTO[] | null;
+  rotulo: string | null;
+}
+
+function formaDeTirar(texto: string, rotulo: string | null, operacoes: OperacaoDTO[] | null): FormaDeTirar {
+  return { texto, rotulo, operacoes, comando: operacoes ? comandosDasOperacoes(operacoes).join('\n') : null };
 }
 
 export function formasDeTirar(acesso: Acesso): FormaDeTirar[] {
   const { sujeito, objeto } = acesso;
-  const alvo = referenciaSql(objeto);
   const formas: FormaDeTirar[] = [];
   const origens = acesso.privilegios.flatMap((item) => item.origens.map((origem) => ({ origem, privilegio: item.privilegio })));
 
   if (origens.some(({ origem }) => origem.tipo === 'SUPERUSUARIO')) {
     return [
-      {
-        texto: `${sujeito} é superusuário: nenhuma permissão o limita. Só deixa de ter este acesso sem o atributo, com ALTER ROLE ${identificadorSql(sujeito)} NOSUPERUSER.`,
-        comando: null,
-      },
+      formaDeTirar(
+        `${sujeito} é superusuário: nenhuma permissão o limita. Só deixa de ter este acesso sem o atributo, com ALTER ROLE ${identificadorSql(sujeito)} NOSUPERUSER.`,
+        null,
+        null,
+      ),
     ];
   }
   const dono = origens.find(({ origem }) => origem.tipo === 'DONO')?.origem;
   if (dono?.tipo === 'DONO') {
+    const grupo = dono.caminho[0] ?? '';
     return [
-      {
-        texto:
-          dono.caminho.length === 0
-            ? `${sujeito} é dono: só deixa de ter este acesso se o objeto mudar de dono, com ALTER … OWNER TO.`
-            : `O acesso vem de ser membro de ${grupoDaOrigem(dono.caminho)}, dono do objeto. Sair do grupo tira este acesso e tudo o mais que o grupo dá.`,
-        comando: dono.caminho.length === 0 ? null : `REVOKE ${identificadorSql(dono.caminho[0] ?? '')} FROM ${beneficiarioSql(sujeito)};`,
-      },
+      dono.caminho.length === 0
+        ? formaDeTirar(`${sujeito} é dono: só deixa de ter este acesso se o objeto mudar de dono, com ALTER … OWNER TO.`, null, null)
+        : formaDeTirar(
+            `O acesso vem de ser membro de ${grupoDaOrigem(dono.caminho)}, dono do objeto. Sair do grupo tira este acesso e tudo o mais que o grupo dá.`,
+            `Tirar ${sujeito} de ${grupo}`,
+            [{ tipo: 'REVOGAR_PARTICIPACAO', grupo, membro: sujeito }],
+          ),
     ];
   }
 
-  const diretos = [
-    ...new Set(
-      origens.filter(({ origem }) => origem.tipo === 'CONCESSAO' && origem.caminho.length === 0).map(({ privilegio }) => privilegio),
-    ),
-  ];
-  if (diretos.length > 0) {
-    formas.push({
-      texto: `Concedido direto a ${sujeito === PUBLICO ? 'PUBLIC, o que vale para todos os papéis' : sujeito}.`,
-      comando: `REVOKE ${diretos.join(', ')} ON ${alvo} FROM ${beneficiarioSql(sujeito)};`,
-    });
+  const diretas = origens.flatMap(({ origem }) => (origem.tipo === 'CONCESSAO' && origem.caminho.length === 0 ? [origem.concessao] : []));
+  if (diretas.length > 0) {
+    const privilegios = [...new Set(diretas.map((item) => item.privilegio))];
+    formas.push(
+      formaDeTirar(
+        `Concedido direto a ${sujeito === PUBLICO ? 'PUBLIC, o que vale para todos os papéis' : sujeito}.`,
+        `Revogar de ${rotuloDoSujeito(sujeito)}`,
+        [revogacaoDe(objeto, sujeito, privilegios, diretas)],
+      ),
+    );
   }
 
   const grupos = [
@@ -1182,32 +1261,42 @@ export function formasDeTirar(acesso: Acesso): FormaDeTirar[] {
     ),
   ];
   for (const grupo of grupos) {
-    formas.push({
-      texto: `Vem da participação em ${grupo}. Sair do grupo tira este acesso e tudo o mais que o grupo dá; para tirar só deste objeto, revogue do grupo, o que vale para todos os membros.`,
-      comando: `REVOKE ${identificadorSql(grupo)} FROM ${beneficiarioSql(sujeito)};`,
-    });
+    formas.push(
+      formaDeTirar(
+        `Vem da participação em ${grupo}. Sair do grupo tira este acesso e tudo o mais que o grupo dá; para tirar só deste objeto, revogue do grupo, o que vale para todos os membros.`,
+        `Tirar ${sujeito} de ${grupo}`,
+        [{ tipo: 'REVOGAR_PARTICIPACAO', grupo, membro: sujeito }],
+      ),
+    );
   }
 
-  const publicos = [
-    ...new Set(origens.filter(({ origem }) => origem.tipo === 'PUBLICO').map(({ privilegio }) => privilegio)),
-  ];
-  if (publicos.length > 0) {
-    formas.push({
-      texto: `${publicos.join(', ')} vem de PUBLIC: revogar de PUBLIC tira de todos os papéis que não o recebem por outro caminho.`,
-      comando: `REVOKE ${publicos.join(', ')} ON ${alvo} FROM PUBLIC;`,
-    });
+  const publicas = origens.flatMap(({ origem }) => (origem.tipo === 'PUBLICO' ? [origem.concessao] : []));
+  if (publicas.length > 0) {
+    const privilegios = [...new Set(publicas.map((item) => item.privilegio))];
+    formas.push(
+      formaDeTirar(
+        `${privilegios.join(', ')} vem de PUBLIC: revogar de PUBLIC tira de todos os papéis que não o recebem por outro caminho.`,
+        'Revogar de PUBLIC',
+        [revogacaoDe(objeto, PUBLICO, privilegios, publicas)],
+      ),
+    );
   }
 
   return formas;
 }
 
-export function comandosParaConceder(acesso: Acesso, indice: IndiceDasPermissoes): string[] {
+export function operacoesParaConceder(acesso: Acesso, indice: IndiceDasPermissoes): OperacaoDTO[] {
   const { sujeito, objeto } = acesso;
-  const comandos = [`GRANT ${privilegioMinimo[objeto.tipo]} ON ${referenciaSql(objeto)} TO ${beneficiarioSql(sujeito)};`];
-  if (objeto.esquema && objeto.tipo !== 'ESQUEMA' && sujeito !== PUBLICO && !usaOEsquema(sujeito, objeto.esquema, indice)) {
-    comandos.unshift(`GRANT USAGE ON SCHEMA ${identificadorSql(objeto.esquema)} TO ${beneficiarioSql(sujeito)};`);
+  const operacoes: OperacaoDTO[] = [concessaoDe(objeto, sujeito, [privilegioMinimo[objeto.tipo]])];
+  const esquema = objeto.esquema ? indice.esquemas.get(objeto.esquema) : undefined;
+  if (esquema && objeto.tipo !== 'ESQUEMA' && sujeito !== PUBLICO && !usaOEsquema(sujeito, esquema.nome, indice)) {
+    operacoes.unshift(concessaoDe(esquema, sujeito, ['USAGE']));
   }
-  return comandos;
+  return operacoes;
+}
+
+export function comandosParaConceder(acesso: Acesso, indice: IndiceDasPermissoes): string[] {
+  return comandosDasOperacoes(operacoesParaConceder(acesso, indice));
 }
 
 export function privilegioMinimoDoTipo(tipo: TipoObjetoPermissao): Privilegio {

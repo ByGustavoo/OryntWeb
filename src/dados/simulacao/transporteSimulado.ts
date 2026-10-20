@@ -28,7 +28,9 @@ import { listarFuncoes, listarIndices, listarTabelas, listarVisoes } from './man
 import { redefinirSenha, solicitarRecuperacao, verificarCodigoRecuperacao } from './manipuladores/recuperacaoSenha';
 import { buscarResumoRelatorio } from './manipuladores/relatorios';
 import { buscarVersao } from './manipuladores/sistema';
+import { aplicarAlteracao, listarAlteracoes } from './manipuladores/alteracoes';
 import { listarPapeis, listarPermissoes, listarSessoes } from './manipuladores/usuarios';
+import { definirRecusaDeAlteracoes, restaurarPapeisSimulados } from './alteracoesSimuladas';
 import { expirarCodigoSimulado, expirarRedefinicaoSimulada } from './recuperacaoSimulada';
 import { rotaInexistente, servicoIndisponivel } from './resposta';
 import { encerrarSessaoSimulada } from './sessaoSimulada';
@@ -49,6 +51,10 @@ const MARCA_PARAMETRO = ':';
 
 const LATENCIA_MINIMA_MS = 200;
 const LATENCIA_MAXIMA_MS = 500;
+
+function esperaDaAlteracao(): number {
+  return 600 + Math.random() * 500;
+}
 
 const rotas: Rota[] = [
   { metodo: 'POST', caminho: rotasApi.autenticacao.sessao, manipulador: entrar, espera: esperaDoAcesso },
@@ -92,6 +98,8 @@ const rotas: Rota[] = [
   { metodo: 'GET', caminho: rotasApi.usuarios.papeis, manipulador: listarPapeis },
   { metodo: 'GET', caminho: rotasApi.usuarios.sessoes, manipulador: listarSessoes },
   { metodo: 'GET', caminho: rotasApi.usuarios.permissoes, manipulador: listarPermissoes },
+  { metodo: 'GET', caminho: rotasApi.usuarios.alteracoes, manipulador: listarAlteracoes },
+  { metodo: 'POST', caminho: rotasApi.usuarios.alteracoes, manipulador: aplicarAlteracao, espera: esperaDaAlteracao },
   { metodo: 'GET', caminho: rotasApi.relatorios.resumo, manipulador: buscarResumoRelatorio },
   { metodo: 'GET', caminho: rotasApi.sistema.versao, manipulador: buscarVersao },
 ];
@@ -175,6 +183,8 @@ if (ambiente.desenvolvimento) {
       latencia: definirLatencia,
       esvaziar: (vazios = true) => definirDadosVazios(vazios),
       rastrearFuncoes: definirRastreamentoDasFuncoes,
+      recusarAlteracoes: (recusar = true) => definirRecusaDeAlteracoes(recusar),
+      restaurarPapeis: restaurarPapeisSimulados,
       encerrarSessao: encerrarSessaoSimulada,
       expirarCodigo: expirarCodigoSimulado,
       expirarRedefinicao: expirarRedefinicaoSimulada,

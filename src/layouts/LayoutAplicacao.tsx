@@ -9,6 +9,7 @@ import { CHAVE_MENU_RECOLHIDO, ID_CONTEUDO_PRINCIPAL } from '@/configuracoes/apl
 import { useArmazenamentoLocal } from '@/ganchos/useArmazenamentoLocal';
 import { useMenuEmGaveta } from '@/ganchos/useConsultaMidia';
 import { useTravarRolagem } from '@/ganchos/useTravarRolagem';
+import { ProvedorAlteracoes } from '@/provedores/ProvedorAlteracoes';
 import { ProvedorNovaConexao } from '@/provedores/ProvedorNovaConexao';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
 import estilos from './LayoutAplicacao.module.css';
@@ -41,37 +42,39 @@ export function LayoutAplicacao() {
 
   return (
     <ProvedorNovaConexao>
-      <div className={juntarClasses(estilos.casca, recolhido && estilos.cascaRecolhida)}>
-        <a className="link-pular" href={`#${ID_CONTEUDO_PRINCIPAL}`}>
-          Pular para o conteúdo
-        </a>
+      <ProvedorAlteracoes>
+        <div className={juntarClasses(estilos.casca, recolhido && estilos.cascaRecolhida)}>
+          <a className="link-pular" href={`#${ID_CONTEUDO_PRINCIPAL}`}>
+            Pular para o conteúdo
+          </a>
 
-        <MenuLateral
-          recolhido={recolhido}
-          emGaveta={emGaveta}
-          abertoEmGaveta={gavetaAberta && emGaveta}
-          aoAlternarRecolhido={() => setRecolhido(!recolhido)}
-          aoFecharGaveta={fecharGaveta}
-        />
-
-        <div className={estilos.principal}>
-          <Cabecalho
-            ref={botaoMenuRef}
+          <MenuLateral
+            recolhido={recolhido}
             emGaveta={emGaveta}
-            gavetaAberta={gavetaAberta}
-            aoAbrirMenu={() => setGavetaAberta(true)}
+            abertoEmGaveta={gavetaAberta && emGaveta}
+            aoAlternarRecolhido={() => setRecolhido(!recolhido)}
+            aoFecharGaveta={fecharGaveta}
           />
-          <main className={estilos.conteudo} id={ID_CONTEUDO_PRINCIPAL} tabIndex={-1}>
-            <div className={estilos.limite} key={localizacao.pathname}>
-              <LimiteDeErro alternativa={(erro) => <FalhaNaTela erro={erro} />}>
-                <Suspense fallback={<EsqueletoLista linhas={5} rotulo="Carregando a página…" />}>
-                  <Outlet />
-                </Suspense>
-              </LimiteDeErro>
-            </div>
-          </main>
+
+          <div className={estilos.principal}>
+            <Cabecalho
+              ref={botaoMenuRef}
+              emGaveta={emGaveta}
+              gavetaAberta={gavetaAberta}
+              aoAbrirMenu={() => setGavetaAberta(true)}
+            />
+            <main className={estilos.conteudo} id={ID_CONTEUDO_PRINCIPAL} tabIndex={-1}>
+              <div className={estilos.limite} key={localizacao.pathname}>
+                <LimiteDeErro alternativa={(erro) => <FalhaNaTela erro={erro} />}>
+                  <Suspense fallback={<EsqueletoLista linhas={5} rotulo="Carregando a página…" />}>
+                    <Outlet />
+                  </Suspense>
+                </LimiteDeErro>
+              </div>
+            </main>
+          </div>
         </div>
-      </div>
+      </ProvedorAlteracoes>
     </ProvedorNovaConexao>
   );
 }

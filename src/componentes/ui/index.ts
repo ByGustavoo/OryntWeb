@@ -3,6 +3,7 @@ export type { Aba } from './Abas';
 export { Botao } from './Botao';
 export type { BotaoProps, TamanhoBotao, VarianteBotao } from './Botao';
 export { BotaoIcone } from './BotaoIcone';
+export { CaixaMarcacao } from './CaixaMarcacao';
 export { CampoBusca } from './CampoBusca';
 export { CampoCodigo } from './CampoCodigo';
 export { CampoSelecao } from './CampoSelecao';

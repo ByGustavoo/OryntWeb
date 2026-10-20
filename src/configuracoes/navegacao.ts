@@ -115,6 +115,11 @@ const usuariosPermissoes: Funcionalidade = {
     },
     { rotulo: 'Sessões', destino: caminhos.usuariosSessoes, descricao: 'Quem está conectado agora e o que está travado.' },
     {
+      rotulo: 'Alterações',
+      destino: caminhos.usuariosAlteracoes,
+      descricao: 'O que o Orynt mudou nos papéis e nas permissões, com quem fez, quando e o desfazer.',
+    },
+    {
       rotulo: 'Permissões',
       destino: caminhos.usuariosPermissoes,
       descricao: 'O que cada papel pode fazer em cada banco, esquema e tabela.',

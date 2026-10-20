@@ -20,5 +20,6 @@ export const caminhos = {
   usuariosPapeis: '/usuarios-e-permissoes/papeis',
   usuariosSessoes: '/usuarios-e-permissoes/sessoes',
   usuariosPermissoes: '/usuarios-e-permissoes/permissoes',
+  usuariosAlteracoes: '/usuarios-e-permissoes/alteracoes',
   configuracoes: '/configuracoes',
 } as const;

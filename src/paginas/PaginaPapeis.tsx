@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Clock, FlaskConical, SearchX, UsersRound } from 'lucide-react';
+import { Clock, FlaskConical, Play, SearchX, ShieldAlert, UserPlus, UsersRound } from 'lucide-react';
 import { ehErroApi } from '@/api/tratamentoErros';
 import { PainelSemConexao } from '@/componentes/conexao/PainelSemConexao';
 import { CabecalhoPagina } from '@/componentes/layout/CabecalhoPagina';
@@ -9,6 +9,7 @@ import type { ItemDeAtencao } from '@/componentes/objetos/PontosDeAtencao';
 import { ResumoDaLista } from '@/componentes/objetos/ResumoDaLista';
 import type { AtalhoDaLista } from '@/componentes/objetos/ResumoDaLista';
 import { BarraFiltrosPapeis } from '@/componentes/usuarios/BarraFiltrosPapeis';
+import { BotaoDeAlteracao } from '@/componentes/usuarios/BotaoDeAlteracao';
 import { DetalhePapel } from '@/componentes/usuarios/DetalhePapel';
 import { iconeDaSituacaoPapel } from '@/componentes/usuarios/SeloSituacaoPapel';
 import { EsqueletoPapeis, TabelaPapeis } from '@/componentes/usuarios/TabelaPapeis';
@@ -18,9 +19,12 @@ import { useFiltrosPapeis } from '@/ganchos/useFiltrosPapeis';
 import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
 import { useObjetoDaChegada, useVerObjeto } from '@/ganchos/useVerObjeto';
 import type { FiltrosPapeis, ObjetoDoPapelDTO, OrdenacaoPapeis, PapelDTO, SituacaoPapel } from '@/modelos/papeis';
+import { useAlteracoes } from '@/provedores/ProvedorAlteracoes';
 import { useConexao } from '@/provedores/ProvedorConexao';
 import type { SituacaoConexao } from '@/provedores/ProvedorConexao';
 import { limparBusca } from '@/regras/buscaConsultas';
+import { capacidadeDasOperacoes, podeCriarPapeis } from '@/regras/capacidadeAlteracoes';
+import type { Capacidade, ContextoDaCapacidade } from '@/regras/capacidadeAlteracoes';
 import type { SentidoDoPasso } from '@/regras/filtrosConsultas';
 import { paginaDaPosicao, paginarLista } from '@/regras/paginacaoLocal';
 import {
@@ -30,6 +34,7 @@ import {
   direcaoInicialDaOrdenacaoPapeis,
   filtrarPapeis,
   loteDeComandosDosPapeis,
+  operacoesDoLoteDosPapeis,
   pontosDeAtencaoPapeis,
   resumirPapeis,
   rotuloFiltroSituacaoPapel,
@@ -88,6 +93,8 @@ export default function PaginaPapeis() {
   useTituloDocumento('Usuários e permissões: Papéis');
   const { situacao, conexao } = useConexao();
   const { filtros, mudarFiltros } = useFiltrosPapeis(caminhos.usuariosPapeis);
+  const { abrir } = useAlteracoes();
+  const [criacao, setCriacao] = useState<Capacidade | null>(null);
 
   return (
     <>
@@ -98,9 +105,22 @@ export default function PaginaPapeis() {
             ? 'Os usuários e os grupos do banco, com o que cada um pode fazer, de quem participa, de que objetos é dono e quando foi usado.'
             : descreverSemConexao(situacao)
         }
+        acoes={
+          conexao ? (
+            <BotaoDeAlteracao icone={UserPlus} capacidade={criacao} onClick={() => abrir({ tipo: 'NOVO_PAPEL' })}>
+              Novo papel
+            </BotaoDeAlteracao>
+          ) : undefined
+        }
       />
       {conexao ? (
-        <ListaConectada key={conexao.id} simulada={conexao.simulada} filtros={filtros} mudarFiltros={mudarFiltros} />
+        <ListaConectada
+          key={conexao.id}
+          simulada={conexao.simulada}
+          filtros={filtros}
+          mudarFiltros={mudarFiltros}
+          aoCapacidadeDeCriar={setCriacao}
+        />
       ) : (
         <PainelSemConexao />
       )}
@@ -112,9 +132,10 @@ interface ListaConectadaProps {
   simulada: boolean;
   filtros: FiltrosPapeis;
   mudarFiltros: (mudanca: Partial<FiltrosPapeis>) => void;
+  aoCapacidadeDeCriar: (capacidade: Capacidade | null) => void;
 }
 
-function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps) {
+function ListaConectada({ simulada, filtros, mudarFiltros, aoCapacidadeDeCriar }: ListaConectadaProps) {
   const { marcarDesconectada } = useConexao();
   const irParaObjeto = useVerObjeto();
   const chegada = useObjetoDaChegada();
@@ -123,12 +144,18 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
   const topo = useRef<HTMLDivElement>(null);
   const ultimoAberto = useRef<string | null>(null);
   const [busca, setBusca] = useState(filtros.busca);
-  const [aberto, setAberto] = useState<PapelDTO | null>(null);
+  const [nomeAberto, setNomeAberto] = useState<string | null>(null);
   const [origem, setOrigem] = useState<Origem>('LISTA');
+  const { abrir: alterar, versao, ultima } = useAlteracoes();
 
-  const lista = useDadosAssincronos((signal) => servicoUsuarios.listarPapeis(signal), []);
+  const lista = useDadosAssincronos((signal) => servicoUsuarios.listarPapeis(signal), [versao]);
   const sessaoEncerrada = ehErroApi(lista.erro, 'NAO_AUTORIZADO');
   const papeis = useMemo(() => lista.dados?.papeis ?? [], [lista.dados]);
+  const aberto = useMemo(() => (nomeAberto === null ? null : (papeis.find((papel) => papel.nome === nomeAberto) ?? null)), [nomeAberto, papeis]);
+  const capacidade = useMemo<ContextoDaCapacidade | null>(
+    () => (lista.dados ? { ator: lista.dados.papelDaConexao, papeis: lista.dados.papeis } : null),
+    [lista.dados],
+  );
   const contexto = useMemo<ContextoDosPapeis>(() => {
     const agora = new Date().toISOString();
     return {
@@ -144,6 +171,10 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
     () => (filtros.situacao === null ? null : loteDeComandosDosPapeis(filtrados, filtros.situacao, contexto)),
     [filtros.situacao, filtrados, contexto],
   );
+  const operacoesDoLote = useMemo(
+    () => (filtros.situacao === null ? null : operacoesDoLoteDosPapeis(filtrados, filtros.situacao, contexto)),
+    [filtros.situacao, filtrados, contexto],
+  );
   const buscaDigitada = limparBusca(busca);
   const carregado = lista.dados !== null;
   const indiceAberto = aberto ? filtrados.findIndex((papel) => papel.nome === aberto.nome) : -1;
@@ -153,6 +184,21 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
   useEffect(() => {
     if (sessaoEncerrada) marcarDesconectada();
   }, [sessaoEncerrada, marcarDesconectada]);
+
+  useEffect(() => {
+    aoCapacidadeDeCriar(capacidade ? podeCriarPapeis(capacidade) : null);
+  }, [capacidade, aoCapacidadeDeCriar]);
+
+  useEffect(() => {
+    if (!ultima) return;
+    for (const operacao of ultima.operacoes) {
+      if (operacao.tipo === 'RENOMEAR_PAPEL') {
+        setNomeAberto((atual) => (atual === operacao.papel ? operacao.novoNome : atual));
+        if (ultimoAberto.current === operacao.papel) ultimoAberto.current = operacao.novoNome;
+      }
+      if (operacao.tipo === 'EXCLUIR_PAPEL') setNomeAberto((atual) => (atual === operacao.papel ? null : atual));
+    }
+  }, [ultima]);
 
   useEffect(() => {
     if (buscaDigitada === filtros.busca) return;
@@ -172,7 +218,7 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
     if (alvo) {
       ultimoAberto.current = alvo.nome;
       setOrigem('CHEGADA');
-      setAberto(alvo);
+      setNomeAberto(alvo.nome);
     }
     mudarFiltros(posicao >= 0 ? { pagina: paginaDaPosicao(posicao) } : {});
   }, [chegada, carregado, papeis, filtrados, mudarFiltros]);
@@ -180,7 +226,7 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
   const abrir = (papel: PapelDTO, deOnde: Origem) => {
     ultimoAberto.current = papel.nome;
     setOrigem(deOnde);
-    setAberto(papel);
+    setNomeAberto(papel.nome);
   };
 
   const abrirPeloNome = (nome: string) => {
@@ -266,6 +312,13 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
         </Nota>
       ) : null}
 
+      {capacidade && !podeCriarPapeis(capacidade).permitido ? (
+        <Nota tom="info" icone={ShieldAlert} titulo={`${capacidade.ator} só lê os papéis.`}>
+          Ele não tem CREATEROLE nem é superusuário, então criar, alterar e excluir papéis por aqui fica bloqueado, como o
+          PostgreSQL faria. Para administrar, conecte com um papel que tenha CREATEROLE ou com um superusuário, como postgres.
+        </Nota>
+      ) : null}
+
       {lista.dados === null && lista.carregando ? (
         <EsqueletoPontosDeAtencao descricao={DESCRICAO_DOS_PONTOS} linhasPorFrase={LINHAS_POR_FRASE_EM_ESPERA} />
       ) : null}
@@ -324,7 +377,23 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
               atalho('SEM_USO'),
               atalho('GRUPO_VAZIO'),
             ]}
-            acao={lote ? <CopiarComandos key={lote.comandos.join(' ')} lote={lote} seFalhar={ERRO_AO_COPIAR} /> : null}
+            acao={
+              lote ? (
+                <>
+                  <CopiarComandos key={lote.comandos.join(' ')} lote={lote} seFalhar={ERRO_AO_COPIAR} />
+                  {operacoesDoLote ? (
+                    <BotaoDeAlteracao
+                      tamanho="sm"
+                      icone={Play}
+                      capacidade={capacidade ? capacidadeDasOperacoes(operacoesDoLote, capacidade) : null}
+                      onClick={() => alterar({ tipo: 'OPERACOES', operacoes: operacoesDoLote, origem: 'LOTE' })}
+                    >
+                      {lote.comandos.length === 1 ? 'Executar' : `Executar os ${formatarNumero(lote.comandos.length)}`}
+                    </BotaoDeAlteracao>
+                  ) : null}
+                </>
+              ) : null
+            }
             mostrarLimpar={temFiltroAtivoPapeis(filtros) && filtrados.length > 0}
             aoLimpar={limparFiltros}
           />
@@ -394,8 +463,10 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
         aoAbrirObjeto={abrirObjeto}
         aoVerSessoes={(papel) => irParaObjeto.sessoesDoPapel(papel.nome, papel.replicacao)}
         aoVerPermissoes={(papel) => irParaObjeto.permissoesDoPapel(papel.nome)}
-        aoFechar={() => setAberto(null)}
+        aoFechar={() => setNomeAberto(null)}
         focoAoFechar={linhaDoUltimoAberto}
+        aoAlterar={alterar}
+        capacidade={capacidade}
       />
     </div>
   );
