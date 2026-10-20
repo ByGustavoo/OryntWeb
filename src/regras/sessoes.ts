@@ -367,6 +367,35 @@ export function cadeiasDeBloqueio(sessoes: SessaoDTO[]): NoDaCadeia[] {
     .sort((a, b) => b.total - a.total || a.sessao.pid - b.sessao.pid);
 }
 
+export interface ResumoDaCadeia {
+  niveis: number;
+  maiorEsperaMs: number;
+}
+
+export function resumirCadeia(cadeia: NoDaCadeia, contexto: ContextoDasSessoes): ResumoDaCadeia {
+  const visitar = (no: NoDaCadeia, nivel: number): ResumoDaCadeia =>
+    no.filhos.reduce<ResumoDaCadeia>(
+      (resumo, filho) => {
+        const abaixo = visitar(filho, nivel + 1);
+        const espera = tempoDaConsultaMs(filho.sessao, contexto) ?? 0;
+        return {
+          niveis: Math.max(resumo.niveis, abaixo.niveis),
+          maiorEsperaMs: Math.max(resumo.maiorEsperaMs, abaixo.maiorEsperaMs, espera),
+        };
+      },
+      { niveis: nivel, maiorEsperaMs: 0 },
+    );
+  return visitar(cadeia, 0);
+}
+
+export function bloqueiosSegurados(sessao: SessaoDTO): BloqueioDTO[] {
+  return sessao.bloqueios.filter((bloqueio) => bloqueio.concedido);
+}
+
+export function bloqueioEsperado(sessao: SessaoDTO): BloqueioDTO | null {
+  return sessao.bloqueios.find((bloqueio) => !bloqueio.concedido) ?? null;
+}
+
 export function situacoesDaSessao(sessao: SessaoDTO, sessoes: SessaoDTO[], contexto: ContextoDasSessoes): SituacaoSessao[] {
   if (!apontavel(sessao)) return [];
   const situacoes: SituacaoSessao[] = [];

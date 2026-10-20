@@ -1,0 +1,86 @@
+.conteiner {
+  container: resumo-conta-auditoria / inline-size;
+}
+
+.corpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--espaco-5);
+}
+
+@container resumo-conta-auditoria (min-width: 640px) {
+  .corpo {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--espaco-8);
+  }
+}
+
+.bloco {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+  min-width: 0;
+}
+
+.tituloBloco {
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+}
+
+.vazio {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-sm);
+}
+
+.barras {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.barra {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px var(--espaco-3);
+  font-size: var(--tamanho-sm);
+}
+
+.rotulo {
+  color: var(--texto);
+  overflow-wrap: anywhere;
+}
+
+.valor {
+  color: var(--texto-secundario);
+  text-align: right;
+}
+
+.trilho {
+  grid-column: 1 / -1;
+  height: 6px;
+  overflow: hidden;
+  border-radius: var(--raio-pilula);
+  background-color: var(--neutro-suave);
+}
+
+.preenchimento {
+  display: block;
+  width: calc(var(--proporcao) * 100%);
+  min-width: 6px;
+  height: 100%;
+  border-radius: inherit;
+  background-color: var(--grafico-1);
+}
+
+.negados {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  margin-top: var(--espaco-5);
+  color: var(--erro);
+  font-size: var(--tamanho-sm);
+}

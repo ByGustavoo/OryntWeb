@@ -1,9 +1,10 @@
 .conteiner {
-  --recuo: 20px;
+  --recuo: 24px;
   --respiro-da-etapa: var(--espaco-3);
   --colunas-da-etapa: minmax(0, 1fr) 13rem 8.5rem;
   --meia-linha: calc(var(--tamanho-sm) * var(--altura-linha-justa) / 2);
   --ponto: 7px;
+  --alternador: 14px;
 
   container: arvore-plano / inline-size;
 }
@@ -89,7 +90,8 @@
   top: 0;
   bottom: 0;
   left: calc(var(--recuo) / 2 - 0.5px);
-  border-left: 1px solid var(--borda-forte);
+  width: 1px;
+  background-color: var(--guia-arvore);
 }
 
 .guiaUltimo::before {
@@ -104,7 +106,24 @@
   top: calc(var(--respiro-da-etapa) + var(--meia-linha) - 0.5px);
   left: calc(var(--recuo) / 2);
   width: calc(var(--recuo) - var(--ponto) / 2 - 2px);
-  border-top: 1px solid var(--borda-forte);
+  height: 1px;
+  background-color: var(--guia-arvore);
+}
+
+.passagemDaTrilha::before {
+  background-color: var(--destaque);
+}
+
+.chegadaDaTrilha::before {
+  background: linear-gradient(
+    to bottom,
+    var(--destaque) calc(var(--respiro-da-etapa) + var(--meia-linha)),
+    var(--guia-arvore) calc(var(--respiro-da-etapa) + var(--meia-linha))
+  );
+}
+
+.chegadaDaTrilha::after {
+  background-color: var(--destaque);
 }
 
 .conteudo {
@@ -125,7 +144,7 @@
   left: calc(var(--recuo) / 2 - var(--ponto) / 2);
   width: var(--ponto);
   height: var(--ponto);
-  border: 1.5px solid var(--borda-forte);
+  border: 1.5px solid var(--guia-arvore);
   border-radius: 50%;
   background-color: var(--superficie);
   transition:
@@ -139,12 +158,78 @@
   top: calc(var(--meia-linha) + var(--ponto) / 2);
   bottom: calc(var(--respiro-da-etapa) * -1);
   left: calc(var(--recuo) / 2 - 0.5px);
-  border-left: 1px solid var(--borda-forte);
+  width: 1px;
+  background-color: var(--guia-arvore);
+}
+
+.alternavel .conteudo::before {
+  display: none;
+}
+
+.alternavel.comFilhos .conteudo::after {
+  top: calc(var(--meia-linha) + var(--alternador) / 2);
+}
+
+.desceNaTrilha .conteudo::after {
+  background-color: var(--destaque);
+}
+
+.alternador {
+  position: absolute;
+  z-index: 1;
+  top: calc(var(--meia-linha) - var(--alternador) / 2);
+  left: calc(var(--recuo) / 2 - var(--alternador) / 2);
+  display: grid;
+  place-items: center;
+  width: var(--alternador);
+  height: var(--alternador);
+  border-radius: var(--raio-xs);
+  background-color: var(--superficie);
+  color: var(--texto-terciario);
+  cursor: pointer;
+  transition:
+    color var(--duracao-rapida) var(--curva-saida),
+    background-color var(--duracao-rapida) var(--curva-saida);
+}
+
+.alternador svg {
+  transform: rotate(90deg);
+  transition: transform var(--duracao-base) var(--curva-saida);
+}
+
+.alternadorRecolhido svg {
+  transform: none;
+}
+
+.alternadorRecolhido {
+  color: var(--texto);
+}
+
+.desceNaTrilha .alternador,
+.selecionada .alternador {
+  color: var(--destaque);
+}
+
+.selecionada .alternador {
+  background-color: var(--destaque-suave);
 }
 
 .selecionada .conteudo::before {
   border-color: var(--destaque);
   background-color: var(--destaque);
+}
+
+.ocultas {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  height: calc(var(--meia-linha) * 2);
+  padding-inline: 6px;
+  border: 1px dashed var(--borda-controle);
+  border-radius: var(--raio-pilula);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-xs);
+  white-space: nowrap;
 }
 
 .etapaEmEspera .conteudo::before,
@@ -316,11 +401,21 @@
   .etapa:not(.selecionada, .etapaEmEspera, .estatica):hover {
     background-color: var(--superficie-suave);
   }
+
+  .etapa:not(.selecionada, .etapaEmEspera, .estatica):hover .alternador {
+    background-color: var(--superficie-suave);
+  }
+
+  .alternador:hover {
+    background-color: var(--neutro-suave);
+    color: var(--texto);
+  }
 }
 
 @container arvore-plano (max-width: 620px) {
   .conteiner {
-    --recuo: 14px;
+    --recuo: 18px;
+    --alternador: 12px;
   }
 
   .cabecalho {
@@ -368,5 +463,9 @@
   .etapa,
   .barra > span {
     animation: none;
+  }
+
+  .alternador svg {
+    transition: none;
   }
 }

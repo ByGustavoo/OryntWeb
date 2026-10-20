@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
-import { TriangleAlert } from 'lucide-react';
+import { ChevronRight, TriangleAlert } from 'lucide-react';
 import { Painel } from '@/componentes/ui';
 import type { NoPlanoDTO, PlanoExecucaoDTO } from '@/modelos/planos';
 import {
@@ -23,12 +23,19 @@ import {
 import { formatarDecimal, formatarDuracaoMs, formatarNumero, formatarPercentual, formatarTamanho, pluralizar } from '@/utilitarios/formatacao';
 import estilos from './DetalheEtapa.module.css';
 
+export interface PassoDoCaminho {
+  id: number;
+  nome: string;
+}
+
 interface DetalheEtapaProps {
   plano: PlanoExecucaoDTO;
   no: NoPlanoDTO;
   abaixoDeLimite: boolean;
   posicao: number;
   total: number;
+  caminho?: PassoDoCaminho[];
+  aoIrParaEtapa?: (id: number) => void;
 }
 
 const BYTES_POR_KB = 1024;
@@ -62,7 +69,7 @@ function Secao({ titulo, children }: { titulo: string; children: ReactNode }) {
   );
 }
 
-export function DetalheEtapa({ plano, no, abaixoDeLimite, posicao, total }: DetalheEtapaProps) {
+export function DetalheEtapa({ plano, no, abaixoDeLimite, posicao, total, caminho = [], aoIrParaEtapa }: DetalheEtapaProps) {
   const proprio = tempoProprioMs(no);
   const parte = plano.tempoExecucaoMs > 0 ? (proprio / plano.tempoExecucaoMs) * 100 : 0;
   const alvo = alvoDoNo(no);
@@ -77,6 +84,24 @@ export function DetalheEtapa({ plano, no, abaixoDeLimite, posicao, total }: Deta
         <p className={estilos.posicao}>
           Etapa <span className="numeros">{posicao}</span> de <span className="numeros">{total}</span>
         </p>
+        {caminho.length > 0 ? (
+          <nav className={estilos.caminho} aria-label="Caminho desde a primeira etapa">
+            <ol>
+              {caminho.map((passo) => (
+                <li key={passo.id}>
+                  {aoIrParaEtapa ? (
+                    <button type="button" className={estilos.passo} onClick={() => aoIrParaEtapa(passo.id)}>
+                      {passo.nome}
+                    </button>
+                  ) : (
+                    <span className={estilos.passo}>{passo.nome}</span>
+                  )}
+                  <ChevronRight size={12} strokeWidth={2.25} aria-hidden="true" className={estilos.separador} />
+                </li>
+              ))}
+            </ol>
+          </nav>
+        ) : null}
         <h2 className={estilos.nome} id="titulo-etapa-do-plano">
           {nomeDoNo(no)}
         </h2>

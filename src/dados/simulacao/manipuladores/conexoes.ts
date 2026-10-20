@@ -11,7 +11,11 @@ import {
 import type { AlvoConexao } from '@/regras/falhaConexao';
 import { ORDEM_CAMPOS, montarCredenciais, nomeSugerido, validarConexao } from '@/regras/validacaoConexao';
 import type { CamposConexao } from '@/regras/validacaoConexao';
-import { lerAcessoSimulado } from '../acessoSimulado';
+import type { AlvoAuditoriaDTO } from '@/modelos/administracao';
+import type { NovoEvento } from '../auditoriaSimulada';
+import { registrarEvento } from '../auditoriaSimulada';
+import type { ContextoSimulado } from '../autorizacaoSimulada';
+import { autorDaConta } from '../contasSimuladas';
 import { gravarConexoesSalvasSimuladas, lerConexoesSalvasSimuladas } from '../conexoesSalvasSimuladas';
 import { lerCenarioConexao } from '../controles';
 import { criado, dadosInvalidos, naoAutorizado, ok, problema, rotaInexistente, semConteudo } from '../resposta';
@@ -107,8 +111,26 @@ export function esperaDaTentativa(): number {
   return ESPERA_MINIMA_MS + Math.random() * (ESPERA_MAXIMA_MS - ESPERA_MINIMA_MS);
 }
 
-export function testarConexao(requisicao: RequisicaoTransporte): RespostaTransporte {
-  if (!lerAcessoSimulado()) return acessoNaoAutenticado();
+function alvoDaConexao(salva: Pick<ConexaoSalvaDTO, 'id' | 'nome' | 'banco' | 'host'>): AlvoAuditoriaDTO {
+  return { tipo: 'CONEXAO', id: salva.id, rotulo: `${salva.nome} (${salva.banco} em ${salva.host})` };
+}
+
+function registrarNaConta(contexto: ContextoSimulado, evento: Omit<NovoEvento, 'conta'>, agora: Date): void {
+  if (contexto.conta) registrarEvento({ ...evento, conta: autorDaConta(contexto.conta) }, agora);
+}
+
+function motivoDaRecusa(recusa: RespostaTransporte): string | null {
+  const corpo = recusa.corpo as { detail?: unknown } | undefined;
+  return typeof corpo?.detail === 'string' ? corpo.detail : null;
+}
+
+export function testarConexao(
+  requisicao: RequisicaoTransporte,
+  _agora: Date,
+  _parametros: Parametros,
+  contexto: ContextoSimulado,
+): RespostaTransporte {
+  if (!contexto.conta) return acessoNaoAutenticado();
   const recusa = recusar(camposDoCorpo(requisicao.corpo));
   if (recusa) return recusa;
   const teste: TesteConexaoDTO = {
@@ -119,14 +141,20 @@ export function testarConexao(requisicao: RequisicaoTransporte): RespostaTranspo
   return ok(teste);
 }
 
-export function criarConexao(requisicao: RequisicaoTransporte, agora: Date): RespostaTransporte {
-  if (!lerAcessoSimulado()) return acessoNaoAutenticado();
+export function criarConexao(
+  requisicao: RequisicaoTransporte,
+  agora: Date,
+  _parametros: Parametros,
+  contexto: ContextoSimulado,
+): RespostaTransporte {
+  const conta = contexto.conta;
+  if (!conta) return acessoNaoAutenticado();
   const campos = camposDoCorpo(requisicao.corpo);
-  const recusa = recusar(campos);
-  if (recusa) return recusa;
+  const recusaDosCampos = recusarCampos(campos);
+  if (recusaDosCampos) return recusaDosCampos;
 
   const { nome, host, porta, banco, usuario } = montarCredenciais(campos);
-  const salvas = lerConexoesSalvasSimuladas();
+  const salvas = lerConexoesSalvasSimuladas(conta.id);
   const existente = salvas.find((item) => mesmaConexao(item, { host, porta, banco, usuario }));
   const salva: ConexaoSalvaDTO = {
     id: existente?.id ?? `simulada-${crypto.randomUUID().slice(0, 8)}`,
@@ -138,31 +166,72 @@ export function criarConexao(requisicao: RequisicaoTransporte, agora: Date): Res
     usuario,
     ultimoUsoEm: agora.toISOString(),
   };
-  gravarConexoesSalvasSimuladas(registrarConexaoSalva(salvas, salva));
+
+  const recusa = recusarPeloCenario({ host, porta, banco, usuario });
+  if (recusa) {
+    registrarNaConta(
+      contexto,
+      { tipo: 'CONEXAO_CRIADA', resultado: 'FALHA', alvo: alvoDaConexao(salva), motivo: motivoDaRecusa(recusa) },
+      agora,
+    );
+    return recusa;
+  }
+
+  gravarConexoesSalvasSimuladas(conta.id, registrarConexaoSalva(salvas, salva));
+  registrarNaConta(
+    contexto,
+    { tipo: existente ? 'CONEXAO_ATIVADA' : 'CONEXAO_CRIADA', resultado: 'SUCESSO', alvo: alvoDaConexao(salva) },
+    agora,
+  );
   return criado(abrirSessao(salva, agora));
 }
 
-export function listarConexoes(): RespostaTransporte {
-  if (!lerAcessoSimulado()) return acessoNaoAutenticado();
-  return ok(lerConexoesSalvasSimuladas());
+export function listarConexoes(
+  _requisicao: RequisicaoTransporte,
+  _agora: Date,
+  _parametros: Parametros,
+  contexto: ContextoSimulado,
+): RespostaTransporte {
+  if (!contexto.conta) return acessoNaoAutenticado();
+  return ok(lerConexoesSalvasSimuladas(contexto.conta.id));
 }
 
-export function ativarConexao(_requisicao: RequisicaoTransporte, agora: Date, parametros: Parametros): RespostaTransporte {
-  if (!lerAcessoSimulado()) return acessoNaoAutenticado();
-  const salvas = lerConexoesSalvasSimuladas();
+export function ativarConexao(
+  _requisicao: RequisicaoTransporte,
+  agora: Date,
+  parametros: Parametros,
+  contexto: ContextoSimulado,
+): RespostaTransporte {
+  const conta = contexto.conta;
+  if (!conta) return acessoNaoAutenticado();
+  const salvas = lerConexoesSalvasSimuladas(conta.id);
   const salva = salvas.find((item) => item.id === parametros.id);
   if (!salva) return conexaoInexistente();
   const recusa = recusarPeloCenario(salva);
-  if (recusa) return recusa;
+  if (recusa) {
+    registrarNaConta(
+      contexto,
+      { tipo: 'CONEXAO_ATIVADA', resultado: 'FALHA', alvo: alvoDaConexao(salva), motivo: motivoDaRecusa(recusa) },
+      agora,
+    );
+    return recusa;
+  }
 
   const usada: ConexaoSalvaDTO = { ...salva, ultimoUsoEm: agora.toISOString() };
-  gravarConexoesSalvasSimuladas(registrarConexaoSalva(salvas, usada));
+  gravarConexoesSalvasSimuladas(conta.id, registrarConexaoSalva(salvas, usada));
+  registrarNaConta(contexto, { tipo: 'CONEXAO_ATIVADA', resultado: 'SUCESSO', alvo: alvoDaConexao(usada) }, agora);
   return ok(abrirSessao(usada, agora));
 }
 
-export function renomearConexao(requisicao: RequisicaoTransporte, _agora: Date, parametros: Parametros): RespostaTransporte {
-  if (!lerAcessoSimulado()) return acessoNaoAutenticado();
-  const salvas = lerConexoesSalvasSimuladas();
+export function renomearConexao(
+  requisicao: RequisicaoTransporte,
+  agora: Date,
+  parametros: Parametros,
+  contexto: ContextoSimulado,
+): RespostaTransporte {
+  const conta = contexto.conta;
+  if (!conta) return acessoNaoAutenticado();
+  const salvas = lerConexoesSalvasSimuladas(conta.id);
   const salva = salvas.find((item) => item.id === parametros.id);
   if (!salva) return conexaoInexistente();
 
@@ -171,30 +240,59 @@ export function renomearConexao(requisicao: RequisicaoTransporte, _agora: Date, 
   if (erro) return dadosInvalidos([{ campo: 'nome', mensagem: erro }]);
 
   const renomeada: ConexaoSalvaDTO = { ...salva, nome: nome.trim() };
-  gravarConexoesSalvasSimuladas(renomearConexaoSalva(salvas, salva.id, renomeada.nome));
+  gravarConexoesSalvasSimuladas(conta.id, renomearConexaoSalva(salvas, salva.id, renomeada.nome));
   const sessao = lerSessaoSimulada();
   if (sessao?.id === salva.id) gravarSessaoSimulada({ ...sessao, nome: renomeada.nome });
+  registrarNaConta(
+    contexto,
+    {
+      tipo: 'CONEXAO_RENOMEADA',
+      resultado: 'SUCESSO',
+      alvo: alvoDaConexao(renomeada),
+      mudancas: [{ campo: 'Nome', antes: salva.nome, depois: renomeada.nome }],
+    },
+    agora,
+  );
   return ok(renomeada);
 }
 
-export function excluirConexao(_requisicao: RequisicaoTransporte, _agora: Date, parametros: Parametros): RespostaTransporte {
-  if (!lerAcessoSimulado()) return acessoNaoAutenticado();
-  const salvas = lerConexoesSalvasSimuladas();
+export function excluirConexao(
+  _requisicao: RequisicaoTransporte,
+  agora: Date,
+  parametros: Parametros,
+  contexto: ContextoSimulado,
+): RespostaTransporte {
+  const conta = contexto.conta;
+  if (!conta) return acessoNaoAutenticado();
+  const salvas = lerConexoesSalvasSimuladas(conta.id);
   const salva = salvas.find((item) => item.id === parametros.id);
   if (!salva) return conexaoInexistente();
 
-  gravarConexoesSalvasSimuladas(removerConexaoSalva(salvas, salva.id));
+  gravarConexoesSalvasSimuladas(conta.id, removerConexaoSalva(salvas, salva.id));
   if (lerSessaoSimulada()?.id === salva.id) encerrarSessaoSimulada();
+  registrarNaConta(contexto, { tipo: 'CONEXAO_EXCLUIDA', resultado: 'SUCESSO', alvo: alvoDaConexao(salva) }, agora);
   return semConteudo();
 }
 
-export function buscarConexaoAtual(): RespostaTransporte {
-  if (!lerAcessoSimulado()) return acessoNaoAutenticado();
+export function buscarConexaoAtual(
+  _requisicao: RequisicaoTransporte,
+  _agora: Date,
+  _parametros: Parametros,
+  contexto: ContextoSimulado,
+): RespostaTransporte {
+  if (!contexto.conta) return acessoNaoAutenticado();
   const conexao = lerSessaoSimulada();
   return conexao ? ok(conexao) : naoAutorizado();
 }
 
-export function encerrarConexao(): RespostaTransporte {
+export function encerrarConexao(
+  _requisicao: RequisicaoTransporte,
+  agora: Date,
+  _parametros: Parametros,
+  contexto: ContextoSimulado,
+): RespostaTransporte {
+  const conexao = lerSessaoSimulada();
   encerrarSessaoSimulada();
+  if (conexao) registrarNaConta(contexto, { tipo: 'CONEXAO_ENCERRADA', resultado: 'SUCESSO', alvo: alvoDaConexao(conexao) }, agora);
   return semConteudo();
 }

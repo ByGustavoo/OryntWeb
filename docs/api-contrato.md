@@ -43,6 +43,26 @@ Set-Cookie: orynt_sessao=<token opaco>; HttpOnly; Secure; SameSite=Strict; Path=
   da conexão salva, para reativá-la sem pedir a senha de novo, e ela nunca volta numa resposta. O
   algoritmo e a guarda da chave são **A DEFINIR NO BACKEND**.
 * Nome do cookie e duração da sessão são **A DEFINIR NO BACKEND**.
+* **Autorização:** cada rota pede uma permissão da conta (tabela abaixo), conferida pela API em toda
+  requisição, com as permissões lidas do banco naquele momento. Sem ela, `403` com `type` terminando em
+  `/problems/forbidden`, e a tentativa vira um evento `ACESSO_NEGADO` da auditoria. O front esconde menus e
+  bloqueia botões pela mesma regra, mas a palavra final é da API.
+* Uma sessão cuja conta foi desativada, excluída ou teve as sessões encerradas responde `401` com `type`
+  terminando em `/problems/unauthenticated` em qualquer rota, e o front volta para o login.
+
+| Permissão | Rotas |
+|---|---|
+| `DASHBOARD_VER` | `/dashboard/*` |
+| `RELATORIOS_VER` | `/relatorios/*` (Resumo, Exportação e Comparação) |
+| `CONSULTAS_VER` | `/consultas`, `/consultas/{id}/*` |
+| `OBJETOS_VER` | `/objetos/*` |
+| `BANCO_ACESSOS_VER` | `GET /usuarios/*` |
+| `BANCO_PAPEIS_ALTERAR` | `POST /usuarios/alteracoes` com operações de papel (`CRIAR_PAPEL`, `ALTERAR_PAPEL`, `RENOMEAR_PAPEL`, `DESCREVER_PAPEL`, `CONFIGURAR_PAPEL`, `EXCLUIR_PAPEL`, `CONCEDER_PARTICIPACAO`, `REVOGAR_PARTICIPACAO`) |
+| `BANCO_PERMISSOES_ALTERAR` | `POST /usuarios/alteracoes` com `CONCEDER`, `REVOGAR` ou `PRIVILEGIO_PADRAO` (um lote com os dois tipos pede as duas) |
+| `CONEXOES_USAR` | `POST /conexoes`, `POST /conexoes/teste`, `POST /conexoes/{id}/ativacao`, `PATCH` e `DELETE /conexoes/{id}` |
+| `ADMIN_USUARIOS` | `/administracao/*` |
+| `ADMIN_AUDITORIA` | `GET /auditoria` |
+| só a sessão | `GET` e `DELETE /autenticacao/sessao`, `GET /conexoes`, `GET` e `DELETE /conexoes/atual`, `GET /sistema/versao`, `POST /auditoria/acessos` |
 
 ---
 
@@ -68,7 +88,8 @@ Toda resposta de erro tem este corpo, o mesmo dos outros projetos:
 | Status | Tipo no front | O que a tela faz |
 |---|---|---|
 | `400`, `422` | `VALIDACAO` | Mostra as mensagens de `errors` nos campos |
-| `401`, `403` | `NAO_AUTORIZADO` | Volta para a tela de login ou mostra o dashboard sem conexão; no login, mostra "E-mail ou senha incorretos" |
+| `401` | `NAO_AUTORIZADO` | Com `type` `/problems/unauthenticated`, volta para a tela de login de qualquer tela; sem ele, mostra a tela sem conexão; no login, mostra "E-mail ou senha incorretos" |
+| `403` | `PROIBIDO` | Mostra o `detail` (a permissão que falta); no login, "Esta conta está desativada" |
 | `404` | `NAO_ENCONTRADO` | Estado de erro da região |
 | `409` | `CONFLITO` | Estado de erro da região |
 | `429` | `LIMITE_EXCEDIDO` | Pede para aguardar antes de tentar de novo; na recuperação de senha, pede um novo código |
@@ -128,6 +149,18 @@ ajustar `PROBLEMAS_CONEXAO` em `src/modelos/conexao.ts`.
 | `POST` | `/usuarios/alteracoes` | Executa, numa transação, as operações de papéis e de permissões revisadas na tela | sim |
 | `GET` | `/usuarios/alteracoes` | O histórico das alterações feitas pelo Orynt no servidor, aplicadas e recusadas | sim |
 | `GET` | `/sistema/versao` | Versão publicada da API e a data de lançamento | não |
+| `POST` | `/autenticacao/convite/verificacao` | Confere o token de um convite e devolve o nome e o e-mail | não |
+| `POST` | `/autenticacao/convite` | Define a senha pelo convite | não |
+| `GET` | `/administracao/contas` | As contas do Orynt | sim |
+| `POST` | `/administracao/contas` | Cria uma conta e envia o convite | sim |
+| `PATCH` | `/administracao/contas/{id}` | Edita o nome e o e-mail, ativa ou desativa | sim |
+| `PUT` | `/administracao/contas/{id}/permissoes` | Troca o perfil e as permissões | sim |
+| `DELETE` | `/administracao/contas/{id}` | Exclui a conta | sim |
+| `POST` | `/administracao/contas/{id}/convite` | Reenvia o convite | sim |
+| `DELETE` | `/administracao/contas/{id}/sessoes` | Encerra as sessões da conta | sim |
+| `DELETE` | `/administracao/contas/{id}/bloqueio` | Desbloqueia o login | sim |
+| `GET` | `/auditoria` | Os eventos registrados, com filtros e paginação | sim |
+| `POST` | `/auditoria/acessos` | Registra a tela aberta | sim |
 
 ---
 
@@ -159,7 +192,24 @@ interface UsuarioDTO {
   id: string;
   nome: string;
   email: string;
+  perfil: PerfilConta;
+  permissoes: CodigoPermissao[];
   simulado: boolean;
+}
+
+interface VerificacaoConviteDTO {
+  token: string;
+}
+
+interface ConviteValidoDTO {
+  nome: string;
+  email: string;
+  expiraEm: string;
+}
+
+interface AceiteConviteDTO {
+  token: string;
+  senha: string;
 }
 
 interface PedidoRecuperacaoDTO {
@@ -184,6 +234,25 @@ interface NovaSenhaDTO {
 * `UsuarioDTO` nunca traz a senha.
 * `simulado` é `true` só no simulador.
 * `tokenRedefinicao` é opaco, de uso único e de vida curta. O front o mantém só na memória da tela.
+* `permissoes` são as efetivas da conta naquele momento. O front as relê a cada tela aberta.
+* O token do convite chega no fragmento do link (`/ativar-conta#convite=...`), que não vai ao servidor nem aos
+  logs de acesso; a tela o tira do endereço assim que o lê.
+
+### 4.11 Administração e auditoria
+
+Os tipos estão em `src/modelos/administracao.ts`: `PerfilConta`, `CodigoPermissao`, `ContaDTO`, `ListaContasDTO`,
+`NovaContaDTO`, `EdicaoContaDTO`, `PermissoesContaDTO`, `EventoAuditoriaDTO`, `PaginaAuditoriaDTO`,
+`ResumoContaAuditoriaDTO` e `AcessoTelaDTO`.
+
+* `ContaDTO` nunca traz a senha, o hash, o token do convite nem as sessões; só `sessoesAtivas` e `conexoesSalvas`
+  como números. `convite` é `null` quando a senha já foi definida. `bloqueadaAte` vem só enquanto o bloqueio vale.
+* A situação da conta é decidida no front (`regras/contas.ts`): `DESATIVADA`, `BLOQUEADA`, `CONVITE_PENDENTE`,
+  `CONVITE_EXPIRADO` e `ATIVA`, nessa ordem.
+* Os perfis são `LEITOR` (dashboard, relatórios e conexões), `ANALISTA` (o Leitor mais consultas, objetos e a
+  leitura de papéis, sessões e permissões do banco) e `ADMINISTRADOR` (todo o catálogo). O perfil é um ponto de
+  partida: `permissoes` é a lista efetiva, que pode fugir dele.
+* `EventoAuditoriaDTO.conta` e `alvo.rotulo` guardam o nome e o e-mail do momento do evento, para continuarem
+  legíveis depois que a conta mudar ou for excluída.
 
 ### 4.3 Conexão
 
@@ -932,9 +1001,9 @@ interface ListaAlteracoesDTO {
 
 ## 5. Autenticação
 
-Nesta fase só o simulador responde a estas rotas, com um login fictício: ele aceita apenas as
-credenciais de `src/dados/simulacao/credenciaisDemonstracao.ts`. A autenticação real e o cadastro são
-**A DEFINIR NO BACKEND**. A recuperação de senha (5.4 a 5.6) já tem contrato, porque a tela existe; o
+Nesta fase só o simulador responde a estas rotas. A conta de demonstração
+(`src/dados/simulacao/credenciaisDemonstracao.ts`) é a conta inicial, administradora; as outras são criadas em
+Administração › Usuários (seção 13) e entram com a senha definida pelo convite. A recuperação de senha (5.4 a 5.6) já tem contrato, porque a tela existe; o
 simulador a cumpre sem enviar e-mail e sem gravar a senha.
 
 ### 5.1 `POST /autenticacao/sessao`
@@ -942,7 +1011,11 @@ simulador a cumpre sem enviar e-mail e sem gravar a senha.
 * **Corpo:** `CredenciaisAcessoDTO`.
 * **`200`:** `UsuarioDTO`, com o `Set-Cookie` da seção 1.1.
 * **`400`:** campos inválidos, com `errors` (`email` obrigatório e em formato de e-mail, até 254 caracteres; `senha` obrigatória e não aparada).
-* **`401`:** credenciais recusadas, com `type` terminando em `/problems/invalid-credentials`. A resposta não diz qual dos dois campos está errado.
+* **`401`:** credenciais recusadas, com `type` terminando em `/problems/invalid-credentials`. A resposta não diz qual dos dois campos está errado, nem se o e-mail tem conta.
+* **`403`:** senha certa de uma conta desativada (`/problems/account-disabled`).
+* **`429`:** cinco senhas erradas do mesmo e-mail em 15 minutos bloqueiam o login dele por 15 minutos, tenha o
+  e-mail conta ou não, para o bloqueio não revelar quem existe (`/problems/too-many-attempts`). Durante o
+  bloqueio, até a senha certa recebe `429`. A recuperação de senha e o desbloqueio pelo administrador tiram o bloqueio.
 * O e-mail é comparado sem diferenciar maiúsculas de minúsculas.
 
 ### 5.2 `GET /autenticacao/sessao`
@@ -1705,8 +1778,8 @@ identificadores (`quote_ident`) e os literais (`quote_literal`) e monta o SQL pe
   (42704), `database-invalid-grant` (0LP01), `database-object-in-use` (55006) e `database-command-failed` (os
   outros). A recusa também entra no histórico, com `resultado` `RECUSADA` e `falha`. Nenhum comando da transação
   fica aplicado.
-* `400` quando o pedido não segue o formato; `401` sem conexão ativa. A API não usa `403` aqui, porque o front lê
-  `403` como fim da sessão.
+* `400` quando o pedido não segue o formato; `401` sem conexão ativa; `403` quando a conta do Orynt não tem
+  `BANCO_PAPEIS_ALTERAR` ou `BANCO_PERMISSOES_ALTERAR` (seção 1.1). A recusa do próprio banco continua `422`.
 
 ### 12.5 `GET /usuarios/alteracoes`
 
@@ -1716,9 +1789,132 @@ navegador. `401` sem conexão ativa.
 
 ---
 
-## 13. Pendências do contrato
+## 13. Administração
 
-* Autenticação real: como as contas são criadas.
+Contas do Orynt (quem entra na aplicação), não papéis do PostgreSQL. Todas as rotas desta seção pedem
+`ADMIN_USUARIOS`; sem ela a resposta é `403` e o servidor registra `ACESSO_NEGADO` na auditoria.
+
+### 13.1 Regras que a API aplica, não o front
+
+* **Só concede o que tem:** toda permissão que a conta passa a ter e não tinha precisa estar nas permissões de
+  quem pede. Do contrário, `403` com `type` terminando em `/problems/privilege-escalation`. Revogar uma
+  permissão que o administrador não tem é permitido.
+* **Dependências:** `BANCO_PAPEIS_ALTERAR` e `BANCO_PERMISSOES_ALTERAR` só valem com `BANCO_ACESSOS_VER`. Um
+  conjunto sem a dependência volta `400` no campo `permissoes`.
+* **Proteções** (`409`, `type` terminando em `/problems/administrator-protection`): ninguém desativa, exclui
+  nem tira `ADMIN_USUARIOS` da própria conta; a última conta ativa com `ADMIN_USUARIOS` não pode ser
+  desativada, excluída nem perder essa permissão; a conta criada na instalação (`inicial`) não pode ser
+  desativada nem excluída; não se encerram as sessões da própria conta por aqui (o caminho é
+  `DELETE /autenticacao/sessao`).
+* **Senha:** o administrador nunca define nem vê a senha. A conta nasce com um convite (token aleatório,
+  guardado só como hash, válido por 7 dias, de uso único). A senha é guardada com um hash lento e com sal (o
+  simulador usa PBKDF2-SHA-256 com 210.000 iterações; na API, Argon2id ou bcrypt, **A DEFINIR NO BACKEND**).
+* **Permissões efetivas a cada requisição:** a API lê as permissões da conta em toda requisição, então uma
+  revogação vale na seguinte, sem novo login. Desativar ou excluir a conta encerra as sessões dela.
+* **Auditoria:** cada rota que muda algo registra um evento (seção 14), com o antes e o depois.
+
+### 13.2 `GET /administracao/contas`
+
+`200` com `ListaContasDTO`: todas as contas, numa resposta só. A tela busca, filtra e pagina no navegador.
+
+### 13.3 `POST /administracao/contas`
+
+* **Corpo:** `NovaContaDTO`. Com `ativa: true`, o convite sai na hora; com `false`, a conta fica guardada e o
+  convite sai quando ela for ativada.
+* **`201`:** `ContaDTO`, com `convite` preenchido quando saiu.
+* **`400`:** `nome` (2 a 80 caracteres), `email` (formato e até 254), `perfil`, `permissoes` do catálogo, `ativa`.
+* **`409`:** e-mail em uso (`/problems/email-in-use`, com `errors` em `email`). A comparação ignora maiúsculas.
+* **`403`:** elevação de privilégio (13.1).
+
+### 13.4 `PATCH /administracao/contas/{id}`
+
+* **Corpo:** `EdicaoContaDTO`, só com os campos que mudam. Trocar o e-mail de quem ainda não definiu a senha
+  envia um convite novo para o endereço novo. Ativar uma conta sem senha envia um convite novo.
+* **`200`:** `ContaDTO`. **`404`**; **`409`** (e-mail em uso ou proteção).
+
+### 13.5 `PUT /administracao/contas/{id}/permissoes`
+
+* **Corpo:** `PermissoesContaDTO`, com o perfil e a lista completa de permissões efetivas (não um delta).
+* **`200`:** `ContaDTO`. **`400`**, **`403`**, **`404`** e **`409`** conforme 13.1.
+
+### 13.6 `DELETE /administracao/contas/{id}`
+
+* **`204`:** encerra as sessões, apaga as conexões salvas da conta e a conta. A auditoria e o histórico de
+  `/usuarios/alteracoes` não são apagados: os eventos guardam o nome e o e-mail que a conta tinha.
+* **`404`**; **`409`** (proteção).
+
+### 13.7 `POST /administracao/contas/{id}/convite`
+
+Reenvia o convite; o token anterior deixa de valer. **`200`:** `ContaDTO`. **`409`:** a conta já tem senha ou
+está desativada.
+
+### 13.8 `DELETE /administracao/contas/{id}/sessoes`
+
+Encerra todas as sessões da conta. **`200`:** `ContaDTO`. **`409`:** a própria conta.
+
+### 13.9 `DELETE /administracao/contas/{id}/bloqueio`
+
+Tira o bloqueio de login por tentativas (seção 5.1). **`200`:** `ContaDTO`.
+
+---
+
+## 14. Auditoria
+
+### 14.1 `GET /auditoria`
+
+Pede `ADMIN_AUDITORIA`. A lista é filtrada, ordenada do mais recente ao mais antigo e paginada pela API, porque
+cresce sem limite.
+
+| Parâmetro | Valores |
+|---|---|
+| `busca` | Texto livre, até 200 caracteres. Procura na frase do evento, no nome e no e-mail da conta, no e-mail digitado num login, no registro afetado, no módulo, na ação, na rota e no antes e depois. |
+| `conta` | Id da conta: traz o que ela fez e o que fizeram com ela. |
+| `categoria` | `AUTENTICACAO`, `NAVEGACAO`, `CONSULTA`, `CRIACAO`, `ATUALIZACAO`, `EXCLUSAO`, `PERMISSOES` |
+| `modulo` | `ACESSO`, `DASHBOARD`, `RELATORIOS`, `CONSULTAS`, `OBJETOS`, `BANCO`, `CONEXOES`, `ADMINISTRACAO`, `CONFIGURACOES` |
+| `resultado` | `SUCESSO`, `FALHA`, `NEGADO` |
+| `periodo` | `ULTIMA_HORA`, `ULTIMAS_24_HORAS`, `ULTIMOS_7_DIAS`, `ULTIMOS_30_DIAS`; sem ele, tudo |
+| `pagina` | A partir de 1, com 25 eventos por página. Uma página além do fim volta a última. |
+
+`200` com `PaginaAuditoriaDTO`. Com `conta`, `resumoDaConta` traz as contagens do que a própria conta fez no
+período, por módulo e por ação, e as tentativas negadas.
+
+### 14.2 `POST /auditoria/acessos`
+
+Pede só a sessão. O front avisa a tela que abriu (`AcessoTelaDTO`, um caminho da lista de telas do Orynt). A API
+confere a permissão da tela e registra `TELA_ACESSADA` (`204`) ou `ACESSO_NEGADO` (`403`); caminho desconhecido
+volta `400`. É um evento por tela aberta: trocar filtros ou páginas não gera eventos.
+
+### 14.3 O que é registrado
+
+| Tipo | Quando |
+|---|---|
+| `LOGIN`, `LOGOUT` | Login aceito e saída |
+| `LOGIN_FALHOU` | Login recusado, com `motivo` (`SENHA_INCORRETA`, `CONTA_INEXISTENTE`, `CONTA_DESATIVADA`, `CONVITE_PENDENTE`, `BLOQUEADA`) e o e-mail digitado em `emailInformado`; nunca a senha |
+| `LOGIN_BLOQUEADO` | A quinta senha errada do mesmo e-mail em 15 minutos, que bloqueia o login por 15 minutos |
+| `RECUPERACAO_PEDIDA`, `SENHA_REDEFINIDA` | Recuperação de senha de uma conta que existe |
+| `CONVITE_ACEITO` | A pessoa definiu a senha pelo convite |
+| `TELA_ACESSADA` | Tela aberta (14.2) |
+| `ACESSO_NEGADO` | Qualquer rota ou tela recusada por falta de permissão, com a rota em `requisicao` |
+| `CONTA_CRIADA`, `CONTA_EDITADA`, `CONTA_ATIVADA`, `CONTA_DESATIVADA`, `CONTA_EXCLUIDA`, `CONTA_DESBLOQUEADA`, `CONVITE_REENVIADO`, `SESSOES_ENCERRADAS` | Seção 13 |
+| `PERMISSOES_ALTERADAS` | Seção 13.5, com `concedidas`, `revogadas` e a troca de perfil em `mudancas` |
+| `CONEXAO_CRIADA`, `CONEXAO_ATIVADA`, `CONEXAO_ENCERRADA`, `CONEXAO_RENOMEADA`, `CONEXAO_EXCLUIDA` | Seção 6, também as tentativas recusadas pelo banco (`FALHA`) |
+| `BANCO_ALTERADO` | `POST /usuarios/alteracoes`, aplicada ou recusada, com o id da alteração em `alvo` |
+
+* **Nunca entram no registro:** senhas, códigos de recuperação, tokens de convite ou de redefinição,
+  verificadores SCRAM e o corpo das requisições.
+* **Origem:** `ip` e `navegador`, este resumido como "Chrome 141 no Windows". O simulador não tem IP. Guardar o
+  IP é **A DEFINIR NO BACKEND**, junto com a política de privacidade.
+* **Integridade:** não existe rota para editar ou apagar eventos, nem para o administrador. No banco da API a
+  tabela deve ser só de inserção para o usuário da aplicação. A retenção é **A DEFINIR NO BACKEND** (o simulador
+  guarda os 5.000 mais recentes).
+
+---
+
+## 15. Pendências do contrato
+
+* Contas: o algoritmo de hash da senha (Argon2id ou bcrypt), o serviço de e-mail dos convites, a duração e a
+  ociosidade máxima da sessão, e se o bloqueio por tentativas também conta por origem.
+* Auditoria: retenção, guarda do IP, exportação para um SIEM e proteção contra alteração no banco da API.
 * Recuperação de senha: o serviço de envio de e-mail, o texto da mensagem, o limite de pedidos por origem e o prazo do token de redefinição.
 * Como a senha das conexões salvas é cifrada e onde fica a chave.
 * Limite de conexões salvas por conta, se houver.

@@ -1,5 +1,7 @@
 import type { LucideIcon } from 'lucide-react';
-import { FileChartColumn, LayoutDashboard, Settings, SquareTerminal, Table2, Users } from 'lucide-react';
+import { FileChartColumn, LayoutDashboard, ScrollText, Settings, SquareTerminal, Table2, UserCog, Users } from 'lucide-react';
+import type { CodigoPermissao } from '@/modelos/administracao';
+import { podeAbrirTela } from '@/regras/permissoesConta';
 import { caminhos } from '@/rotas/caminhos';
 
 export interface FilhoNavegacao {
@@ -146,7 +148,27 @@ export const navegacaoPrincipal: SecaoNavegacao[] = [
     titulo: 'Gerenciamento',
     itens: [objetosBanco, usuariosPermissoes],
   },
+  {
+    titulo: 'Administração',
+    itens: [
+      { rotulo: 'Usuários', icone: UserCog, destino: caminhos.administracaoUsuarios },
+      { rotulo: 'Auditoria', icone: ScrollText, destino: caminhos.administracaoAuditoria },
+    ],
+  },
 ];
+
+export function navegacaoDaConta(dono: { permissoes: readonly CodigoPermissao[] } | null): SecaoNavegacao[] {
+  return navegacaoPrincipal
+    .map((secao) => ({
+      ...secao,
+      itens: secao.itens.flatMap((item): ItemNavegacao[] => {
+        if (!item.filhos) return podeAbrirTela(dono, item.destino) ? [item] : [];
+        const filhos = item.filhos.filter((filho) => podeAbrirTela(dono, filho.destino));
+        return filhos.length > 0 ? [{ ...item, filhos }] : [];
+      }),
+    }))
+    .filter((secao) => secao.itens.length > 0);
+}
 
 export const navegacaoRodape: ItemNavegacao = {
   rotulo: 'Configurações',

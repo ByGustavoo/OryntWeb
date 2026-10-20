@@ -9,13 +9,14 @@ const DESCRICAO_PADRAO: Record<TipoErroApi, string> = {
   SERVIDOR: 'O servidor encontrou um problema. Tente de novo daqui a pouco.',
   VALIDACAO: 'Alguns dados não foram aceitos. Revise e tente de novo.',
   NAO_AUTORIZADO: 'A conexão com o banco foi encerrada. Conecte de novo para continuar.',
+  PROIBIDO: 'A sua conta não tem permissão para isso. Fale com quem administra o Orynt na sua equipe.',
   NAO_ENCONTRADO: 'O registro não existe mais. Ele pode ter sido excluído em outra tela.',
   CONFLITO: 'A alteração entra em conflito com dados já salvos.',
   LIMITE_EXCEDIDO: 'Foram muitas tentativas em pouco tempo. Aguarde alguns minutos e tente de novo.',
   CANCELADO: 'A operação foi cancelada.',
 };
 
-const TIPOS_COM_DETALHE_PARA_PESSOA: TipoErroApi[] = ['VALIDACAO', 'NAO_ENCONTRADO', 'CONFLITO'];
+const TIPOS_COM_DETALHE_PARA_PESSOA: TipoErroApi[] = ['VALIDACAO', 'NAO_ENCONTRADO', 'CONFLITO', 'PROIBIDO'];
 
 function textoOuVazio(valor: unknown): string {
   return typeof valor === 'string' ? valor : '';
@@ -66,7 +67,7 @@ export function descreverFalha(erro: unknown): string {
 }
 
 export function registrarErro(erro: ErroApi, requisicao: { metodo: string; caminho: string }): void {
-  if (erro.tipo === 'CANCELADO' || erro.tipo === 'NAO_AUTORIZADO') return;
+  if (erro.tipo === 'CANCELADO' || erro.tipo === 'NAO_AUTORIZADO' || erro.tipo === 'PROIBIDO') return;
   const grave = erro.tipo === 'SERVIDOR' || erro.tipo === 'REDE' || erro.tipo === 'TEMPO_ESGOTADO';
   if (!grave && !ambiente.desenvolvimento) return;
   const registrar = grave ? console.error : console.warn;

@@ -35,7 +35,7 @@ export function QuemAcessa({ objetoId, permissoes, aoVer }: QuemAcessaProps) {
 
   if (permissoes.falhou) {
     return (
-      <section className={estilos.secao} aria-labelledby="titulo-quem-acessa">
+      <section className={estilos.secao} aria-labelledby="titulo-quem-acessa" data-indice="Quem acessa">
         {cabecalho(null)}
         <p className={estilos.leitura}>O Orynt não conseguiu carregar as permissões deste banco.</p>
         <Botao variante="secundario" tamanho="sm" className={locais.acao} onClick={permissoes.recarregar}>
@@ -47,7 +47,7 @@ export function QuemAcessa({ objetoId, permissoes, aoVer }: QuemAcessaProps) {
 
   if (!indice) {
     return (
-      <section className={estilos.secao} aria-labelledby="titulo-quem-acessa" aria-busy="true">
+      <section className={estilos.secao} aria-labelledby="titulo-quem-acessa" data-indice="Quem acessa" aria-busy="true">
         {cabecalho(null)}
         <span className="visualmente-oculto" role="status">
           Carregando quem acessa este objeto…
@@ -63,7 +63,7 @@ export function QuemAcessa({ objetoId, permissoes, aoVer }: QuemAcessaProps) {
 
   if (!indice.objetos.has(objetoId)) {
     return (
-      <section className={estilos.secao} aria-labelledby="titulo-quem-acessa">
+      <section className={estilos.secao} aria-labelledby="titulo-quem-acessa" data-indice="Quem acessa">
         {cabecalho(null)}
         <p className={estilos.leitura}>Este objeto não está entre as permissões que o Orynt leu deste banco.</p>
       </section>
@@ -89,7 +89,7 @@ export function QuemAcessa({ objetoId, permissoes, aoVer }: QuemAcessaProps) {
   ].join('');
 
   return (
-    <section className={estilos.secao} aria-labelledby="titulo-quem-acessa">
+    <section className={estilos.secao} aria-labelledby="titulo-quem-acessa" data-indice="Quem acessa">
       {cabecalho(proprias.length)}
       <p className={estilos.leitura}>{frase}</p>
       {visiveis.length > 0 ? (

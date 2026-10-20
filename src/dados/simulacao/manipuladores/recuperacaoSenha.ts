@@ -1,13 +1,14 @@
 import type { RequisicaoTransporte, RespostaTransporte } from '@/api/transporte';
 import { PROBLEMAS_AUTENTICACAO } from '@/modelos/autenticacao';
 import { codigoCompleto, validarEmailRecuperacao, validarNovaSenha } from '@/regras/recuperacaoSenha';
-import { mesmoEmail } from '@/regras/validacaoAcesso';
-import { CREDENCIAIS_DEMONSTRACAO } from '../credenciaisDemonstracao';
+import { registrarEvento } from '../auditoriaSimulada';
+import { SENHA_DA_DEMONSTRACAO, atualizarContaSimulada, autorDaConta, contaPorEmail, limparTentativasDeLogin } from '../contasSimuladas';
+import { gerarHashDeSenha } from '../hashSenhaSimulada';
 import {
   abrirRedefinicaoSimulada,
   conferirCodigoSimulado,
+  emailDaRedefinicaoSimulada,
   encerrarRedefinicaoSimulada,
-  redefinicaoSimuladaValida,
   registrarPedidoSimulado,
 } from '../recuperacaoSimulada';
 import { aceito, dadosInvalidos, ok, problema, semConteudo } from '../resposta';
@@ -26,12 +27,28 @@ function codigoRecusado(): RespostaTransporte {
   );
 }
 
+function redefinicaoExpirada(): RespostaTransporte {
+  return problema(
+    422,
+    'Redefinição expirada!',
+    PROBLEMAS_AUTENTICACAO.redefinicaoExpirada,
+    'A validação do código não vale mais para trocar a senha.',
+  );
+}
+
+function contaQueRecupera(email: string) {
+  const conta = contaPorEmail(email);
+  return conta && conta.ativa && conta.senha !== null ? conta : null;
+}
+
 export function solicitarRecuperacao(requisicao: RequisicaoTransporte, agora: Date): RespostaTransporte {
   const email = campoDoCorpo(requisicao.corpo, 'email');
   const erro = validarEmailRecuperacao(email);
   if (erro) return dadosInvalidos([{ campo: 'email', mensagem: erro }]);
 
-  registrarPedidoSimulado(email, mesmoEmail(email, CREDENCIAIS_DEMONSTRACAO.email), agora.getTime());
+  const conta = contaQueRecupera(email);
+  registrarPedidoSimulado(email, conta !== null, agora.getTime());
+  if (conta) registrarEvento({ tipo: 'RECUPERACAO_PEDIDA', resultado: 'SUCESSO', conta: autorDaConta(conta) }, agora);
   return aceito();
 }
 
@@ -53,23 +70,25 @@ export function verificarCodigoRecuperacao(requisicao: RequisicaoTransporte, ago
   }
   if (resultado === 'RECUSADO') return codigoRecusado();
 
-  return ok({ tokenRedefinicao: abrirRedefinicaoSimulada(agora.getTime()) });
+  return ok({ tokenRedefinicao: abrirRedefinicaoSimulada(email, agora.getTime()) });
 }
 
-export function redefinirSenha(requisicao: RequisicaoTransporte, agora: Date): RespostaTransporte {
+export async function redefinirSenha(requisicao: RequisicaoTransporte, agora: Date): Promise<RespostaTransporte> {
   const token = campoDoCorpo(requisicao.corpo, 'tokenRedefinicao');
-  if (!redefinicaoSimuladaValida(token, agora.getTime())) {
-    return problema(
-      422,
-      'Redefinição expirada!',
-      PROBLEMAS_AUTENTICACAO.redefinicaoExpirada,
-      'A validação do código não vale mais para trocar a senha.',
-    );
-  }
+  const email = emailDaRedefinicaoSimulada(token, agora.getTime());
+  if (email === null) return redefinicaoExpirada();
 
-  const erro = validarNovaSenha(campoDoCorpo(requisicao.corpo, 'senha'));
+  const senha = campoDoCorpo(requisicao.corpo, 'senha');
+  const erro = validarNovaSenha(senha);
   if (erro) return dadosInvalidos([{ campo: 'senha', mensagem: erro }]);
 
   encerrarRedefinicaoSimulada(token);
+  const conta = contaQueRecupera(email);
+  if (!conta) return semConteudo();
+
+  const hash = conta.senha === SENHA_DA_DEMONSTRACAO ? SENHA_DA_DEMONSTRACAO : await gerarHashDeSenha(senha);
+  atualizarContaSimulada(conta.id, (atual) => ({ ...atual, senha: hash, sessoes: [], atualizadaEm: agora.toISOString() }));
+  limparTentativasDeLogin(email);
+  registrarEvento({ tipo: 'SENHA_REDEFINIDA', resultado: 'SUCESSO', conta: autorDaConta(conta) }, agora);
   return semConteudo();
 }

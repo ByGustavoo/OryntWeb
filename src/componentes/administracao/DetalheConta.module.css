@@ -1,0 +1,44 @@
+.criada {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+}
+
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-2);
+  margin-top: var(--espaco-2);
+}
+
+.excluir {
+  margin-left: auto;
+  color: var(--erro);
+}
+
+.barraPendente {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-2) var(--espaco-4);
+  padding: var(--espaco-3) var(--espaco-4);
+  border: 1px solid color-mix(in srgb, var(--destaque) 35%, var(--borda));
+  border-radius: var(--raio-md);
+  background-color: var(--superficie-elevada);
+  box-shadow: var(--sombra-flutuante);
+}
+
+.textoPendente {
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+}
+
+.acoesPendentes {
+  display: flex;
+  gap: var(--espaco-2);
+  margin-left: auto;
+}

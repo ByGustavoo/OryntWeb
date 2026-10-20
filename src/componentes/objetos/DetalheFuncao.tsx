@@ -41,7 +41,7 @@ import {
   pluralizar,
 } from '@/utilitarios/formatacao';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
-import { DonoDoObjeto, ItemConsulta, Medida, SecaoCopiavel } from './DetalheObjeto';
+import { DonoDoObjeto, IndiceDoDetalhe, ItemConsulta, Medida, SecaoCopiavel } from './DetalheObjeto';
 import estilos from './DetalheObjeto.module.css';
 import { NomeObjeto } from './NomeObjeto';
 import { SeloSituacaoFuncao, SeloTipoFuncao } from './SeloSituacaoFuncao';
@@ -187,6 +187,8 @@ function CorpoDetalhe({ funcao, contexto, simulada, ...acoes }: CorpoDetalheProp
         </div>
       </header>
 
+      <IndiceDoDetalhe raiz={raiz} />
+
       {avisos.map((aviso) => (
         <Nota key={aviso.texto} tom={aviso.tom} icone={aviso.tom === 'erro' ? OctagonAlert : TriangleAlert}>
           {aviso.texto}
@@ -213,6 +215,7 @@ function CorpoDetalhe({ funcao, contexto, simulada, ...acoes }: CorpoDetalheProp
 
       <SecaoCopiavel
         id="titulo-codigo-funcao"
+        indice="Código"
         titulo="Código"
         texto={funcao.definicao}
         copiado="Copiado"
@@ -244,7 +247,7 @@ function SecaoUso({ funcao, contexto }: { funcao: FuncaoDTO; contexto: ContextoD
   const propria = uso ? Math.round(parteDoTempoProprio(uso) * 100) : 0;
 
   return (
-    <section className={estilos.secao} aria-labelledby="titulo-uso-funcao">
+    <section className={estilos.secao} aria-labelledby="titulo-uso-funcao" data-indice="Uso">
       <h3 className={estilos.tituloSecao} id="titulo-uso-funcao">
         Uso nos últimos 30 dias
       </h3>
@@ -326,7 +329,7 @@ function SecaoAssinatura({ funcao }: { funcao: FuncaoDTO }) {
   ];
 
   return (
-    <section className={estilos.secao} aria-labelledby="titulo-assinatura-funcao">
+    <section className={estilos.secao} aria-labelledby="titulo-assinatura-funcao" data-indice="Parâmetros">
       <h3 className={estilos.tituloSecao} id="titulo-assinatura-funcao">
         Parâmetros e retorno
       </h3>
@@ -361,7 +364,7 @@ function SecaoAssinatura({ funcao }: { funcao: FuncaoDTO }) {
 
 function SecaoGatilhos({ funcao, aoAbrirTabela }: { funcao: FuncaoDTO; aoAbrirTabela: (id: string) => void }) {
   return (
-    <section className={estilos.secao} aria-labelledby="titulo-gatilhos-funcao">
+    <section className={estilos.secao} aria-labelledby="titulo-gatilhos-funcao" data-indice="Gatilhos">
       <h3 className={estilos.tituloSecao} id="titulo-gatilhos-funcao">
         Gatilhos que a chamam <span className={`${estilos.contagem} numeros`}>{formatarNumero(funcao.gatilhos.length)}</span>
       </h3>
@@ -408,7 +411,7 @@ function SecaoConsultas({
   aoVerPlano,
 }: Pick<AcoesDoDetalhe, 'aoVerHistorico' | 'aoVerPlano'> & { funcao: FuncaoDTO }) {
   return (
-    <section className={estilos.secao} aria-labelledby="titulo-consultas-funcao">
+    <section className={estilos.secao} aria-labelledby="titulo-consultas-funcao" data-indice="Consultas">
       <h3 className={estilos.tituloSecao} id="titulo-consultas-funcao">
         Consultas que {funcao.tipo === 'PROCEDIMENTO' ? 'o chamam' : 'a chamam'} <span className={`${estilos.contagem} numeros`}>{formatarNumero(funcao.consultas.length)}</span>
       </h3>
@@ -445,7 +448,7 @@ function SecaoDependentes({
   const quantidade = funcao.indices.length + funcao.visoes.length;
 
   return (
-    <section className={estilos.secao} aria-labelledby="titulo-dependentes-funcao">
+    <section className={estilos.secao} aria-labelledby="titulo-dependentes-funcao" data-indice="Dependentes">
       <h3 className={estilos.tituloSecao} id="titulo-dependentes-funcao">
         Objetos que dependem {funcao.tipo === 'PROCEDIMENTO' ? 'dele' : 'dela'} <span className={`${estilos.contagem} numeros`}>{formatarNumero(quantidade)}</span>
       </h3>

@@ -1,0 +1,29 @@
+.corpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-5);
+  padding-top: var(--espaco-1);
+}
+
+.titulo {
+  margin-bottom: var(--espaco-2);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+}
+
+.consequencias {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+  margin: 0;
+  padding-left: var(--espaco-5);
+  list-style: disc;
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  line-height: var(--altura-linha-normal);
+}
+
+.consequencias li::marker {
+  color: var(--texto-terciario);
+}

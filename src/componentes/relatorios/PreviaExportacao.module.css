@@ -1,8 +1,8 @@
 .painel {
-  position: sticky;
-  top: calc(var(--altura-cabecalho) + var(--espaco-4));
+  contain: size;
   gap: var(--espaco-3);
   min-width: 0;
+  min-height: 24rem;
 }
 
 .painel > header {
@@ -44,7 +44,8 @@
 }
 
 .conteudo {
-  max-height: 26rem;
+  flex: 1 1 auto;
+  min-height: 8rem;
   margin: 0;
   padding: var(--espaco-4);
   overflow: auto;
@@ -70,6 +71,12 @@
 
 @container exportacao (max-width: 900px) {
   .painel {
-    position: static;
+    contain: none;
+    min-height: 0;
+  }
+
+  .conteudo {
+    flex: none;
+    max-height: 26rem;
   }
 }

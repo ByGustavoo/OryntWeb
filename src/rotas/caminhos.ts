@@ -2,6 +2,7 @@ export const caminhos = {
   inicio: '/',
   login: '/login',
   recuperarSenha: '/recuperar-senha',
+  ativarConta: '/ativar-conta',
   dashboard: '/dashboard',
   relatorios: '/relatorios',
   relatoriosResumo: '/relatorios/resumo',
@@ -21,5 +22,8 @@ export const caminhos = {
   usuariosSessoes: '/usuarios-e-permissoes/sessoes',
   usuariosPermissoes: '/usuarios-e-permissoes/permissoes',
   usuariosAlteracoes: '/usuarios-e-permissoes/alteracoes',
+  administracao: '/administracao',
+  administracaoUsuarios: '/administracao/usuarios',
+  administracaoAuditoria: '/administracao/auditoria',
   configuracoes: '/configuracoes',
 } as const;

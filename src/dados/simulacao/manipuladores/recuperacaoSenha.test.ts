@@ -29,7 +29,7 @@ function verificar(email: string, codigo: string, agora = INICIO): RespostaTrans
   return verificarCodigoRecuperacao(requisicao(rotasApi.autenticacao.verificacaoRecuperacao, { email, codigo }), agora);
 }
 
-function redefinir(tokenRedefinicao: string, senha: string, agora = INICIO): RespostaTransporte {
+function redefinir(tokenRedefinicao: string, senha: string, agora = INICIO): Promise<RespostaTransporte> {
   return redefinirSenha(requisicao(rotasApi.autenticacao.novaSenha, { tokenRedefinicao, senha }), agora);
 }
 
@@ -58,12 +58,12 @@ beforeEach(() => {
 });
 
 describe('solicitarRecuperacao', () => {
-  it('responde do mesmo jeito para um e-mail com conta e para um sem conta', () => {
+  it('responde do mesmo jeito para um e-mail com conta e para um sem conta', async () => {
     expect(pedir(CREDENCIAIS_DEMONSTRACAO.email)).toEqual(pedir(EMAIL_SEM_CONTA));
     expect(pedir(EMAIL_SEM_CONTA)).toEqual({ status: 202, corpo: undefined });
   });
 
-  it('só gera código para o e-mail que tem conta', () => {
+  it('só gera código para o e-mail que tem conta', async () => {
     pedir(EMAIL_SEM_CONTA);
     expect(lerCaixaEntradaSimulada()).toMatchObject({ destinatario: EMAIL_SEM_CONTA, codigo: null });
 
@@ -71,20 +71,20 @@ describe('solicitarRecuperacao', () => {
     expect(lerCaixaEntradaSimulada()?.codigo).toMatch(/^\d{6}$/);
   });
 
-  it('recusa o e-mail malformado antes de registrar o pedido', () => {
+  it('recusa o e-mail malformado antes de registrar o pedido', async () => {
     const resposta = pedir('demo@');
     expect(resposta.status).toBe(400);
     expect(lerCaixaEntradaSimulada()).toBeNull();
   });
 
-  it('mantém o mesmo código quando o reenvio chega antes de 60 segundos', () => {
+  it('mantém o mesmo código quando o reenvio chega antes de 60 segundos', async () => {
     pedir(CREDENCIAIS_DEMONSTRACAO.email);
     const primeiro = codigoEnviado();
     expect(pedir(CREDENCIAIS_DEMONSTRACAO.email, depois(59)).status).toBe(202);
     expect(codigoEnviado()).toBe(primeiro);
   });
 
-  it('zera as tentativas quando um novo código é enviado depois do intervalo', () => {
+  it('zera as tentativas quando um novo código é enviado depois do intervalo', async () => {
     pedir(CREDENCIAIS_DEMONSTRACAO.email);
     for (let tentativa = 0; tentativa < 5; tentativa += 1) verificar(CREDENCIAIS_DEMONSTRACAO.email, codigoErrado());
     expect(lerCaixaEntradaSimulada()?.esgotada).toBe(true);
@@ -96,14 +96,14 @@ describe('solicitarRecuperacao', () => {
 });
 
 describe('verificarCodigoRecuperacao', () => {
-  it('libera a redefinição com o código certo', () => {
+  it('libera a redefinição com o código certo', async () => {
     pedir(CREDENCIAIS_DEMONSTRACAO.email);
     const resposta = verificar(CREDENCIAIS_DEMONSTRACAO.email, codigoEnviado());
     expect(resposta.status).toBe(200);
     expect((resposta.corpo as { tokenRedefinicao: string }).tokenRedefinicao).not.toBe('');
   });
 
-  it('dá a mesma resposta para código errado, e-mail sem conta e e-mail que nunca pediu', () => {
+  it('dá a mesma resposta para código errado, e-mail sem conta e e-mail que nunca pediu', async () => {
     pedir(CREDENCIAIS_DEMONSTRACAO.email);
     const errado = verificar(CREDENCIAIS_DEMONSTRACAO.email, codigoErrado());
     pedir(EMAIL_SEM_CONTA);
@@ -116,20 +116,20 @@ describe('verificarCodigoRecuperacao', () => {
     expect(semPedido).toEqual(errado);
   });
 
-  it('recusa o código certo depois que ele expira', () => {
+  it('recusa o código certo depois que ele expira', async () => {
     pedir(CREDENCIAIS_DEMONSTRACAO.email);
     const codigo = codigoEnviado();
     expect(verificar(CREDENCIAIS_DEMONSTRACAO.email, codigo, depois(10 * 60)).status).toBe(422);
   });
 
-  it('recusa o código certo depois do controle de expiração', () => {
+  it('recusa o código certo depois do controle de expiração', async () => {
     pedir(CREDENCIAIS_DEMONSTRACAO.email);
     const codigo = codigoEnviado();
     expirarCodigoSimulado();
     expect(verificar(CREDENCIAIS_DEMONSTRACAO.email, codigo).status).toBe(422);
   });
 
-  it('esgota o código na quinta tentativa errada, inclusive para e-mail sem conta', () => {
+  it('esgota o código na quinta tentativa errada, inclusive para e-mail sem conta', async () => {
     for (const email of [CREDENCIAIS_DEMONSTRACAO.email, EMAIL_SEM_CONTA]) {
       pedir(email);
       const respostas = Array.from({ length: 5 }, () => verificar(email, '999999').status);
@@ -138,7 +138,7 @@ describe('verificarCodigoRecuperacao', () => {
     }
   });
 
-  it('não aceita nem o código certo depois de esgotado', () => {
+  it('não aceita nem o código certo depois de esgotado', async () => {
     pedir(CREDENCIAIS_DEMONSTRACAO.email);
     const codigo = codigoEnviado();
     for (let tentativa = 0; tentativa < 5; tentativa += 1) verificar(CREDENCIAIS_DEMONSTRACAO.email, codigoErrado());
@@ -147,14 +147,14 @@ describe('verificarCodigoRecuperacao', () => {
     expect(tipoDoProblema(resposta)).toBe('/problems/recovery-attempts-exceeded');
   });
 
-  it('não aceita o mesmo código duas vezes', () => {
+  it('não aceita o mesmo código duas vezes', async () => {
     pedir(CREDENCIAIS_DEMONSTRACAO.email);
     const codigo = codigoEnviado();
     expect(verificar(CREDENCIAIS_DEMONSTRACAO.email, codigo).status).toBe(200);
     expect(verificar(CREDENCIAIS_DEMONSTRACAO.email, codigo).status).toBe(422);
   });
 
-  it('não conta como tentativa um código incompleto', () => {
+  it('não conta como tentativa um código incompleto', async () => {
     pedir(CREDENCIAIS_DEMONSTRACAO.email);
     for (let tentativa = 0; tentativa < 8; tentativa += 1) {
       expect(verificar(CREDENCIAIS_DEMONSTRACAO.email, '12').status).toBe(422);
@@ -164,36 +164,36 @@ describe('verificarCodigoRecuperacao', () => {
 });
 
 describe('redefinirSenha', () => {
-  it('aceita a senha nova com o token da verificação', () => {
-    expect(redefinir(tokenLiberado(), 'uma senha nova').status).toBe(204);
+  it('aceita a senha nova com o token da verificação', async () => {
+    expect((await redefinir(tokenLiberado(), 'uma senha nova')).status).toBe(204);
   });
 
-  it('recusa um token inventado', () => {
-    const resposta = redefinir('token-inventado', 'uma senha nova');
+  it('recusa um token inventado', async () => {
+    const resposta = await redefinir('token-inventado', 'uma senha nova');
     expect(resposta.status).toBe(422);
     expect(tipoDoProblema(resposta)).toBe('/problems/invalid-reset-token');
   });
 
-  it('não aceita o mesmo token duas vezes', () => {
+  it('não aceita o mesmo token duas vezes', async () => {
     const token = tokenLiberado();
-    expect(redefinir(token, 'uma senha nova').status).toBe(204);
-    expect(redefinir(token, 'outra senha nova').status).toBe(422);
+    expect((await redefinir(token, 'uma senha nova')).status).toBe(204);
+    expect((await redefinir(token, 'outra senha nova')).status).toBe(422);
   });
 
-  it('mantém o token quando a senha é recusada pela validação', () => {
+  it('mantém o token quando a senha é recusada pela validação', async () => {
     const token = tokenLiberado();
-    expect(redefinir(token, 'curta').status).toBe(400);
-    expect(redefinir(token, 'uma senha nova').status).toBe(204);
+    expect((await redefinir(token, 'curta')).status).toBe(400);
+    expect((await redefinir(token, 'uma senha nova')).status).toBe(204);
   });
 
-  it('recusa o token expirado', () => {
+  it('recusa o token expirado', async () => {
     const token = tokenLiberado();
-    expect(redefinir(token, 'uma senha nova', depois(10 * 60)).status).toBe(422);
+    expect((await redefinir(token, 'uma senha nova', depois(10 * 60))).status).toBe(422);
   });
 
-  it('recusa o token depois do controle de expiração', () => {
+  it('recusa o token depois do controle de expiração', async () => {
     const token = tokenLiberado();
     expirarRedefinicaoSimulada();
-    expect(redefinir(token, 'uma senha nova').status).toBe(422);
+    expect((await redefinir(token, 'uma senha nova')).status).toBe(422);
   });
 });

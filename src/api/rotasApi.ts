@@ -4,6 +4,20 @@ export const rotasApi = {
     recuperacao: '/autenticacao/recuperacao',
     verificacaoRecuperacao: '/autenticacao/recuperacao/verificacao',
     novaSenha: '/autenticacao/recuperacao/senha',
+    convite: '/autenticacao/convite',
+    verificacaoConvite: '/autenticacao/convite/verificacao',
+  },
+  administracao: {
+    contas: '/administracao/contas',
+    conta: (id: string) => `/administracao/contas/${id}`,
+    permissoes: (id: string) => `/administracao/contas/${id}/permissoes`,
+    convite: (id: string) => `/administracao/contas/${id}/convite`,
+    sessoes: (id: string) => `/administracao/contas/${id}/sessoes`,
+    bloqueio: (id: string) => `/administracao/contas/${id}/bloqueio`,
+  },
+  auditoria: {
+    eventos: '/auditoria',
+    acessos: '/auditoria/acessos',
   },
   conexoes: {
     lista: '/conexoes',

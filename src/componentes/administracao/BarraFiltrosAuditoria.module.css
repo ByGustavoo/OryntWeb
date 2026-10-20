@@ -1,0 +1,48 @@
+.conteiner {
+  container: filtros-auditoria / inline-size;
+}
+
+.barra {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--espaco-3);
+}
+
+.busca {
+  grid-column: 1 / -1;
+}
+
+.selecaoLarga {
+  grid-column: span 2;
+}
+
+.selecao {
+  grid-column: span 1;
+  min-width: 0;
+}
+
+@container filtros-auditoria (max-width: 1100px) {
+  .barra {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .selecaoLarga {
+    grid-column: span 1;
+  }
+}
+
+@container filtros-auditoria (max-width: 640px) {
+  .barra {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .selecaoLarga {
+    grid-column: 1 / -1;
+  }
+}
+
+@container filtros-auditoria (max-width: 280px) {
+  .barra {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

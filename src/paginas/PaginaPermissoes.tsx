@@ -15,6 +15,7 @@ import { DetalheAcesso } from '@/componentes/usuarios/DetalheAcesso';
 import { PrivilegiosPadrao } from '@/componentes/usuarios/PrivilegiosPadrao';
 import { iconeDaSituacaoPermissao, iconeDoTipoObjetoPermissao } from '@/componentes/usuarios/SeloSituacaoPermissao';
 import { EsqueletoPermissoes, TabelaComparacao, TabelaPermissoes } from '@/componentes/usuarios/TabelaPermissoes';
+import { PermissaoDasAlteracoes } from '@/componentes/usuarios/BotaoDeAlteracao';
 import { Botao, ConteudoAssincrono, EstadoVazio, Nota, Paginacao, Painel } from '@/componentes/ui';
 import type { OpcaoSelecao } from '@/componentes/ui';
 import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
@@ -104,7 +105,7 @@ export default function PaginaPermissoes() {
   const [inicialDaConcessao, setInicialDaConcessao] = useState<Partial<CamposConcessao>>({});
 
   return (
-    <>
+    <PermissaoDasAlteracoes.Provider value="BANCO_PERMISSOES_ALTERAR">
       <CabecalhoPagina
         titulo="Permissões"
         descricao={
@@ -131,7 +132,7 @@ export default function PaginaPermissoes() {
       ) : (
         <PainelSemConexao />
       )}
-    </>
+    </PermissaoDasAlteracoes.Provider>
   );
 }
 

@@ -4,6 +4,8 @@ import {
   BANCO_DA_CONEXAO,
   aplicarMudancaSessoes,
   avisosDaSessao,
+  bloqueioEsperado,
+  bloqueiosSegurados,
   cadeiasDeBloqueio,
   comandosDaSessao,
   contarPorEstado,
@@ -17,6 +19,7 @@ import {
   loteDeComandosDasSessoes,
   pontosDeAtencaoSessoes,
   raizDoBloqueio,
+  resumirCadeia,
   resumirSessoes,
   situacoesDaSessao,
   sugestaoDeTempoOcioso,
@@ -202,6 +205,20 @@ describe('situações das sessões', () => {
     expect(cadeia?.filhos.map((filho) => filho.sessao.pid)).toEqual([200]);
     expect(cadeia?.filhos[0]?.filhos.map((filho) => filho.sessao.pid)).toEqual([300]);
     expect(raizDoBloqueio(segunda, sessoes)?.pid).toBe(100);
+  });
+
+  it('resume a cadeia pelos níveis e pela espera mais longa, e separa o bloqueio seguro do esperado', () => {
+    const [cadeia] = cadeiasDeBloqueio(sessoes);
+    expect(cadeia && resumirCadeia(cadeia, contexto)).toEqual({ niveis: 2, maiorEsperaMs: 45_000 });
+    const comBloqueios = criarSessao(400, {
+      bloqueios: [
+        { tipo: 'RELACAO', alvo: 'pedidos', modo: 'RowExclusiveLock', concedido: true },
+        { tipo: 'TUPLA', alvo: '(12,4)', modo: 'ExclusiveLock', concedido: false },
+      ],
+    });
+    expect(bloqueiosSegurados(comBloqueios).map((bloqueio) => bloqueio.modo)).toEqual(['RowExclusiveLock']);
+    expect(bloqueioEsperado(comBloqueios)?.alvo).toBe('(12,4)');
+    expect(bloqueioEsperado(raiz)).toBeNull();
   });
 
   it('escreve as frases com os tempos medidos a partir do retrato', () => {

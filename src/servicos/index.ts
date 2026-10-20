@@ -1,3 +1,4 @@
+export { servicoAdministracao } from './servicoAdministracao';
 export { servicoAutenticacao } from './servicoAutenticacao';
 export { servicoConexao } from './servicoConexao';
 export { servicoConsultas } from './servicoConsultas';

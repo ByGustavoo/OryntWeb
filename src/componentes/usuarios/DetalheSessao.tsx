@@ -11,7 +11,7 @@ import {
   OctagonAlert,
   TriangleAlert,
 } from 'lucide-react';
-import { Medida, SecaoCopiavel } from '@/componentes/objetos/DetalheObjeto';
+import { IndiceDoDetalhe, Medida, SecaoCopiavel } from '@/componentes/objetos/DetalheObjeto';
 import estilos from '@/componentes/objetos/DetalheObjeto.module.css';
 import { BotaoIcone, Botao, Modal, Nota, Selo } from '@/componentes/ui';
 import type { SessaoDTO } from '@/modelos/sessoes';
@@ -180,6 +180,8 @@ function CorpoDetalhe({ sessao, sessoes, contexto, sugestao, simulada, ...acoes 
         </div>
       </header>
 
+      <IndiceDoDetalhe raiz={raiz} />
+
       {avisos.map((aviso) => (
         <Nota key={aviso.texto} tom={aviso.tom} icone={iconeDoAviso[aviso.tom]}>
           {aviso.texto}
@@ -245,7 +247,7 @@ function SecaoSugestao({ sugestao, aoAbrirPapel }: { sugestao: SugestaoDeTempoOc
 function SecaoLinhaDoTempo({ sessao, contexto }: { sessao: SessaoDTO; contexto: ContextoDasSessoes }) {
   const marcos = linhaDoTempo(sessao, contexto);
   return (
-    <section className={estilos.secao} aria-labelledby="titulo-tempo-sessao">
+    <section className={estilos.secao} aria-labelledby="titulo-tempo-sessao" data-indice="Linha do tempo">
       <h3 className={estilos.tituloSecao} id="titulo-tempo-sessao">
         Linha do tempo
       </h3>
@@ -282,7 +284,7 @@ function SecaoConsulta({
 }) {
   if (!sessao.consulta) {
     return (
-      <section className={estilos.secao} aria-labelledby="titulo-consulta-sessao">
+      <section className={estilos.secao} aria-labelledby="titulo-consulta-sessao" data-indice="Consulta">
         <h3 className={estilos.tituloSecao} id="titulo-consulta-sessao">
           Consulta
         </h3>
@@ -298,6 +300,7 @@ function SecaoConsulta({
   return (
     <SecaoCopiavel
       id="titulo-consulta-sessao"
+      indice="Consulta"
       titulo={emAndamento ? 'Consulta em andamento' : 'Última consulta'}
       texto={sessao.consulta}
       copiado="Copiada"
@@ -373,7 +376,7 @@ function SecaoFila({
   if (bloqueiam.length === 0 && esperam.length === 0) return null;
 
   return (
-    <section className={estilos.secao} aria-labelledby="titulo-fila-sessao">
+    <section className={estilos.secao} aria-labelledby="titulo-fila-sessao" data-indice="Fila">
       <h3 className={estilos.tituloSecao} id="titulo-fila-sessao">
         Fila do bloqueio
       </h3>
@@ -422,7 +425,7 @@ function SecaoFila({
 function SecaoBloqueios({ sessao }: { sessao: SessaoDTO }) {
   if (sessao.bloqueios.length === 0) return null;
   return (
-    <section className={estilos.secao} aria-labelledby="titulo-bloqueios-sessao">
+    <section className={estilos.secao} aria-labelledby="titulo-bloqueios-sessao" data-indice="Bloqueios">
       <h3 className={estilos.tituloSecao} id="titulo-bloqueios-sessao">
         Bloqueios <span className={`${estilos.contagem} numeros`}>{formatarNumero(sessao.bloqueios.length)}</span>
       </h3>
@@ -450,7 +453,7 @@ function SecaoConexao({
 }) {
   const explicacao = sessao.espera ? explicarEspera(sessao.espera) : null;
   return (
-    <section className={estilos.secao} aria-labelledby="titulo-conexao-sessao">
+    <section className={estilos.secao} aria-labelledby="titulo-conexao-sessao" data-indice="Conexão">
       <h3 className={estilos.tituloSecao} id="titulo-conexao-sessao">
         Conexão
       </h3>

@@ -10,6 +10,22 @@ export interface OpcoesRequisicao {
 }
 
 const TEMPO_LIMITE_MS = 15000;
+const TIPO_ACESSO_PERDIDO = '/problems/unauthenticated';
+
+const ouvintesDoAcessoPerdido = new Set<() => void>();
+
+export function aoPerderOAcesso(ouvinte: () => void): () => void {
+  ouvintesDoAcessoPerdido.add(ouvinte);
+  return () => {
+    ouvintesDoAcessoPerdido.delete(ouvinte);
+  };
+}
+
+function avisarSeOAcessoFoiPerdido(falha: ErroApi): void {
+  if (falha.status === 401 && falha.resposta?.type.endsWith(TIPO_ACESSO_PERDIDO)) {
+    ouvintesDoAcessoPerdido.forEach((ouvinte) => ouvinte());
+  }
+}
 
 let transporteCarregado: Promise<Transporte> | null = null;
 
@@ -66,6 +82,7 @@ async function requisitar<T>(metodo: MetodoHttp, caminho: string, corpo: unknown
   } catch (erro) {
     const falha = normalizarFalha(erro, controlador.signal.aborted, expirou);
     registrarErro(falha, { metodo, caminho });
+    avisarSeOAcessoFoiPerdido(falha);
     throw falha;
   } finally {
     window.clearTimeout(temporizador);

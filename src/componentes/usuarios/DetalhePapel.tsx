@@ -24,7 +24,7 @@ import {
   UserRound,
   UsersRound,
 } from 'lucide-react';
-import { Medida, SecaoCopiavel } from '@/componentes/objetos/DetalheObjeto';
+import { IndiceDoDetalhe, Medida, SecaoCopiavel } from '@/componentes/objetos/DetalheObjeto';
 import estilos from '@/componentes/objetos/DetalheObjeto.module.css';
 import proprios from '@/componentes/objetos/DetalheTabela.module.css';
 import { NomeObjeto } from '@/componentes/objetos/NomeObjeto';
@@ -330,6 +330,8 @@ function CorpoDetalhe({
         </div>
       </header>
 
+      <IndiceDoDetalhe raiz={raiz} />
+
       {avisos.map((aviso) => (
         <Nota key={aviso.texto} tom={aviso.tom} icone={aviso.tom === 'erro' ? OctagonAlert : TriangleAlert}>
           {aviso.texto}
@@ -425,7 +427,7 @@ function SecaoAcesso({
   aoVerSessoes: (papel: PapelDTO) => void;
 }) {
   return (
-    <section className={estilos.secao} aria-labelledby="titulo-acesso-papel">
+    <section className={estilos.secao} aria-labelledby="titulo-acesso-papel" data-indice="Acesso">
       <h3 className={estilos.tituloSecao} id="titulo-acesso-papel">
         Acesso
       </h3>
@@ -502,7 +504,7 @@ function SecaoAtributos({ papel, papeis }: { papel: PapelDTO; papeis: PapelDTO[]
   ];
 
   return (
-    <section className={estilos.secao} aria-labelledby="titulo-atributos-papel">
+    <section className={estilos.secao} aria-labelledby="titulo-atributos-papel" data-indice="Atributos">
       <h3 className={estilos.tituloSecao} id="titulo-atributos-papel">
         Atributos
       </h3>
@@ -658,7 +660,7 @@ function SecaoParticipacoes({
   const indiretos = herdados.filter((nome) => !papel.membroDe.some((participacao) => participacao.papel === nome));
 
   return (
-    <section className={estilos.secao} aria-labelledby="titulo-participacoes-papel">
+    <section className={estilos.secao} aria-labelledby="titulo-participacoes-papel" data-indice="Participação">
       <div className={estilos.cabecalhoSecao}>
         <h3 className={estilos.tituloSecao} id="titulo-participacoes-papel">
           Participação
@@ -737,7 +739,7 @@ function SecaoConfiguracoes({ papel, sugestao, aoAlterar, capacidade }: SecaoCon
   const semLimite = semLimiteDeTempo(papel);
   if (papel.configuracoes.length === 0 && !semLimite && !sugestao) {
     return (
-      <section className={estilos.secao} aria-labelledby="titulo-configuracoes-papel">
+      <section className={estilos.secao} aria-labelledby="titulo-configuracoes-papel" data-indice="Configurações">
         <h3 className={estilos.tituloSecao} id="titulo-configuracoes-papel">
           Configurações próprias
         </h3>
@@ -749,7 +751,7 @@ function SecaoConfiguracoes({ papel, sugestao, aoAlterar, capacidade }: SecaoCon
   }
 
   return (
-    <section className={estilos.secao} aria-labelledby="titulo-configuracoes-papel">
+    <section className={estilos.secao} aria-labelledby="titulo-configuracoes-papel" data-indice="Configurações">
       <h3 className={estilos.tituloSecao} id="titulo-configuracoes-papel">
         Configurações próprias
       </h3>
@@ -817,7 +819,7 @@ function SecaoObjetos({ papel, aoAbrirObjeto }: { papel: PapelDTO; aoAbrirObjeto
   const ocultos = papel.objetos.length - visiveis.length;
 
   return (
-    <section className={estilos.secao} aria-labelledby="titulo-objetos-papel">
+    <section className={estilos.secao} aria-labelledby="titulo-objetos-papel" data-indice="Objetos">
       <h3 className={estilos.tituloSecao} id="titulo-objetos-papel">
         Dono de <span className={`${estilos.contagem} numeros`}>{formatarNumero(papel.objetos.length)}</span>
       </h3>

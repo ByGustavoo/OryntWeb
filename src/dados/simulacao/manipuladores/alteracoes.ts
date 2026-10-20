@@ -33,7 +33,10 @@ import { validarNomeDoPapel } from '@/regras/formularioPapel';
 import { lerNomeDoPapel } from '@/regras/papeis';
 import { indexarPermissoes, PUBLICO, tiposObjetoPermissao } from '@/regras/permissoes';
 import { comandosDasOperacoes, ocultarSenhas } from '@/regras/sqlAlteracoes';
-import { lerAcessoSimulado } from '../acessoSimulado';
+import { tituloDaAlteracao } from '@/regras/descricaoAlteracoes';
+import { registrarEvento } from '../auditoriaSimulada';
+import type { ContextoSimulado } from '../autorizacaoSimulada';
+import { autorDaConta } from '../contasSimuladas';
 import {
   alteracoesDaConexao,
   marcarDesfeita,
@@ -515,7 +518,12 @@ export function listarAlteracoes(_requisicao: RequisicaoTransporte, agora: Date)
   return ok(lista);
 }
 
-export function aplicarAlteracao(requisicao: RequisicaoTransporte, agora: Date): RespostaTransporte {
+export function aplicarAlteracao(
+  requisicao: RequisicaoTransporte,
+  agora: Date,
+  _parametros: Record<string, string> = {},
+  { conta: contaDaSessao }: ContextoSimulado = { conta: null },
+): RespostaTransporte {
   const sessao = lerSessaoSimulada();
   if (!sessao) return naoAutorizado();
   const pedido = lerPedido(requisicao.corpo);
@@ -537,7 +545,7 @@ export function aplicarAlteracao(requisicao: RequisicaoTransporte, agora: Date):
   const alteracao: AlteracaoDTO = {
     id: crypto.randomUUID(),
     feitaEm: agora.toISOString(),
-    conta: lerAcessoSimulado()?.email ?? '',
+    conta: contaDaSessao?.email ?? '',
     papelDaConexao: estado.papeis.papelDaConexao,
     banco: sessao.banco,
     origem: pedido.origem,
@@ -550,6 +558,18 @@ export function aplicarAlteracao(requisicao: RequisicaoTransporte, agora: Date):
     desfeitaPor: null,
   };
   registrarAlteracao(sessao.id, alteracao);
+  if (contaDaSessao) {
+    registrarEvento(
+      {
+        tipo: 'BANCO_ALTERADO',
+        resultado: encontrada ? 'FALHA' : 'SUCESSO',
+        conta: autorDaConta(contaDaSessao),
+        alvo: { tipo: 'ALTERACAO', id: alteracao.id, rotulo: tituloDaAlteracao(operacoes, 'PASSADO') },
+        motivo: encontrada ? encontrada.mensagem : `Banco ${sessao.banco}, como ${estado.papeis.papelDaConexao}.`,
+      },
+      agora,
+    );
+  }
 
   if (encontrada) {
     return problema(422, tituloDoProblema[encontrada.problema], PROBLEMAS_ALTERACAO[encontrada.problema], encontrada.mensagem);
