@@ -632,6 +632,8 @@ src
 
 | Arquivo | Conteúdo |
 |---|---|
+| [`CLAUDE.md`](CLAUDE.md) | Stack, comandos, convenções, regras de segurança e armadilhas que valem para o projeto inteiro |
+| [`docs/notas/`](docs/notas) | Decisões, medidas e armadilhas de cada área, e a estrutura de `src/` arquivo por arquivo |
 | [`REQUISITOS.md`](REQUISITOS.md) | Decisões de produto e regras da conexão |
 | [`docs/api-contrato.md`](docs/api-contrato.md) | Rotas, DTOs e erros que a API precisa implementar |
 
