@@ -5,7 +5,7 @@ import { TrechoSql } from '@/componentes/comum/TrechoSql';
 import { BotaoOrdenar, ESMAECIMENTO_DO_ESQUELETO, NaoSeAplica, ordemAria } from '@/componentes/objetos/TabelaObjetos';
 import type { ColunaOrdenavel } from '@/componentes/objetos/TabelaObjetos';
 import estilos from '@/componentes/objetos/TabelaObjetos.module.css';
-import { CampoSelecao, Esqueleto } from '@/componentes/ui';
+import { CampoSelecao, Dica, Esqueleto } from '@/componentes/ui';
 import type { DirecaoOrdenacao } from '@/modelos/consultas';
 import type { OrdenacaoSessoes, SessaoDTO } from '@/modelos/sessoes';
 import {
@@ -138,9 +138,11 @@ function CelulaSituacao({ sessao, todas, contexto }: { sessao: SessaoDTO; todas:
     <span className={juntarClasses(estilos.celulaEmLinhas, estilos.alinhadaAoInicio)}>
       <SeloSituacaoSessao situacao={principal} />
       {outras.length > 0 ? (
-        <span className={estilos.textoSecundario} title={outras.map((situacao) => rotuloSituacaoSessao[situacao]).join(', ')}>
-          e mais {formatarNumero(outras.length)} {pluralizar(outras.length, 'ponto', 'pontos')}
-        </span>
+        <Dica conteudo={outras.map((situacao) => rotuloSituacaoSessao[situacao]).join(', ')}>
+          <span className={estilos.textoSecundario}>
+            e mais {formatarNumero(outras.length)} {pluralizar(outras.length, 'ponto', 'pontos')}
+          </span>
+        </Dica>
       ) : null}
     </span>
   );
@@ -152,9 +154,11 @@ function CelulaEstado({ sessao }: { sessao: SessaoDTO }) {
     <span className={juntarClasses(estilos.celulaEmLinhas, estilos.alinhadaAoInicio)}>
       <SeloEstadoSessao estado={estadoExibido(sessao)} />
       {sessao.espera ? (
-        <span className={juntarClasses(estilos.textoSecundario, proprios.espera)} title={explicacao ?? undefined}>
-          <span className="codigo">{textoDaEspera(sessao.espera)}</span>
-        </span>
+        <Dica conteudo={explicacao ?? undefined}>
+          <span className={juntarClasses(estilos.textoSecundario, proprios.espera)}>
+            <span className="codigo">{textoDaEspera(sessao.espera)}</span>
+          </span>
+        </Dica>
       ) : null}
     </span>
   );
@@ -290,14 +294,18 @@ export function TabelaSessoes({
                 <button type="button" className={estilos.abrir} aria-haspopup="dialog">
                   <span className={proprios.linhaDoPid}>
                     <span className={juntarClasses(estilos.nome, 'numeros')}>{String(sessao.pid)}</span>
-                    <span className={juntarClasses(proprios.quem, processo ? undefined : 'codigo')} title={nomeDaSessao(sessao)}>
-                      {nomeDaSessao(sessao)}
-                    </span>
+                    <Dica conteudo={nomeDaSessao(sessao)} soSeCortado>
+                      <span className={juntarClasses(proprios.quem, processo ? undefined : 'codigo')}>
+                        {nomeDaSessao(sessao)}
+                      </span>
+                    </Dica>
                     {sessao.doOrynt ? <SeloOrynt /> : null}
                   </span>
-                  <span className={estilos.descricao} title={sessao.endereco ?? undefined}>
-                    {detalheDaSessao(sessao, contexto)}
-                  </span>
+                  <Dica conteudo={sessao.endereco ?? undefined} soSeCortado>
+                    <span className={estilos.descricao}>
+                      {detalheDaSessao(sessao, contexto)}
+                    </span>
+                  </Dica>
                   <span className="visualmente-oculto">. Ver os detalhes desta sessão</span>
                 </button>
               </td>

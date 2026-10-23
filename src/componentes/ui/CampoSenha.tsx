@@ -2,6 +2,7 @@ import { forwardRef, useState } from 'react';
 import type { InputHTMLAttributes, ReactNode } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { classesControle } from './classesControle';
+import { Dica } from './Dica';
 import { EstruturaCampo } from './EstruturaCampo';
 import type { PropriedadesMensagensCampo } from './EstruturaCampo';
 import estilosCampo from './Campo.module.css';
@@ -51,22 +52,23 @@ export const CampoSenha = forwardRef<HTMLInputElement, CampoSenhaProps>(function
             aria-describedby={idDescricao}
             {...resto}
           />
-          <button
-            type="button"
-            className={estilos.alternar}
-            onClick={() => setVisivel(!visivel)}
-            disabled={disabled}
-            aria-label={rotuloAlternar}
-            aria-pressed={visivel}
-            aria-controls={idControle}
-            title={rotuloAlternar}
-          >
-            {visivel ? (
-              <EyeOff size={16} strokeWidth={2} aria-hidden="true" />
-            ) : (
-              <Eye size={16} strokeWidth={2} aria-hidden="true" />
-            )}
-          </button>
+          <Dica conteudo={rotuloAlternar}>
+            <button
+              type="button"
+              className={estilos.alternar}
+              onClick={() => setVisivel(!visivel)}
+              disabled={disabled}
+              aria-label={rotuloAlternar}
+              aria-pressed={visivel}
+              aria-controls={idControle}
+            >
+              {visivel ? (
+                <EyeOff size={16} strokeWidth={2} aria-hidden="true" />
+              ) : (
+                <Eye size={16} strokeWidth={2} aria-hidden="true" />
+              )}
+            </button>
+          </Dica>
         </div>
       )}
     </EstruturaCampo>

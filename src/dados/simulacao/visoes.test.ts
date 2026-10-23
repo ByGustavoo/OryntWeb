@@ -10,12 +10,12 @@ const porId = new Map(visoes.map((visao) => [visao.id, visao]));
 
 function visao(id: string) {
   const encontrada = porId.get(id);
-  if (!encontrada) throw new Error(`Falta a visão ${id}.`);
+  if (!encontrada) throw new Error(`Falta a view ${id}.`);
   return encontrada;
 }
 
 describe('gerarVisoes', () => {
-  it('liga cada dependência entre visões nos dois sentidos', () => {
+  it('liga cada dependência entre views nos dois sentidos', () => {
     for (const atual of visoes) {
       for (const referencia of atual.dependeDe.filter((objeto) => objeto.tipo !== 'TABELA')) {
         const dependida = visao(idDoObjeto(referencia));
@@ -28,7 +28,7 @@ describe('gerarVisoes', () => {
     }
   });
 
-  it('cita a visão no SQL de cada consulta que a lê e de cada atualização', () => {
+  it('cita a view no SQL de cada consulta que a lê e de cada atualização', () => {
     for (const atual of visoes) {
       for (const consulta of atual.consultas) expect(consulta.sql, atual.id).toContain(atual.nome);
       const atualizacao = atual.materializacao?.atualizacao;
@@ -62,7 +62,7 @@ describe('gerarVisoes', () => {
     expect(situacaoDaMaterializada(visao('relatorios.estoque_por_categoria'), geradoEm)).toBe('NAO_POPULADA');
   });
 
-  it('deixa sem leitura só as visões que nenhuma consulta lê, nem por outra visão', () => {
+  it('deixa sem leitura só as views que nenhuma consulta lê, nem por outra view', () => {
     expect([...visoesSemLeitura(visoes)].sort()).toEqual([
       'auditoria.acoes_recentes',
       'public.estoque_disponivel',
@@ -71,7 +71,7 @@ describe('gerarVisoes', () => {
     ]);
   });
 
-  it('fica sem visões quando os dados estão vazios', () => {
+  it('fica sem views quando os dados estão vazios', () => {
     expect(gerarVisoes(agora, true).visoes).toEqual([]);
   });
 });

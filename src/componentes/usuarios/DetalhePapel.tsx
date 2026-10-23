@@ -7,7 +7,6 @@ import {
   Activity,
   Eye,
   Lightbulb,
-  FlaskConical,
   KeyRound,
   KeySquare,
   Layers,
@@ -99,16 +98,16 @@ const iconeDoObjeto: Record<TipoObjetoDoPapel, LucideIcon> = {
 
 const telaDoObjeto: Record<TipoObjetoDoPapel, string> = {
   TABELA: 'Tabelas',
-  VISAO: 'Visões',
-  VISAO_MATERIALIZADA: 'Visões',
+  VISAO: 'Views',
+  VISAO_MATERIALIZADA: 'Views',
   FUNCAO: 'Funções',
   PROCEDIMENTO: 'Funções',
 };
 
 const plural: Record<TipoObjetoDoPapel, [string, string]> = {
   TABELA: ['tabela', 'tabelas'],
-  VISAO: ['visão', 'visões'],
-  VISAO_MATERIALIZADA: ['visão materializada', 'visões materializadas'],
+  VISAO: ['view', 'views'],
+  VISAO_MATERIALIZADA: ['view materializada', 'views materializadas'],
   FUNCAO: ['função', 'funções'],
   PROCEDIMENTO: ['procedimento', 'procedimentos'],
 };
@@ -143,7 +142,6 @@ interface DetalhePapelProps extends AcoesDoDetalhe {
   papeis: PapelDTO[];
   contexto: ContextoDosPapeis;
   limiteOciosoDoServidor: string | null;
-  simulada: boolean;
   posicao: number | null;
   total: number;
   aoPercorrer: (sentido: SentidoDoPasso) => void;
@@ -156,7 +154,6 @@ export function DetalhePapel({
   papeis,
   contexto,
   limiteOciosoDoServidor,
-  simulada,
   posicao,
   total,
   aoPercorrer,
@@ -216,7 +213,6 @@ export function DetalhePapel({
           papeis={papeis}
           contexto={contexto}
           sugestao={exibido.login ? sugestaoDeTempoOcioso(exibido, limiteOciosoDoServidor) : null}
-          simulada={simulada}
           {...acoes}
         />
       ) : null}
@@ -240,7 +236,6 @@ interface CorpoDetalheProps extends AcoesDoDetalhe {
   papeis: PapelDTO[];
   contexto: ContextoDosPapeis;
   sugestao: SugestaoDeTempoOcioso | null;
-  simulada: boolean;
 }
 
 function CorpoDetalhe({
@@ -248,7 +243,6 @@ function CorpoDetalhe({
   papeis,
   contexto,
   sugestao,
-  simulada,
   aoAbrirPapel,
   aoAbrirObjeto,
   aoVerSessoes,
@@ -290,11 +284,6 @@ function CorpoDetalhe({
           {situacoes.map((situacao) => (
             <SeloSituacaoPapel key={situacao} situacao={situacao} papel={papel} contexto={contexto} />
           ))}
-          {simulada ? (
-            <Selo tom="aviso" icone={FlaskConical}>
-              Dados demonstrativos
-            </Selo>
-          ) : null}
         </div>
         <div className={locais.acoes} role="group" aria-label={`Alterar ${papel.nome}`}>
           <BotaoDeAlteracao
@@ -871,7 +860,7 @@ function SecaoObjetos({ papel, aoAbrirObjeto }: { papel: PapelDTO; aoAbrirObjeto
           ) : null}
         </>
       ) : (
-        <p className={estilos.leitura}>Não é dono de nenhuma tabela, visão ou função deste banco.</p>
+        <p className={estilos.leitura}>Não é dono de nenhuma tabela, view ou função deste banco.</p>
       )}
     </section>
   );

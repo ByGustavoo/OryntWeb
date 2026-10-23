@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { LinhaEmEspera } from '@/componentes/relatorios/EsqueletoRelatorio';
-import { Botao, Esqueleto, Interruptor, Painel } from '@/componentes/ui';
+import { Botao, Dica, Esqueleto, Interruptor, Painel } from '@/componentes/ui';
 import type { EstadoExibido, ListaSessoesDTO } from '@/modelos/sessoes';
 import {
   SEGUNDOS_ENTRE_ATUALIZACOES,
@@ -96,16 +96,17 @@ function Distribuicao({ criterio, fatias }: { criterio: CriterioDaDistribuicao; 
         <ul className={estilos.fatias}>
           {fatias.map((fatia) => (
             <li key={fatia.chave} className={estilos.fatia}>
-              <span
-                className={juntarClasses(
-                  estilos.rotuloFatia,
-                  !fatia.vazia && criterio === 'ORIGEM' && 'codigo',
-                  fatia.vazia && estilos.rotuloVazio,
-                )}
-                title={fatia.rotulo}
-              >
-                {fatia.rotulo}
-              </span>
+              <Dica conteudo={fatia.rotulo}>
+                <span
+                  className={juntarClasses(
+                    estilos.rotuloFatia,
+                    !fatia.vazia && criterio === 'ORIGEM' && 'codigo',
+                    fatia.vazia && estilos.rotuloVazio,
+                  )}
+                >
+                  {fatia.rotulo}
+                </span>
+              </Dica>
               <span className={`${estilos.quantidadeFatia} numeros`}>
                 {formatarNumero(fatia.quantidade)}
                 <span className="visualmente-oculto">

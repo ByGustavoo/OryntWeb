@@ -3,9 +3,10 @@ import type { AnimationEvent, CSSProperties, MouseEvent, ReactNode } from 'react
 import { ChevronRight } from 'lucide-react';
 import { ESMAECIMENTO_DO_ESQUELETO } from '@/componentes/objetos/TabelaObjetos';
 import estilos from '@/componentes/objetos/TabelaObjetos.module.css';
-import { Esqueleto, Selo } from '@/componentes/ui';
+import { Dica, Esqueleto, Selo } from '@/componentes/ui';
 import type { ContaDTO } from '@/modelos/administracao';
 import { situacaoDaConta } from '@/regras/contas';
+import { inicialDoUsuario } from '@/regras/inicialUsuario';
 import { personalizada, rotuloDoPerfil } from '@/regras/permissoesConta';
 import { formatarDataOpcional, formatarInstante, formatarTempoRelativo } from '@/utilitarios/formatacao';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
@@ -65,11 +66,16 @@ export function EsqueletoContas({ linhas }: { linhas: number }) {
           {Array.from({ length: linhas }, (_, indice) => (
             <tr key={indice} style={{ opacity: 1 - indice * (ESMAECIMENTO_DO_ESQUELETO / linhas) }}>
               <td className={estilos.celulaVisao}>
-                <span className={estilos.linhaEmEspera}>
-                  <Esqueleto largura={`${38 - ((indice * 11) % 14)}%`} altura={12} />
-                </span>
-                <span className={estilos.linhaEmEspera}>
-                  <Esqueleto largura={`${52 - ((indice * 13) % 18)}%`} altura={10} />
+                <span className={proprios.pessoa}>
+                  <Esqueleto largura={34} altura={34} raio="var(--raio-pilula)" />
+                  <span className={proprios.identificacao}>
+                    <span className={estilos.linhaEmEspera}>
+                      <Esqueleto largura={`${46 - ((indice * 11) % 14)}%`} altura={12} />
+                    </span>
+                    <span className={estilos.linhaEmEspera}>
+                      <Esqueleto largura={`${62 - ((indice * 13) % 18)}%`} altura={10} />
+                    </span>
+                  </span>
                 </span>
               </td>
               <td className={estilos.celulaTipo} data-rotulo="Perfil">
@@ -134,16 +140,24 @@ export function TabelaContas({ contas, geradoEm, contaAtual, idAberta, rolarAteA
             onAnimationEnd={posicao === contas.length - 1 ? encerrarEntrada : undefined}
           >
             <td className={estilos.celulaVisao}>
-              <button type="button" className={estilos.abrir} aria-haspopup="dialog">
-                <span className={proprios.nome}>
-                  <span className={estilos.nome}>{conta.nome}</span>
-                  {conta.id === contaAtual ? (
-                    <Selo tom="destaque" className={proprios.voce}>
-                      Você
-                    </Selo>
-                  ) : null}
+              <button type="button" className={juntarClasses(estilos.abrir, proprios.pessoa)} aria-haspopup="dialog">
+                <span
+                  className={juntarClasses(proprios.avatar, conta.id === contaAtual && proprios.avatarAtual)}
+                  aria-hidden="true"
+                >
+                  {inicialDoUsuario(conta)}
                 </span>
-                <span className={`${estilos.descricao} codigo`}>{conta.email}</span>
+                <span className={proprios.identificacao}>
+                  <span className={proprios.nome}>
+                    <span className={estilos.nome}>{conta.nome}</span>
+                    {conta.id === contaAtual ? (
+                      <Selo tom="destaque" className={proprios.voce}>
+                        Você
+                      </Selo>
+                    ) : null}
+                  </span>
+                  <span className={`${estilos.descricao} codigo`}>{conta.email}</span>
+                </span>
                 <span className="visualmente-oculto">. Ver os dados e as permissões</span>
               </button>
             </td>
@@ -157,9 +171,11 @@ export function TabelaContas({ contas, geradoEm, contaAtual, idAberta, rolarAteA
               <SeloSituacaoConta situacao={situacaoDaConta(conta, agora)} />
             </td>
             <td className={estilos.celulaNumerica} data-rotulo="Último acesso">
-              <span title={conta.ultimoAcessoEm ? formatarInstante(conta.ultimoAcessoEm) : undefined}>
-                {conta.ultimoAcessoEm ? formatarTempoRelativo(conta.ultimoAcessoEm, agora) : <span className={estilos.vazio}>Nunca</span>}
-              </span>
+              <Dica conteudo={conta.ultimoAcessoEm ? formatarInstante(conta.ultimoAcessoEm) : undefined}>
+                <span>
+                  {conta.ultimoAcessoEm ? formatarTempoRelativo(conta.ultimoAcessoEm, agora) : <span className={estilos.vazio}>Nunca</span>}
+                </span>
+              </Dica>
             </td>
             <td className={estilos.celulaNumerica} data-rotulo="Criada em">
               {formatarDataOpcional(conta.criadaEm) ?? '—'}

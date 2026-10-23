@@ -1,15 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Clock, FlaskConical, LockKeyhole, MailWarning, SearchX, UserPlus, UsersRound } from 'lucide-react';
+import { Clock, LockKeyhole, MailWarning, SearchX, UserPlus, UsersRound } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { BarraFiltrosContas } from '@/componentes/administracao/BarraFiltrosContas';
 import { DetalheConta } from '@/componentes/administracao/DetalheConta';
 import { ModalConta } from '@/componentes/administracao/ModalConta';
 import type { ModoDaConta } from '@/componentes/administracao/ModalConta';
 import { ModalExclusaoConta } from '@/componentes/administracao/ModalExclusaoConta';
+import { PerfisDasContas } from '@/componentes/administracao/PerfisDasContas';
 import { EsqueletoContas, TabelaContas } from '@/componentes/administracao/TabelaContas';
 import { CabecalhoPagina } from '@/componentes/layout/CabecalhoPagina';
 import { ResumoDaLista } from '@/componentes/objetos/ResumoDaLista';
-import { Botao, ConteudoAssincrono, EstadoVazio, Nota, Paginacao, Painel } from '@/componentes/ui';
+import { Botao, ConteudoAssincrono, EstadoVazio, Paginacao, Painel } from '@/componentes/ui';
 import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
 import { useFiltrosGuardados } from '@/ganchos/useFiltrosGuardados';
 import { usePermissao } from '@/ganchos/usePermissao';
@@ -35,6 +36,7 @@ import { caminhos } from '@/rotas/caminhos';
 import { servicoAdministracao } from '@/servicos';
 import { formatarNumero, pluralizar } from '@/utilitarios/formatacao';
 import estilos from './PaginaObjetos.module.css';
+import proprios from './PaginaAdministracaoUsuarios.module.css';
 
 const ESPERA_DA_BUSCA_MS = 250;
 const LINHAS_DO_ESQUELETO = 5;
@@ -165,107 +167,109 @@ export default function PaginaAdministracaoUsuarios() {
       />
 
       <div className={estilos.blocos}>
-        {simulada ? (
-          <Nota tom="aviso" icone={FlaskConical} titulo="Dados demonstrativos.">
-            As contas, as senhas (só o hash) e a auditoria ficam no simulador, neste navegador. Nenhum servidor guarda nada e nenhum
-            e-mail é enviado.
-          </Nota>
-        ) : null}
+        <div className={proprios.conteiner}>
+          <div className={proprios.diretorio}>
+            <Painel espacamento="nenhum" aria-labelledby="titulo-lista-contas" aria-busy={lista.carregando}>
+              <div className={estilos.topo} ref={topo}>
+                <h2 className="visualmente-oculto" id="titulo-lista-contas">
+                  Lista de usuários
+                </h2>
+                <BarraFiltrosContas
+                  busca={busca}
+                  filtros={filtros}
+                  aoDigitarBusca={setBusca}
+                  aoConfirmarBusca={() => mudarFiltros({ busca: buscaDigitada })}
+                  aoMudar={mudarFiltros}
+                />
+                <ResumoDaLista
+                  contagem={carregado ? resumirContas(contas.length, filtradas.length, filtros) : ''}
+                  emEspera={lista.dados === null && lista.carregando}
+                  rotuloDosAtalhos="Contas que pedem atenção"
+                  atalhos={[
+                    {
+                      chave: 'BLOQUEADA',
+                      icone: LockKeyhole,
+                      tom: 'erro',
+                      quantidade: atencao.bloqueadas,
+                      texto: pluralizar(atencao.bloqueadas, 'bloqueada', 'bloqueadas'),
+                      ativo: filtros.situacao === 'BLOQUEADA',
+                      aoAlternar: () => alternarSituacao('BLOQUEADA'),
+                    },
+                    {
+                      chave: 'CONVITE_EXPIRADO',
+                      icone: MailWarning,
+                      tom: 'aviso',
+                      quantidade: atencao.convitesExpirados,
+                      texto: pluralizar(atencao.convitesExpirados, 'convite expirado', 'convites expirados'),
+                      ativo: filtros.situacao === 'CONVITE_EXPIRADO',
+                      aoAlternar: () => alternarSituacao('CONVITE_EXPIRADO'),
+                    },
+                    {
+                      chave: 'SEM_ACESSO_RECENTE',
+                      icone: Clock,
+                      tom: 'aviso',
+                      quantidade: atencao.semAcesso,
+                      texto: `sem acesso há ${DIAS_SEM_ACESSO} dias`,
+                      ativo: filtros.situacao === 'SEM_ACESSO_RECENTE',
+                      aoAlternar: () => alternarSituacao('SEM_ACESSO_RECENTE'),
+                    },
+                  ]}
+                  mostrarLimpar={temFiltroAtivoContas(filtros) && filtradas.length > 0}
+                  aoLimpar={limparFiltros}
+                />
+              </div>
 
-        <Painel espacamento="nenhum" aria-labelledby="titulo-lista-contas" aria-busy={lista.carregando}>
-          <div className={estilos.topo} ref={topo}>
-            <h2 className="visualmente-oculto" id="titulo-lista-contas">
-              Lista de usuários
-            </h2>
-            <BarraFiltrosContas
-              busca={busca}
-              filtros={filtros}
-              aoDigitarBusca={setBusca}
-              aoConfirmarBusca={() => mudarFiltros({ busca: buscaDigitada })}
-              aoMudar={mudarFiltros}
-            />
-            <ResumoDaLista
-              contagem={carregado ? resumirContas(contas.length, filtradas.length, filtros) : ''}
-              emEspera={lista.dados === null && lista.carregando}
-              rotuloDosAtalhos="Contas que pedem atenção"
-              atalhos={[
-                {
-                  chave: 'BLOQUEADA',
-                  icone: LockKeyhole,
-                  tom: 'erro',
-                  quantidade: atencao.bloqueadas,
-                  texto: pluralizar(atencao.bloqueadas, 'bloqueada', 'bloqueadas'),
-                  ativo: filtros.situacao === 'BLOQUEADA',
-                  aoAlternar: () => alternarSituacao('BLOQUEADA'),
-                },
-                {
-                  chave: 'CONVITE_EXPIRADO',
-                  icone: MailWarning,
-                  tom: 'aviso',
-                  quantidade: atencao.convitesExpirados,
-                  texto: pluralizar(atencao.convitesExpirados, 'convite expirado', 'convites expirados'),
-                  ativo: filtros.situacao === 'CONVITE_EXPIRADO',
-                  aoAlternar: () => alternarSituacao('CONVITE_EXPIRADO'),
-                },
-                {
-                  chave: 'SEM_ACESSO_RECENTE',
-                  icone: Clock,
-                  tom: 'aviso',
-                  quantidade: atencao.semAcesso,
-                  texto: `sem acesso há ${DIAS_SEM_ACESSO} dias`,
-                  ativo: filtros.situacao === 'SEM_ACESSO_RECENTE',
-                  aoAlternar: () => alternarSituacao('SEM_ACESSO_RECENTE'),
-                },
-              ]}
-              mostrarLimpar={temFiltroAtivoContas(filtros) && filtradas.length > 0}
-              aoLimpar={limparFiltros}
-            />
-          </div>
-
-          <div ref={regiao}>
-            <ConteudoAssincrono
-              resultado={lista}
-              esqueleto={<EsqueletoContas linhas={LINHAS_DO_ESQUELETO} />}
-              tituloErro="Não foi possível carregar os usuários"
-            >
-              {(dados) =>
-                filtradas.length === 0 ? (
-                  <EstadoVazio
-                    icone={contas.length === 0 ? UsersRound : SearchX}
-                    titulo="Nenhum usuário encontrado"
-                    descricao={`Nenhuma das ${formatarNumero(contas.length)} contas corresponde aos filtros (${descreverFiltrosContas(filtros).join(', ')}).`}
-                    acao={
-                      <Botao variante="secundario" onClick={limparFiltros}>
-                        Limpar filtros
-                      </Botao>
-                    }
-                  />
-                ) : (
-                  <>
-                    <TabelaContas
-                      contas={paginaAtual.itens}
-                      geradoEm={dados.geradoEm}
-                      contaAtual={dados.contaAtual}
-                      idAberta={idAberta}
-                      rolarAteAberta={rolarAteAberta}
-                      aoAbrir={(conta) => abrir(conta, false)}
-                    />
-                    {paginaAtual.totalPaginas > 1 ? (
-                      <Paginacao
-                        rotulo="Páginas da lista de usuários"
-                        resumo={`${formatarNumero(paginaAtual.primeiro)} a ${formatarNumero(paginaAtual.ultimo)} de ${formatarNumero(filtradas.length)}`}
-                        pagina={paginaAtual.pagina}
-                        totalPaginas={paginaAtual.totalPaginas}
-                        aoMudar={mudarPagina}
-                        className={estilos.paginacao}
+              <div ref={regiao}>
+                <ConteudoAssincrono
+                  resultado={lista}
+                  esqueleto={<EsqueletoContas linhas={LINHAS_DO_ESQUELETO} />}
+                  tituloErro="Não foi possível carregar os usuários"
+                >
+                  {(dados) =>
+                    filtradas.length === 0 ? (
+                      <EstadoVazio
+                        icone={contas.length === 0 ? UsersRound : SearchX}
+                        titulo="Nenhum usuário encontrado"
+                        descricao={`Nenhuma das ${formatarNumero(contas.length)} contas corresponde aos filtros (${descreverFiltrosContas(filtros).join(', ')}).`}
+                        acao={
+                          <Botao variante="secundario" onClick={limparFiltros}>
+                            Limpar filtros
+                          </Botao>
+                        }
                       />
-                    ) : null}
-                  </>
-                )
-              }
-            </ConteudoAssincrono>
+                    ) : (
+                      <>
+                        <TabelaContas
+                          contas={paginaAtual.itens}
+                          geradoEm={dados.geradoEm}
+                          contaAtual={dados.contaAtual}
+                          idAberta={idAberta}
+                          rolarAteAberta={rolarAteAberta}
+                          aoAbrir={(conta) => abrir(conta, false)}
+                        />
+                        {paginaAtual.totalPaginas > 1 ? (
+                          <Paginacao
+                            rotulo="Páginas da lista de usuários"
+                            resumo={`${formatarNumero(paginaAtual.primeiro)} a ${formatarNumero(paginaAtual.ultimo)} de ${formatarNumero(filtradas.length)}`}
+                            pagina={paginaAtual.pagina}
+                            totalPaginas={paginaAtual.totalPaginas}
+                            aoMudar={mudarPagina}
+                            className={estilos.paginacao}
+                          />
+                        ) : null}
+                      </>
+                    )
+                  }
+                </ConteudoAssincrono>
+              </div>
+            </Painel>
+            <PerfisDasContas
+              contas={contas}
+              perfilAtivo={filtros.perfil}
+              aoAlternar={(perfil) => mudarFiltros({ perfil: filtros.perfil === perfil ? null : perfil })}
+            />
           </div>
-        </Painel>
+        </div>
       </div>
 
       <DetalheConta
@@ -296,7 +300,6 @@ export default function PaginaAdministracaoUsuarios() {
           aberto={formularioAberto}
           ator={ator}
           contas={contas}
-          simulada={simulada}
           aoFechar={() => setFormularioAberto(false)}
           aoSalvar={aoSalvarConta}
         />

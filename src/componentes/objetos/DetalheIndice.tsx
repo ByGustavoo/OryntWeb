@@ -3,7 +3,6 @@ import {
   ChevronDown,
   ChevronRight,
   ChevronUp,
-  FlaskConical,
   GitCompareArrows,
   History,
   Layers,
@@ -54,7 +53,6 @@ interface DetalheIndiceProps extends AcoesDosUsos {
   indice: IndiceDTO | null;
   indices: IndiceDTO[];
   contexto: ContextoDosIndices;
-  simulada: boolean;
   posicao: number | null;
   total: number;
   aoPercorrer: (sentido: SentidoDoPasso) => void;
@@ -69,7 +67,6 @@ export function DetalheIndice({
   indice,
   indices,
   contexto,
-  simulada,
   posicao,
   total,
   aoPercorrer,
@@ -133,7 +130,6 @@ export function DetalheIndice({
           indice={exibido}
           indices={indices}
           contexto={contexto}
-          simulada={simulada}
           aoAbrirIndice={aoAbrirIndice}
           aoVerTabela={aoVerTabela}
           aoAbrirFuncao={aoAbrirFuncao}
@@ -147,7 +143,7 @@ export function DetalheIndice({
 }
 
 function descreverIndice(indice: IndiceDTO): string {
-  const tabela = indice.tabela.tipo === 'TABELA' ? 'da tabela' : 'da visão materializada';
+  const tabela = indice.tabela.tipo === 'TABELA' ? 'da tabela' : 'da view materializada';
   return `Índice ${rotuloMetodoIndice[indice.metodo]} ${tabela} ${idDaTabela(indice)}.`;
 }
 
@@ -155,7 +151,6 @@ interface CorpoDetalheProps extends AcoesDosUsos {
   indice: IndiceDTO;
   indices: IndiceDTO[];
   contexto: ContextoDosIndices;
-  simulada: boolean;
   aoAbrirIndice: (id: string) => void;
   aoVerTabela: (indice: IndiceDTO) => void;
   aoAbrirFuncao: (id: string) => void;
@@ -165,7 +160,6 @@ function CorpoDetalhe({
   indice,
   indices,
   contexto,
-  simulada,
   aoAbrirIndice,
   aoVerTabela,
   aoAbrirFuncao,
@@ -202,11 +196,6 @@ function CorpoDetalhe({
           </Selo>
           {tipo ? <Selo tom="neutro">{tipo}</Selo> : null}
           {temSelo(situacao) ? <SeloSituacaoIndice situacao={situacao} /> : null}
-          {simulada ? (
-            <Selo tom="aviso" icone={FlaskConical}>
-              Dados demonstrativos
-            </Selo>
-          ) : null}
         </div>
       </header>
 
@@ -293,7 +282,7 @@ function CorpoDetalhe({
           </span>
           <ChevronRight className={estilos.setaObjeto} size={16} strokeWidth={2} aria-hidden="true" />
           <span className="visualmente-oculto">
-            {tabela.tipo === 'TABELA' ? '. Abrir esta tabela em Tabelas' : '. Abrir esta visão em Visões'}
+            {tabela.tipo === 'TABELA' ? '. Abrir esta tabela em Tabelas' : '. Abrir esta view em Views'}
           </span>
         </button>
       </section>

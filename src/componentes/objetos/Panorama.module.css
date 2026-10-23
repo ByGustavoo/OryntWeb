@@ -1,0 +1,35 @@
+.conteiner {
+  container: panorama / inline-size;
+}
+
+.panorama {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--espaco-5);
+}
+
+.figura,
+.pontos {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.figura > *,
+.pontos > * {
+  flex: 1 1 auto;
+}
+
+@container panorama (min-width: 960px) {
+  .figura-larga {
+    grid-template-columns: minmax(0, 1.55fr) minmax(20rem, 1fr);
+  }
+
+  .equilibrada {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .soFigura {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

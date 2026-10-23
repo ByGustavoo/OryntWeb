@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Activity, FlaskConical, SearchX } from 'lucide-react';
+import { Activity, SearchX } from 'lucide-react';
 import { ehErroApi } from '@/api/tratamentoErros';
 import { PainelSemConexao } from '@/componentes/conexao/PainelSemConexao';
 import { CabecalhoPagina } from '@/componentes/layout/CabecalhoPagina';
 import { CopiarComandos } from '@/componentes/objetos/CopiarComandos';
+import { Panorama } from '@/componentes/objetos/Panorama';
 import { EsqueletoPontosDeAtencao, PontosDeAtencao } from '@/componentes/objetos/PontosDeAtencao';
 import type { ItemDeAtencao } from '@/componentes/objetos/PontosDeAtencao';
 import { ResumoDaLista } from '@/componentes/objetos/ResumoDaLista';
@@ -14,7 +15,7 @@ import { DetalheSessao } from '@/componentes/usuarios/DetalheSessao';
 import { EsqueletoResumoSessoes, ResumoSessoes } from '@/componentes/usuarios/ResumoSessoes';
 import { iconeDaSituacaoSessao } from '@/componentes/usuarios/SeloSituacaoSessao';
 import { EsqueletoSessoes, TabelaSessoes } from '@/componentes/usuarios/TabelaSessoes';
-import { Botao, ConteudoAssincrono, EstadoVazio, Nota, Paginacao, Painel } from '@/componentes/ui';
+import { Botao, ConteudoAssincrono, EstadoVazio, Paginacao, Painel } from '@/componentes/ui';
 import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
 import { useFiltrosSessoes } from '@/ganchos/useFiltrosSessoes';
 import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
@@ -59,7 +60,7 @@ import estilos from './PaginaObjetos.module.css';
 
 const ESPERA_DA_BUSCA_MS = 250;
 const LINHAS_DO_ESQUELETO = 8;
-const DESCRICAO_DOS_PONTOS = 'O que merece um olhar nas sessões agora, do mais urgente ao menos urgente';
+const DESCRICAO_DOS_PONTOS = 'O que merece um olhar agora, do mais urgente ao menos urgente';
 const LINHAS_POR_FRASE_EM_ESPERA = [3, 1, 2, 1, 3];
 const ERRO_AO_COPIAR = 'O navegador bloqueou a área de transferência. Abra cada sessão e copie o comando pelo detalhe.';
 
@@ -124,7 +125,6 @@ export default function PaginaSessoes() {
       {conexao ? (
         <ListaConectada
           key={conexao.id}
-          simulada={conexao.simulada}
           banco={conexao.banco}
           filtros={filtros}
           mudarFiltros={mudarFiltros}
@@ -137,13 +137,12 @@ export default function PaginaSessoes() {
 }
 
 interface ListaConectadaProps {
-  simulada: boolean;
   banco: string;
   filtros: FiltrosSessoes;
   mudarFiltros: (mudanca: Partial<FiltrosSessoes>) => void;
 }
 
-function ListaConectada({ simulada, banco, filtros, mudarFiltros }: ListaConectadaProps) {
+function ListaConectada({ banco, filtros, mudarFiltros }: ListaConectadaProps) {
   const { marcarDesconectada } = useConexao();
   const irParaObjeto = useVerObjeto();
   const irParaOPlano = useVerPlano();
@@ -298,43 +297,45 @@ function ListaConectada({ simulada, banco, filtros, mudarFiltros }: ListaConecta
 
   return (
     <div className={estilos.blocos}>
-      {simulada ? (
-        <Nota tom="aviso" icone={FlaskConical} titulo="Dados demonstrativos.">
-          As sessões e os números desta tela são fictícios e não vêm do seu servidor. Eles dão lugar aos dados reais quando o
-          Orynt estiver ligado à API.
-        </Nota>
-      ) : null}
-
       {lista.dados ? (
         <ResumoSessoes lista={lista.dados} {...controlesDoRetrato} />
       ) : lista.carregando ? (
         <EsqueletoResumoSessoes {...controlesDoRetrato} />
       ) : null}
 
-      {carregado && cadeias.length > 0 ? (
-        <CadeiasDeBloqueio cadeias={cadeias} contexto={contexto} aoAbrir={(sessao) => abrir(sessao, 'PAINEL')} />
-      ) : null}
-
       {lista.dados === null && lista.carregando ? (
         <EsqueletoPontosDeAtencao descricao={DESCRICAO_DOS_PONTOS} linhasPorFrase={LINHAS_POR_FRASE_EM_ESPERA} />
       ) : null}
-      {carregado && pontos.length > 0 ? (
-        <PontosDeAtencao
-          descricao={DESCRICAO_DOS_PONTOS}
-          itens={pontos.map((ponto): ItemDeAtencao => {
-            const { acao, rotulo } = acaoDoPonto(ponto);
-            return {
-              chave: chaveDoPonto(ponto),
-              tom: ponto.tom,
-              icone: ponto.tipo === 'SUGESTAO' ? iconeDaSituacaoSessao.OCIOSA_EM_TRANSACAO : iconeDaSituacaoSessao[ponto.tipo],
-              objeto: null,
-              titulo: ponto.titulo,
-              texto: ponto.texto,
-              acao,
-              rotuloDaAcao: rotulo,
-              aoSeguir: () => seguirPonto(ponto.alvo),
-            };
-          })}
+      {carregado && (cadeias.length > 0 || pontos.length > 0) ? (
+        <Panorama
+          figura={
+            cadeias.length > 0 ? (
+              <CadeiasDeBloqueio cadeias={cadeias} contexto={contexto} aoAbrir={(sessao) => abrir(sessao, 'PAINEL')} />
+            ) : null
+          }
+          pontos={
+            pontos.length > 0 ? (
+              <PontosDeAtencao
+                descricao={DESCRICAO_DOS_PONTOS}
+                variante={cadeias.length > 0 ? 'lateral' : 'painel'}
+                itens={pontos.map((ponto): ItemDeAtencao => {
+                  const { acao, rotulo } = acaoDoPonto(ponto);
+                  return {
+                    chave: chaveDoPonto(ponto),
+                    tom: ponto.tom,
+                    icone:
+                      ponto.tipo === 'SUGESTAO' ? iconeDaSituacaoSessao.OCIOSA_EM_TRANSACAO : iconeDaSituacaoSessao[ponto.tipo],
+                    objeto: null,
+                    titulo: ponto.titulo,
+                    texto: ponto.texto,
+                    acao,
+                    rotuloDaAcao: rotulo,
+                    aoSeguir: () => seguirPonto(ponto.alvo),
+                  };
+                })}
+              />
+            ) : null
+          }
         />
       ) : null}
 
@@ -429,7 +430,6 @@ function ListaConectada({ simulada, banco, filtros, mudarFiltros }: ListaConecta
         sessoes={sessoes}
         contexto={contexto}
         sugestoes={sugestoes}
-        simulada={simulada}
         posicao={indiceAberto >= 0 ? indiceAberto + 1 : null}
         total={filtrados.length}
         aoPercorrer={percorrer}

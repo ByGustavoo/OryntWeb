@@ -20,7 +20,7 @@ interface AcaoSobreConexao {
 }
 
 const DESCRICAO = ambiente.dadosSimulados
-  ? 'Nesta versão de demonstração a lista fica guardada neste navegador, sem a senha. Com a API, ela passa a ficar na sua conta.'
+  ? 'Ficam guardadas neste navegador, sem a senha.'
   : 'Ficam guardadas na sua conta. A senha fica no servidor e nunca volta para o navegador.';
 
 export function SecaoConexoesSalvas() {

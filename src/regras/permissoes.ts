@@ -79,8 +79,8 @@ export const rotuloTipoObjetoPermissao: Record<TipoObjetoPermissao, string> = {
   BANCO: 'Banco',
   ESQUEMA: 'Esquema',
   TABELA: 'Tabela',
-  VISAO: 'Visão',
-  VISAO_MATERIALIZADA: 'Visão materializada',
+  VISAO: 'View',
+  VISAO_MATERIALIZADA: 'View materializada',
   SEQUENCIA: 'Sequência',
   FUNCAO: 'Função',
   PROCEDIMENTO: 'Procedimento',
@@ -90,8 +90,8 @@ export const rotuloFiltroTipoObjeto: Record<TipoObjetoPermissao, string> = {
   BANCO: 'O banco',
   ESQUEMA: 'Esquemas',
   TABELA: 'Tabelas',
-  VISAO: 'Visões',
-  VISAO_MATERIALIZADA: 'Visões materializadas',
+  VISAO: 'Views',
+  VISAO_MATERIALIZADA: 'Views materializadas',
   SEQUENCIA: 'Sequências',
   FUNCAO: 'Funções',
   PROCEDIMENTO: 'Procedimentos',
@@ -202,7 +202,7 @@ export const palavraDoPadraoSql: Record<TipoPrivilegioPadrao, string> = {
 };
 
 const textoDoPadrao: Record<TipoPrivilegioPadrao, string> = {
-  TABELAS: 'As tabelas e visões',
+  TABELAS: 'As tabelas e views',
   SEQUENCIAS: 'As sequências',
   FUNCOES: 'As funções',
 };
@@ -870,7 +870,7 @@ export function efeitoDoPrivilegio(privilegio: Privilegio, tipo: TipoObjetoPermi
   if (privilegio === 'CONNECT') return 'Conecta ao banco.';
   if (privilegio === 'TEMPORARY') return 'Cria tabelas temporárias, que somem no fim da sessão.';
   if (privilegio === 'CREATE') {
-    return tipo === 'BANCO' ? 'Cria esquemas no banco.' : 'Cria tabelas, visões, sequências e funções no esquema.';
+    return tipo === 'BANCO' ? 'Cria esquemas no banco.' : 'Cria tabelas, views, sequências e funções no esquema.';
   }
   if (privilegio === 'USAGE') {
     return tipo === 'SEQUENCIA'

@@ -50,6 +50,16 @@
   flex-basis: 0;
   flex-shrink: 1;
   min-width: 3px;
+  transition: opacity var(--duracao-rapida) var(--curva-saida);
+}
+
+.apagado,
+.linhaApagada {
+  opacity: 0.3;
+}
+
+.linhaApagada {
+  transition: opacity var(--duracao-rapida) var(--curva-saida);
 }
 
 .segmento:first-child {

@@ -3,7 +3,6 @@ import {
   ChevronDown,
   ChevronRight,
   ChevronUp,
-  FlaskConical,
   History,
   Info,
   ListTree,
@@ -53,7 +52,6 @@ interface DetalheSessaoProps extends AcoesDoDetalhe {
   sessoes: SessaoDTO[];
   contexto: ContextoDasSessoes;
   sugestoes: SugestaoDeTempoOcioso[];
-  simulada: boolean;
   posicao: number | null;
   total: number;
   aoPercorrer: (sentido: SentidoDoPasso) => void;
@@ -66,7 +64,6 @@ export function DetalheSessao({
   sessoes,
   contexto,
   sugestoes,
-  simulada,
   posicao,
   total,
   aoPercorrer,
@@ -126,7 +123,6 @@ export function DetalheSessao({
           sessoes={sessoes}
           contexto={contexto}
           sugestao={sugestoes.find((sugestao) => sugestao.papel === exibida.papel) ?? null}
-          simulada={simulada}
           {...acoes}
         />
       ) : null}
@@ -139,12 +135,11 @@ interface CorpoDetalheProps extends AcoesDoDetalhe {
   sessoes: SessaoDTO[];
   contexto: ContextoDasSessoes;
   sugestao: SugestaoDeTempoOcioso | null;
-  simulada: boolean;
 }
 
 const iconeDoAviso = { erro: OctagonAlert, aviso: TriangleAlert, info: Info } as const;
 
-function CorpoDetalhe({ sessao, sessoes, contexto, sugestao, simulada, ...acoes }: CorpoDetalheProps) {
+function CorpoDetalhe({ sessao, sessoes, contexto, sugestao, ...acoes }: CorpoDetalheProps) {
   const raiz = useRef<HTMLDivElement>(null);
   const avisos = avisosDaSessao(sessao, sessoes, contexto);
   const comandos = comandosDaSessao(sessao, sessoes);
@@ -172,11 +167,6 @@ function CorpoDetalhe({ sessao, sessoes, contexto, sugestao, simulada, ...acoes 
           {situacoes.map((situacao) => (
             <SeloSituacaoSessao key={situacao} situacao={situacao} />
           ))}
-          {simulada ? (
-            <Selo tom="aviso" icone={FlaskConical}>
-              Dados demonstrativos
-            </Selo>
-          ) : null}
         </div>
       </header>
 

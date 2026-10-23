@@ -25,7 +25,7 @@ function execucoes(id: string): number {
 }
 
 describe('gerarTabelas', () => {
-  it('lista as tabelas comuns do catálogo e deixa as visões materializadas para Visões', () => {
+  it('lista as tabelas comuns do catálogo e deixa as views materializadas para Views', () => {
     const comuns = tabelasFicticias.filter((candidata) => candidata.tipo === 'TABELA').map((candidata) => candidata.nome);
     expect(dados.tabelas.map((atual) => atual.nome)).toEqual(comuns);
     expect(porNome.has('vendas_diarias')).toBe(false);
@@ -115,7 +115,7 @@ describe('gerarTabelas', () => {
     }
   });
 
-  it('liga cada tabela às visões que dependem dela', () => {
+  it('liga cada tabela às views que dependem dela', () => {
     for (const atual of dados.tabelas) {
       const esperadas = visoesFicticias
         .filter((visao) => visao.dependeDe.some(([tipo, esquema, nome]) => tipo === 'TABELA' && `${esquema}.${nome}` === atual.id))

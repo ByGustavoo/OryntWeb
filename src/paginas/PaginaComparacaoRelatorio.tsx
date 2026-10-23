@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { ChartNoAxesColumn, FlaskConical, Printer } from 'lucide-react';
+import { ChartNoAxesColumn, Printer } from 'lucide-react';
 import { ehErroApi } from '@/api/tratamentoErros';
 import { PainelSemConexao } from '@/componentes/conexao/PainelSemConexao';
 import { EsqueletoIndicadores } from '@/componentes/dashboard/GradeIndicadores';
@@ -12,7 +12,7 @@ import { GraficosEmEspera, PainelEmEspera, RelatorioEmEspera } from '@/component
 import { GraficoComparacao } from '@/componentes/relatorios/GraficoComparacao';
 import { IndicadoresComparacao } from '@/componentes/relatorios/IndicadoresComparacao';
 import { SeletorComparacao } from '@/componentes/relatorios/SeletorComparacao';
-import { CabecalhoPainel, ConteudoAssincrono, EstadoVazio, Nota, Painel } from '@/componentes/ui';
+import { CabecalhoPainel, ConteudoAssincrono, EstadoVazio, Painel } from '@/componentes/ui';
 import { useComparacaoRelatorio } from '@/ganchos/useComparacaoRelatorio';
 import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
 import { useImpressao } from '@/ganchos/useImpressao';
@@ -128,13 +128,6 @@ function ComparacaoConectada({ conexao }: { conexao: ConexaoDTO }) {
           aoMudar={mudarPar}
           acoes={[{ icone: Printer, rotulo: 'Imprimir', aoAcionar: imprimir, carregando: imprimindo }]}
         />
-
-        {conexao.simulada ? (
-          <Nota tom="aviso" icone={FlaskConical} titulo="Dados demonstrativos.">
-            Os números dos dois períodos são fictícios e não vêm do seu banco. Eles dão lugar aos dados reais quando o
-            Orynt estiver ligado à API.
-          </Nota>
-        ) : null}
 
         <div className={estilos.conteudo} aria-busy={comparacao.carregando}>
           <ConteudoAssincrono

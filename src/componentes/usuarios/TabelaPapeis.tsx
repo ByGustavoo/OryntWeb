@@ -5,7 +5,7 @@ import { NomeObjeto } from '@/componentes/objetos/NomeObjeto';
 import { BotaoOrdenar, ESMAECIMENTO_DO_ESQUELETO, NaoSeAplica, ordemAria } from '@/componentes/objetos/TabelaObjetos';
 import type { ColunaOrdenavel } from '@/componentes/objetos/TabelaObjetos';
 import estilos from '@/componentes/objetos/TabelaObjetos.module.css';
-import { CampoSelecao, Esqueleto, Selo } from '@/componentes/ui';
+import { CampoSelecao, Dica, Esqueleto, Selo } from '@/componentes/ui';
 import type { DirecaoOrdenacao } from '@/modelos/consultas';
 import type { OrdenacaoPapeis, PapelDTO } from '@/modelos/papeis';
 import {
@@ -126,12 +126,13 @@ function CelulaSituacao({ papel, contexto }: { papel: PapelDTO; contexto: Contex
     <span className={juntarClasses(estilos.celulaEmLinhas, estilos.alinhadaAoInicio)}>
       <SeloSituacaoPapel situacao={principal} papel={papel} contexto={contexto} />
       {outras.length > 0 ? (
-        <span
-          className={estilos.textoSecundario}
-          title={outras.map((situacao) => rotuloDaSituacaoDoPapel(situacao, papel, contexto)).join(', ')}
-        >
-          e mais {formatarNumero(outras.length)} {pluralizar(outras.length, 'ponto', 'pontos')}
-        </span>
+        <Dica conteudo={outras.map((situacao) => rotuloDaSituacaoDoPapel(situacao, papel, contexto)).join(', ')}>
+          <span
+            className={estilos.textoSecundario}
+          >
+            e mais {formatarNumero(outras.length)} {pluralizar(outras.length, 'ponto', 'pontos')}
+          </span>
+        </Dica>
       ) : null}
     </span>
   );
@@ -290,21 +291,24 @@ export function TabelaPapeis({
               <td className={estilos.celulaVisao}>
                 <button type="button" className={estilos.abrir} aria-haspopup="dialog">
                   <span className={proprios.linhaDoNome}>
-                    <span className={`${estilos.nome} codigo`} title={papel.nome}>
-                      <NomeObjeto esquema={null} nome={papel.nome} />
-                    </span>
+                    <Dica conteudo={papel.nome} soSeCortado>
+                      <span className={`${estilos.nome} codigo`}>
+                        <NomeObjeto esquema={null} nome={papel.nome} />
+                      </span>
+                    </Dica>
                     {daConexao ? (
                       <Selo tom="destaque" className={proprios.voce} titulo="O papel com que o Orynt está conectado">
                         Você
                       </Selo>
                     ) : null}
                   </span>
-                  <span
-                    className={juntarClasses(estilos.descricao, !papel.descricao && estilos.semDescricao)}
-                    title={papel.descricao ?? undefined}
-                  >
-                    {papel.descricao ?? 'Sem descrição no banco'}
-                  </span>
+                  <Dica conteudo={papel.descricao ?? undefined} soSeCortado>
+                    <span
+                      className={juntarClasses(estilos.descricao, !papel.descricao && estilos.semDescricao)}
+                    >
+                      {papel.descricao ?? 'Sem descrição no banco'}
+                    </span>
+                  </Dica>
                   <span className="visualmente-oculto">
                     {daConexao ? '. É o papel da conexão em uso' : ''}. Ver os detalhes deste papel
                   </span>

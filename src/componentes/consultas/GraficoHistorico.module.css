@@ -15,6 +15,10 @@ line.trocaDePlano {
   stroke-width: 4px;
 }
 
-.dicaTroca {
+.leituraTroca {
+  padding: 0 6px;
+  border: 1px dashed var(--texto-secundario);
+  border-radius: var(--raio-pilula);
   color: var(--texto-secundario);
+  font-size: var(--tamanho-xs);
 }

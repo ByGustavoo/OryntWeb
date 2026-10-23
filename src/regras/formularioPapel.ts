@@ -22,7 +22,7 @@ export const descricaoModeloDePapel: Record<ModeloDePapel, string> = {
   EM_BRANCO: 'Você escolhe o tipo, os atributos e as participações.',
   GRUPO_DE_LEITURA: 'Grupo sem login que lê um esquema inteiro, para dar a leitura a vários usuários de uma vez.',
   APLICACAO: 'Usuário que lê e grava nas tabelas de um esquema, com limite de conexões e de tempo.',
-  LEITURA: 'Usuário que só lê as tabelas e visões de um esquema, inclusive as criadas depois.',
+  LEITURA: 'Usuário que só lê as tabelas e views de um esquema, inclusive as criadas depois.',
 };
 
 export type AtributoDoFormulario = Exclude<keyof AtributosDoPapelDTO, 'login'>;

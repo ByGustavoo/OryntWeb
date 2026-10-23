@@ -89,11 +89,7 @@ export function SecaoVersoes({ id, idTitulo }: SecaoConfiguracaoProps) {
           {versaoApi.dados ? (
             <DescricaoVersao
               versao={versaoApi.dados.versao}
-              detalhe={
-                ambiente.dadosSimulados
-                  ? 'Nenhuma API em uso: os dados vêm do simulador'
-                  : descreverLancamento(versaoApi.dados.dataLancamento)
-              }
+              detalhe={descreverLancamento(versaoApi.dados.dataLancamento)}
             />
           ) : versaoApi.carregando ? (
             <>

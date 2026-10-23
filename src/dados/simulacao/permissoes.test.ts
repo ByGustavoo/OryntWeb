@@ -23,7 +23,7 @@ function situacoes(sujeito: string, id: string) {
 }
 
 describe('gerarPermissoes', () => {
-  it('cobre as tabelas, as visões e as funções das outras telas, com os mesmos donos', () => {
+  it('cobre as tabelas, as views e as funções das outras telas, com os mesmos donos', () => {
     const porId = new Map(lista.objetos.map((objeto) => [objeto.id, objeto]));
     for (const tabela of gerarTabelas(agora).tabelas) expect(porId.get(tabela.id)?.dono).toBe(tabela.dono);
     for (const visao of gerarVisoes(agora).visoes) expect(porId.get(visao.id)?.dono).toBe(visao.dono);

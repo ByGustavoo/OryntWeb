@@ -10,7 +10,6 @@ import {
   DatabaseZap,
   Eye,
   EyeOff,
-  FlaskConical,
   History,
   Layers,
   ListTree,
@@ -47,7 +46,6 @@ interface DetalheVisaoProps {
   visao: VisaoDTO | null;
   contexto: ContextoDasVisoes;
   conhecidas: ReadonlySet<string>;
-  simulada: boolean;
   posicao: number | null;
   total: number;
   aoPercorrer: (sentido: SentidoDoPasso) => void;
@@ -69,7 +67,6 @@ export function DetalheVisao({
   visao,
   contexto,
   conhecidas,
-  simulada,
   posicao,
   total,
   aoPercorrer,
@@ -91,23 +88,23 @@ export function DetalheVisao({
     <Modal
       aberto={visao !== null}
       aoFechar={aoFechar}
-      titulo="Detalhes da visão"
+      titulo="Detalhes da view"
       descricao={exibida ? descreverVisao(exibida) : undefined}
       tamanho="lg"
       focoAoFechar={focoAoFechar}
       rodape={
         <div className={estilos.navegacao}>
-          <div className={estilos.passos} role="group" aria-label="Percorrer as visões da lista">
+          <div className={estilos.passos} role="group" aria-label="Percorrer as views da lista">
             <BotaoIcone
               icone={ChevronUp}
-              rotulo="Visão anterior"
+              rotulo="View anterior"
               variante="secundario"
               aria-disabled={temAnterior ? undefined : true}
               onClick={() => temAnterior && aoPercorrer(-1)}
             />
             <BotaoIcone
               icone={ChevronDown}
-              rotulo="Próxima visão"
+              rotulo="Próxima view"
               variante="secundario"
               aria-disabled={temSeguinte ? undefined : true}
               onClick={() => temSeguinte && aoPercorrer(1)}
@@ -116,7 +113,7 @@ export function DetalheVisao({
           <p className={estilos.posicao} role="status">
             {posicao !== null ? (
               <>
-                <span className={estilos.palavraDaPosicao}>Visão </span>
+                <span className={estilos.palavraDaPosicao}>View </span>
                 <span className="numeros">{formatarNumero(posicao)}</span> de <span className="numeros">{formatarNumero(total)}</span>
               </>
             ) : (
@@ -132,7 +129,6 @@ export function DetalheVisao({
           visao={exibida}
           contexto={contexto}
           conhecidas={conhecidas}
-          simulada={simulada}
           aoAbrirObjeto={aoAbrirObjeto}
           aoAbrirPapel={aoAbrirPapel}
           aoVerHistorico={aoVerHistorico}
@@ -145,7 +141,7 @@ export function DetalheVisao({
 }
 
 function descreverVisao(visao: VisaoDTO): string {
-  const tipo = visao.tipo === 'MATERIALIZADA' ? 'Visão materializada' : 'Visão comum';
+  const tipo = visao.tipo === 'MATERIALIZADA' ? 'View materializada' : 'View comum';
   return `${tipo} do esquema ${visao.esquema}, de ${visao.dono}.`;
 }
 
@@ -153,7 +149,6 @@ interface CorpoDetalheProps extends AcoesDasConsultas {
   visao: VisaoDTO;
   contexto: ContextoDasVisoes;
   conhecidas: ReadonlySet<string>;
-  simulada: boolean;
   aoAbrirObjeto: (id: string) => void;
   aoAbrirPapel: (nome: string) => void;
   quemAcessa?: (id: string) => ReactNode;
@@ -163,7 +158,6 @@ function CorpoDetalhe({
   visao,
   contexto,
   conhecidas,
-  simulada,
   aoAbrirObjeto,
   aoAbrirPapel,
   aoVerHistorico,
@@ -185,7 +179,7 @@ function CorpoDetalhe({
           <NomeObjeto esquema={visao.esquema} nome={visao.nome} classeEsquema={estilos.esquema} />
         </p>
         <p className={juntarClasses(estilos.descricao, !visao.descricao && estilos.semDescricao)}>
-          {visao.descricao ?? 'O banco não tem uma descrição para esta visão.'}
+          {visao.descricao ?? 'O banco não tem uma descrição para esta view.'}
         </p>
         <DonoDoObjeto dono={visao.dono} aoAbrir={aoAbrirPapel} />
         <div className={estilos.selos}>
@@ -194,11 +188,6 @@ function CorpoDetalhe({
           {semLeitura ? (
             <Selo tom="aviso" icone={EyeOff}>
               Sem leitura em 30 dias
-            </Selo>
-          ) : null}
-          {simulada ? (
-            <Selo tom="aviso" icone={FlaskConical}>
-              Dados demonstrativos
             </Selo>
           ) : null}
         </div>
@@ -240,14 +229,14 @@ function CorpoDetalhe({
           <ListaDeObjetos
             titulo="Depende de"
             objetos={visao.dependeDe}
-            vazio="A visão não lê nenhuma tabela ou visão."
+            vazio="A view não lê nenhuma tabela ou view."
             conhecidas={conhecidas}
             aoAbrirObjeto={aoAbrirObjeto}
           />
           <ListaDeObjetos
             titulo="Usada por"
             objetos={visao.usadaPor}
-            vazio="Nenhuma visão depende desta. Ela pode ser alterada sem quebrar outra visão."
+            vazio="Nenhuma view depende desta. Ela pode ser alterada sem quebrar outra view."
             conhecidas={conhecidas}
             aoAbrirObjeto={aoAbrirObjeto}
           />
@@ -256,7 +245,7 @@ function CorpoDetalhe({
 
       <section className={estilos.secao} aria-labelledby="titulo-consultas-visao" data-indice="Consultas">
         <h3 className={estilos.tituloSecao} id="titulo-consultas-visao">
-          Consultas que leem a visão{' '}
+          Consultas que leem a view{' '}
           <span className={`${estilos.contagem} numeros`}>{formatarNumero(visao.consultas.length)}</span>
         </h3>
         {visao.consultas.length > 0 ? (
@@ -270,8 +259,8 @@ function CorpoDetalhe({
         ) : (
           <p className={estilos.leitura}>
             {semLeitura
-              ? 'Nenhuma consulta leu esta visão nos últimos 30 dias.'
-              : 'Nenhuma consulta leu esta visão diretamente nos últimos 30 dias. Ela é lida por meio de outra visão, listada em “Usada por”.'}
+              ? 'Nenhuma consulta leu esta view nos últimos 30 dias.'
+              : 'Nenhuma consulta leu esta view diretamente nos últimos 30 dias. Ela é lida por meio de outra view, listada em “Usada por”.'}
           </p>
         )}
       </section>
@@ -344,7 +333,7 @@ function SecaoMaterializacao({
         </div>
       ) : (
         <p className={estilos.leitura}>
-          Nenhum comando REFRESH desta visão apareceu nos últimos 30 dias. Se ela é atualizada por um agendamento, confira se
+          Nenhum comando REFRESH desta view apareceu nos últimos 30 dias. Se ela é atualizada por um agendamento, confira se
           ele ainda roda.
         </p>
       )}
@@ -408,7 +397,7 @@ function ListaDeObjetos({ titulo, objetos, vazio, conhecidas, aoAbrirObjeto }: L
                     {conteudo}
                     <ChevronRight className={estilos.setaObjeto} size={16} strokeWidth={2} aria-hidden="true" />
                     <span className="visualmente-oculto">
-                      {objeto.tipo === 'TABELA' ? '. Abrir esta tabela em Tabelas' : '. Abrir esta visão'}
+                      {objeto.tipo === 'TABELA' ? '. Abrir esta tabela em Tabelas' : '. Abrir esta view'}
                     </span>
                   </button>
                 ) : (

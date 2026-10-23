@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { FlaskConical, History, ListTree, SearchX } from 'lucide-react';
+import { History, ListTree, SearchX } from 'lucide-react';
 import { ehErroApi } from '@/api/tratamentoErros';
 import { PainelSemConexao } from '@/componentes/conexao/PainelSemConexao';
 import { ArvorePlano, EsqueletoArvore, idDaEtapa } from '@/componentes/consultas/ArvorePlano';
@@ -16,12 +16,20 @@ import { VersoesPlano } from '@/componentes/consultas/VersoesPlano';
 import { EsqueletoIndicadores } from '@/componentes/dashboard/GradeIndicadores';
 import { CabecalhoPagina } from '@/componentes/layout/CabecalhoPagina';
 import { LinhaEmEspera, PainelEmEspera, RelatorioEmEspera } from '@/componentes/relatorios/EsqueletoRelatorio';
-import { Botao, CabecalhoPainel, ConteudoAssincrono, Esqueleto, EstadoVazio, Nota, Painel } from '@/componentes/ui';
+import {
+  Botao,
+  CabecalhoPainel,
+  ConteudoAssincrono,
+  Dica,
+  Esqueleto,
+  EstadoVazio,
+  Nota,
+  Painel,
+} from '@/componentes/ui';
 import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
 import { useSelecaoPlano } from '@/ganchos/useSelecaoPlano';
 import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
 import { useVerHistorico } from '@/ganchos/useVerHistorico';
-import type { ConexaoDTO } from '@/modelos/conexao';
 import type { ConsultaDetalhadaDTO } from '@/modelos/consultas';
 import type { PlanoExecucaoDTO, PlanosConsultaDTO, SelecaoPlano } from '@/modelos/planos';
 import { useConexao } from '@/provedores/ProvedorConexao';
@@ -100,16 +108,15 @@ export default function PaginaPlanosExecucao() {
     );
   }
 
-  return <PlanosConectados key={conexao.id} conexao={conexao} selecao={selecao} mudarSelecao={mudarSelecao} />;
+  return <PlanosConectados key={conexao.id} selecao={selecao} mudarSelecao={mudarSelecao} />;
 }
 
 interface PlanosConectadosProps {
-  conexao: ConexaoDTO;
   selecao: SelecaoPlano;
   mudarSelecao: (mudanca: Partial<SelecaoPlano>) => void;
 }
 
-function PlanosConectados({ conexao, selecao, mudarSelecao }: PlanosConectadosProps) {
+function PlanosConectados({ selecao, mudarSelecao }: PlanosConectadosProps) {
   const { marcarDesconectada } = useConexao();
   const verHistorico = useVerHistorico();
   const [escolhida, setEscolhida] = useState<ConsultaDetalhadaDTO | null>(null);
@@ -154,13 +161,6 @@ function PlanosConectados({ conexao, selecao, mudarSelecao }: PlanosConectadosPr
       />
 
       <div className={estilos.blocos}>
-        {conexao.simulada ? (
-          <Nota tom="aviso" icone={FlaskConical} titulo="Dados demonstrativos.">
-            As consultas, os planos e os números desta tela são fictícios e não vêm do seu banco. Eles dão lugar aos dados
-            reais quando o Orynt estiver ligado à API.
-          </Nota>
-        ) : null}
-
         <ConsultaEmAnalise
           periodo={PERIODO_DOS_PLANOS}
           consulta={exibida}
@@ -175,15 +175,16 @@ function PlanosConectados({ conexao, selecao, mudarSelecao }: PlanosConectadosPr
           aoEscolher={escolher}
           aoIrPara={(id) => mudarSelecao({ consulta: id, versao: null, comparacao: null })}
           acao={(consulta) => (
-            <Botao
-              variante="secundario"
-              tamanho="sm"
-              icone={History}
-              title={rotuloVerHistorico(PERIODO_DOS_PLANOS)}
-              onClick={() => verHistorico(consulta.id, PERIODO_DOS_PLANOS)}
-            >
-              Ver histórico
-            </Botao>
+            <Dica conteudo={rotuloVerHistorico(PERIODO_DOS_PLANOS)}>
+              <Botao
+                variante="secundario"
+                tamanho="sm"
+                icone={History}
+                onClick={() => verHistorico(consulta.id, PERIODO_DOS_PLANOS)}
+              >
+                Ver histórico
+              </Botao>
+            </Dica>
           )}
         />
 
@@ -356,15 +357,7 @@ function ConteudoDoPlano({ planos, plano, aoEscolherVersao, aoComparar }: Conteu
 
   return (
     <div className={estilos.planos}>
-      <div className={estilos.abertura}>
-        <DiagnosticoPlano
-          achados={achados}
-          nomeDaEtapa={nomeDaEtapa}
-          aoIrParaEtapa={irParaEtapa}
-          comLigacoes={linhas.length > 1}
-        />
-        <IndicadoresPlano plano={plano} />
-      </div>
+      <IndicadoresPlano plano={plano} />
 
       {versaoExibida && versaoAtual && indiceDaVersao > 0 ? (
         <Nota tom="info" icone={History} titulo={`${rotuloDaVersao(versaoExibida, indiceDaVersao)}.`}>
@@ -403,6 +396,12 @@ function ConteudoDoPlano({ planos, plano, aoEscolherVersao, aoComparar }: Conteu
           </div>
         </div>
         <div className={estilos.extras}>
+          <DiagnosticoPlano
+            achados={achados}
+            nomeDaEtapa={nomeDaEtapa}
+            aoIrParaEtapa={irParaEtapa}
+            comLigacoes={linhas.length > 1}
+          />
           {plano.sugestoes.length > 0 ? (
             <IndicesSugeridos plano={plano} aoIrParaEtapa={linhas.length > 1 ? irParaEtapa : null} />
           ) : null}
@@ -421,10 +420,7 @@ function ConteudoDoPlano({ planos, plano, aoEscolherVersao, aoComparar }: Conteu
 function EsqueletoPlanos({ imediato = false }: { imediato?: boolean }) {
   return (
     <RelatorioEmEspera rotulo="Carregando o plano de execução…" imediato={imediato} className={estilos.planos}>
-      <div className={estilos.abertura}>
-        <EsqueletoDiagnostico />
-        <EsqueletoIndicadores />
-      </div>
+      <EsqueletoIndicadores />
       <div className={estilos.exame}>
         <PainelEmEspera
           espacamento="nenhum"
@@ -447,6 +443,9 @@ function EsqueletoPlanos({ imediato = false }: { imediato?: boolean }) {
               <LinhaEmEspera key={indice} largura={`${92 - indice * 6}%`} />
             ))}
           </Painel>
+        </div>
+        <div className={estilos.extras}>
+          <EsqueletoDiagnostico />
         </div>
       </div>
     </RelatorioEmEspera>

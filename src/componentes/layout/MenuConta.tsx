@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FlaskConical, LogOut, Settings2 } from 'lucide-react';
+import { LogOut, Settings2 } from 'lucide-react';
 import { descreverFalha } from '@/api/tratamentoErros';
 import { ListaConexoesSalvas } from '@/componentes/conexao/ListaConexoesSalvas';
 import { ResumoConexao } from '@/componentes/conexao/ResumoConexao';
 import { Flutuante, IndicadorGiratorio, Selo } from '@/componentes/ui';
+import { Dica } from '@/componentes/ui';
 import type { ConexaoSalvaDTO } from '@/modelos/conexao';
 import { useAutenticacao } from '@/provedores/ProvedorAutenticacao';
 import { useConexao } from '@/provedores/ProvedorConexao';
@@ -64,20 +65,21 @@ export function MenuConta() {
 
   return (
     <>
-      <button
-        ref={gatilhoRef}
-        type="button"
-        className={estilos.gatilho}
-        title={aberto ? undefined : 'Conta e conexão'}
-        aria-label={`Conta de ${usuario.email} e conexão em uso`}
-        aria-haspopup="dialog"
-        aria-expanded={aberto}
-        onClick={() => setAberto(!aberto)}
-      >
-        <span className={estilos.avatar} aria-hidden="true">
-          {inicial}
-        </span>
-      </button>
+      <Dica conteudo="Conta e conexão" lado="baixo">
+        <button
+          ref={gatilhoRef}
+          type="button"
+          className={estilos.gatilho}
+          aria-label={`Conta de ${usuario.email} e conexão em uso`}
+          aria-haspopup="dialog"
+          aria-expanded={aberto}
+          onClick={() => setAberto(!aberto)}
+        >
+          <span className={estilos.avatar} aria-hidden="true">
+            {inicial}
+          </span>
+        </button>
+      </Dica>
 
       <Flutuante aberto={aberto} ancora={gatilhoRef} aoFechar={fechar} rotulo="Conta e conexão" alinhamento="fim">
         <div ref={menuRef} className={estilos.menu} tabIndex={-1}>
@@ -96,12 +98,7 @@ export function MenuConta() {
               <p id="titulo-conexao-menu-conta" className={estilos.tituloSecao}>
                 Conexão em uso
               </p>
-              {conexao?.simulada ? (
-                <Selo tom="aviso" icone={FlaskConical} titulo="Demonstração: nenhum banco real está sendo acessado.">
-                  <span className="visualmente-oculto">Estado: </span>
-                  Demonstração
-                </Selo>
-              ) : conexao ? (
+              {conexao ? (
                 <Selo tom="sucesso" ponto>
                   <span className="visualmente-oculto">Estado: </span>
                   Conectada

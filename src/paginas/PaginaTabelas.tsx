@@ -1,19 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { Clock, FlaskConical, SearchX, Table2 } from 'lucide-react';
+import { Clock, SearchX, Table2 } from 'lucide-react';
 import { ehErroApi } from '@/api/tratamentoErros';
 import { PainelSemConexao } from '@/componentes/conexao/PainelSemConexao';
 import { CabecalhoPagina } from '@/componentes/layout/CabecalhoPagina';
 import { BarraFiltrosTabelas } from '@/componentes/objetos/BarraFiltrosTabelas';
 import { CopiarComandos } from '@/componentes/objetos/CopiarComandos';
 import { DetalheTabela } from '@/componentes/objetos/DetalheTabela';
+import { EspacoDasTabelas, EsqueletoEspacoDasTabelas } from '@/componentes/objetos/EspacoDasTabelas';
+import { Panorama } from '@/componentes/objetos/Panorama';
 import { EsqueletoPontosDeAtencao, PontosDeAtencao } from '@/componentes/objetos/PontosDeAtencao';
 import type { ItemDeAtencao } from '@/componentes/objetos/PontosDeAtencao';
 import { ResumoDaLista } from '@/componentes/objetos/ResumoDaLista';
 import type { AtalhoDaLista } from '@/componentes/objetos/ResumoDaLista';
 import { iconeDaSituacaoTabela } from '@/componentes/objetos/SeloSituacaoTabela';
 import { EsqueletoTabelas, TabelaDeTabelas } from '@/componentes/objetos/TabelaDeTabelas';
-import { Botao, ConteudoAssincrono, EstadoVazio, Nota, Paginacao, Painel } from '@/componentes/ui';
+import { Botao, ConteudoAssincrono, Dica, EstadoVazio, Paginacao, Painel } from '@/componentes/ui';
 import { QuemAcessa } from '@/componentes/usuarios/QuemAcessa';
 import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
 import { useFiltrosTabelas } from '@/ganchos/useFiltrosTabelas';
@@ -57,7 +59,7 @@ import estilos from './PaginaObjetos.module.css';
 
 const ESPERA_DA_BUSCA_MS = 250;
 const LINHAS_DO_ESQUELETO = 8;
-const DESCRICAO_DOS_PONTOS = 'O que merece um olhar nas tabelas deste banco, do mais urgente ao menos urgente';
+const DESCRICAO_DOS_PONTOS = 'Do mais urgente ao menos urgente';
 const LINHAS_POR_FRASE_EM_ESPERA = [3, 3, 2, 2, 2];
 const ERRO_AO_COPIAR = 'O navegador bloqueou a área de transferência. Abra cada tabela e copie o comando pelo detalhe.';
 
@@ -107,7 +109,7 @@ export default function PaginaTabelas() {
         }
       />
       {conexao ? (
-        <ListaConectada key={conexao.id} simulada={conexao.simulada} filtros={filtros} mudarFiltros={mudarFiltros} />
+        <ListaConectada key={conexao.id} filtros={filtros} mudarFiltros={mudarFiltros} />
       ) : (
         <PainelSemConexao />
       )}
@@ -116,12 +118,11 @@ export default function PaginaTabelas() {
 }
 
 interface ListaConectadaProps {
-  simulada: boolean;
   filtros: FiltrosTabelas;
   mudarFiltros: (mudanca: Partial<FiltrosTabelas>) => void;
 }
 
-function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps) {
+function ListaConectada({ filtros, mudarFiltros }: ListaConectadaProps) {
   const { marcarDesconectada } = useConexao();
   const irParaOHistorico = useVerHistorico();
   const irParaOPlano = useVerPlano();
@@ -257,33 +258,43 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
 
   return (
     <div className={estilos.blocos}>
-      {simulada ? (
-        <Nota tom="aviso" icone={FlaskConical} titulo="Dados demonstrativos.">
-          As tabelas e os números desta tela são fictícios e não vêm do seu banco. Eles dão lugar aos dados reais quando o Orynt
-          estiver ligado à API.
-        </Nota>
-      ) : null}
-
       {lista.dados === null && lista.carregando ? (
-        <EsqueletoPontosDeAtencao descricao={DESCRICAO_DOS_PONTOS} linhasPorFrase={LINHAS_POR_FRASE_EM_ESPERA} />
+        <Panorama
+          figura={<EsqueletoEspacoDasTabelas />}
+          pontos={
+            <EsqueletoPontosDeAtencao
+              descricao={DESCRICAO_DOS_PONTOS}
+              linhasPorFrase={LINHAS_POR_FRASE_EM_ESPERA}
+              variante="lateral"
+            />
+          }
+        />
       ) : null}
-      {carregado && pontos.length > 0 ? (
-        <PontosDeAtencao
-          descricao={DESCRICAO_DOS_PONTOS}
-          itens={pontos.map((ponto): ItemDeAtencao => {
-            const { acao, rotulo } = acaoDoPonto(ponto);
-            return {
-              chave: chaveDoPonto(ponto),
-              tom: ponto.tom,
-              icone: iconeDaSituacaoTabela[ponto.tipo],
-              objeto: ponto.tabela,
-              titulo: ponto.titulo,
-              texto: ponto.texto,
-              acao,
-              rotuloDaAcao: rotulo,
-              aoSeguir: () => seguirPonto(ponto.alvo),
-            };
-          })}
+      {carregado && tabelas.length > 0 ? (
+        <Panorama
+          figura={<EspacoDasTabelas tabelas={tabelas} aoAbrir={(tabela) => abrir(tabela, 'PAINEL')} />}
+          pontos={
+            pontos.length > 0 ? (
+              <PontosDeAtencao
+                descricao={DESCRICAO_DOS_PONTOS}
+                variante="lateral"
+                itens={pontos.map((ponto): ItemDeAtencao => {
+                  const { acao, rotulo } = acaoDoPonto(ponto);
+                  return {
+                    chave: chaveDoPonto(ponto),
+                    tom: ponto.tom,
+                    icone: iconeDaSituacaoTabela[ponto.tipo],
+                    objeto: ponto.tabela,
+                    titulo: ponto.titulo,
+                    texto: ponto.texto,
+                    acao,
+                    rotuloDaAcao: rotulo,
+                    aoSeguir: () => seguirPonto(ponto.alvo),
+                  };
+                })}
+              />
+            ) : null
+          }
         />
       ) : null}
 
@@ -304,13 +315,14 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
             contagem={carregado ? resumirTabelas(tabelas, filtradas.length, filtros) : ''}
             complemento={
               carregado && tabelas.length > 0 ? (
-                <p
-                  className={juntarClasses(estilos.coleta, coleta.incompleta && estilos.coletaIncompleta)}
-                  title={coleta.completo}
-                >
-                  <Clock size={14} strokeWidth={2} aria-hidden="true" />
-                  {coleta.incompleta ? coleta.completo : coleta.curto}
-                </p>
+                <Dica conteudo={coleta.completo}>
+                  <p
+                    className={juntarClasses(estilos.coleta, coleta.incompleta && estilos.coletaIncompleta)}
+                  >
+                    <Clock size={14} strokeWidth={2} aria-hidden="true" />
+                    {coleta.incompleta ? coleta.completo : coleta.curto}
+                  </p>
+                </Dica>
               ) : null
             }
             emEspera={lista.dados === null && lista.carregando}
@@ -382,7 +394,6 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
       <DetalheTabela
         tabela={aberta}
         contexto={contexto}
-        simulada={simulada}
         posicao={indiceAberta >= 0 ? indiceAberta + 1 : null}
         total={filtradas.length}
         aoPercorrer={percorrer}

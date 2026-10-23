@@ -208,7 +208,7 @@ const rotas: Rota[] = [
     acesso: ['CONSULTAS_VER'],
     descricao: 'ler o plano de execução de uma consulta',
   },
-  { metodo: 'GET', caminho: rotasApi.objetos.visoes, manipulador: listarVisoes, acesso: ['OBJETOS_VER'], descricao: 'listar as visões' },
+  { metodo: 'GET', caminho: rotasApi.objetos.visoes, manipulador: listarVisoes, acesso: ['OBJETOS_VER'], descricao: 'listar as views' },
   { metodo: 'GET', caminho: rotasApi.objetos.indices, manipulador: listarIndices, acesso: ['OBJETOS_VER'], descricao: 'listar os índices' },
   { metodo: 'GET', caminho: rotasApi.objetos.tabelas, manipulador: listarTabelas, acesso: ['OBJETOS_VER'], descricao: 'listar as tabelas' },
   { metodo: 'GET', caminho: rotasApi.objetos.funcoes, manipulador: listarFuncoes, acesso: ['OBJETOS_VER'], descricao: 'listar as funções' },

@@ -82,9 +82,9 @@ const objetosBanco: Funcionalidade = {
   descricao: 'O inventário do que existe no banco e de quanto espaço cada coisa ocupa.',
   filhos: [
     {
-      rotulo: 'Visões',
+      rotulo: 'Views',
       destino: caminhos.objetosVisoes,
-      descricao: 'Visões e visões materializadas de cada esquema.',
+      descricao: 'Views e views materializadas de cada esquema.',
     },
     {
       rotulo: 'Índices',

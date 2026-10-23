@@ -3,7 +3,6 @@ import {
   Ban,
   ChevronDown,
   ChevronUp,
-  FlaskConical,
   LockKeyholeOpen,
   LogOut,
   MailWarning,
@@ -298,11 +297,6 @@ function CorpoDetalhe({
           {propria ? (
             <Selo tom="destaque" titulo="A conta com que você entrou">
               Você
-            </Selo>
-          ) : null}
-          {simulada ? (
-            <Selo tom="aviso" icone={FlaskConical}>
-              Dados demonstrativos
             </Selo>
           ) : null}
         </div>

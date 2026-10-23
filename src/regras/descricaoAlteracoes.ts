@@ -40,13 +40,13 @@ const palavraDesligada: Record<keyof AtributosDoPapelDTO, string> = {
 };
 
 const textoDeTodos = {
-  TABELAS: 'todas as tabelas e visões de',
+  TABELAS: 'todas as tabelas e views de',
   SEQUENCIAS: 'todas as sequências de',
   FUNCOES: 'todas as funções de',
 };
 
 const textoDoPadrao = {
-  TABELAS: 'as tabelas e visões',
+  TABELAS: 'as tabelas e views',
   SEQUENCIAS: 'as sequências',
   FUNCOES: 'as funções',
 };

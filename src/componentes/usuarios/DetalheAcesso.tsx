@@ -1,5 +1,15 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import { ArrowLeftRight, ChevronDown, ChevronRight, ChevronUp, FlaskConical, Info, KeyRound, OctagonAlert, Play, TriangleAlert } from 'lucide-react';
+import {
+  ArrowLeftRight,
+  ChevronDown,
+  ChevronRight,
+  ChevronUp,
+  Info,
+  KeyRound,
+  OctagonAlert,
+  Play,
+  TriangleAlert,
+} from 'lucide-react';
 import { SecaoCopiavel } from '@/componentes/objetos/DetalheObjeto';
 import estilos from '@/componentes/objetos/DetalheObjeto.module.css';
 import proprios from '@/componentes/objetos/DetalheTabela.module.css';
@@ -32,8 +42,8 @@ import { iconeDoTipoObjetoPermissao, SeloNivel, SeloSituacaoPermissao } from './
 
 const telaDoObjeto: Partial<Record<string, string>> = {
   TABELA: 'Tabelas',
-  VISAO: 'Visões',
-  VISAO_MATERIALIZADA: 'Visões',
+  VISAO: 'Views',
+  VISAO_MATERIALIZADA: 'Views',
   FUNCAO: 'Funções',
   PROCEDIMENTO: 'Funções',
 };
@@ -53,7 +63,6 @@ interface DetalheAcessoProps extends AcoesDoDetalheAcesso {
   diferencas: Privilegio[][] | null;
   indice: IndiceDasPermissoes | null;
   papelDaConexao: string;
-  simulada: boolean;
   posicao: number | null;
   total: number;
   aoPercorrer: (sentido: SentidoDoPasso) => void;
@@ -82,7 +91,6 @@ export function DetalheAcesso({
   diferencas,
   indice,
   papelDaConexao,
-  simulada,
   posicao,
   total,
   aoPercorrer,
@@ -150,7 +158,6 @@ export function DetalheAcesso({
           diferencas={diferencas}
           indice={indice}
           papelDaConexao={papelDaConexao}
-          simulada={simulada}
           {...acoes}
         />
       ) : null}
@@ -164,10 +171,9 @@ interface CorpoDetalheProps extends AcoesDoDetalheAcesso {
   diferencas: Privilegio[][] | null;
   indice: IndiceDasPermissoes;
   papelDaConexao: string;
-  simulada: boolean;
 }
 
-function CorpoDetalhe({ modo, linhas, diferencas, indice, papelDaConexao, simulada, ...acoes }: CorpoDetalheProps) {
+function CorpoDetalhe({ modo, linhas, diferencas, indice, papelDaConexao, ...acoes }: CorpoDetalheProps) {
   const raiz = useRef<HTMLDivElement>(null);
   const [primeira] = linhas;
 
@@ -194,11 +200,6 @@ function CorpoDetalhe({ modo, linhas, diferencas, indice, papelDaConexao, simula
           <Selo tom="neutro" icone={Icone}>
             {rotuloTipoObjetoPermissao[objeto.tipo]}
           </Selo>
-          {simulada ? (
-            <Selo tom="aviso" icone={FlaskConical}>
-              Dados demonstrativos
-            </Selo>
-          ) : null}
         </div>
       </header>
 

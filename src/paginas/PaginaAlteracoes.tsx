@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Ban, ChevronRight, FlaskConical, History, SearchX } from 'lucide-react';
+import { Ban, ChevronRight, History, SearchX } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ehErroApi } from '@/api/tratamentoErros';
 import { PainelSemConexao } from '@/componentes/conexao/PainelSemConexao';
@@ -7,8 +7,8 @@ import { CabecalhoPagina } from '@/componentes/layout/CabecalhoPagina';
 import { ResumoDaLista } from '@/componentes/objetos/ResumoDaLista';
 import { BarraFiltrosAlteracoes } from '@/componentes/usuarios/BarraFiltrosAlteracoes';
 import { DetalheAlteracao } from '@/componentes/usuarios/DetalheAlteracao';
-import { EsqueletoAlteracoes, TabelaAlteracoes } from '@/componentes/usuarios/TabelaAlteracoes';
-import { Botao, ConteudoAssincrono, EstadoVazio, Nota, Paginacao, Painel } from '@/componentes/ui';
+import { EsqueletoLinhaDoTempoAlteracoes, LinhaDoTempoAlteracoes } from '@/componentes/usuarios/LinhaDoTempoAlteracoes';
+import { Botao, ConteudoAssincrono, EstadoVazio, Paginacao, Painel } from '@/componentes/ui';
 import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
 import { useFiltrosAlteracoes } from '@/ganchos/useFiltrosAlteracoes';
 import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
@@ -60,7 +60,7 @@ export default function PaginaAlteracoes() {
         }
       />
       {conexao ? (
-        <ListaConectada key={conexao.id} simulada={conexao.simulada} filtros={filtros} mudarFiltros={mudarFiltros} />
+        <ListaConectada key={conexao.id} filtros={filtros} mudarFiltros={mudarFiltros} />
       ) : (
         <PainelSemConexao />
       )}
@@ -69,12 +69,11 @@ export default function PaginaAlteracoes() {
 }
 
 interface ListaConectadaProps {
-  simulada: boolean;
   filtros: FiltrosAlteracoes;
   mudarFiltros: (mudanca: Partial<FiltrosAlteracoes>) => void;
 }
 
-function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps) {
+function ListaConectada({ filtros, mudarFiltros }: ListaConectadaProps) {
   const { marcarDesconectada } = useConexao();
   const { abrir: alterar, versao } = useAlteracoes();
   const navegar = useNavigate();
@@ -164,17 +163,10 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
   };
 
   const linhaDaAberta = () =>
-    idAberta === null ? null : (regiao.current?.querySelector<HTMLElement>(`tr[data-alteracao="${CSS.escape(idAberta)}"] button`) ?? null);
+    idAberta === null ? null : (regiao.current?.querySelector<HTMLElement>(`[data-alteracao="${CSS.escape(idAberta)}"] button`) ?? null);
 
   return (
     <div className={estilos.blocos}>
-      {simulada ? (
-        <Nota tom="aviso" icone={FlaskConical} titulo="Dados demonstrativos.">
-          As alterações desta tela foram aplicadas só aos dados fictícios da conexão de demonstração, guardados neste navegador.
-          Nenhum banco real foi alterado.
-        </Nota>
-      ) : null}
-
       <Painel espacamento="nenhum" aria-labelledby="titulo-lista-alteracoes" aria-busy={lista.carregando}>
         <div className={estilos.topo} ref={topo}>
           <h2 className="visualmente-oculto" id="titulo-lista-alteracoes">
@@ -211,7 +203,7 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
         <div ref={regiao}>
           <ConteudoAssincrono
             resultado={lista}
-            esqueleto={<EsqueletoAlteracoes linhas={LINHAS_DO_ESQUELETO} />}
+            esqueleto={<EsqueletoLinhaDoTempoAlteracoes linhas={LINHAS_DO_ESQUELETO} />}
             tituloErro="Não foi possível carregar as alterações"
           >
             {(dados) =>
@@ -239,7 +231,7 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
                 />
               ) : (
                 <>
-                  <TabelaAlteracoes
+                  <LinhaDoTempoAlteracoes
                     alteracoes={paginaAtual.itens}
                     geradoEm={dados.geradoEm}
                     idAberta={idAberta}
@@ -266,7 +258,6 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
       <DetalheAlteracao
         alteracao={aberta}
         todas={alteracoes}
-        simulada={simulada}
         posicao={indiceAberto >= 0 ? indiceAberto + 1 : null}
         total={filtradas.length}
         capacidadeDeDesfazer={capacidadeDeDesfazer}

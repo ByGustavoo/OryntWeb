@@ -26,7 +26,6 @@ import estilos from './ModalAlteracao.module.css';
 interface ModalAlteracaoProps {
   pedido: PedidoDeAlteracao;
   aberto: boolean;
-  simulada: boolean;
   aoFechar: () => void;
   aoAplicar: (alteracao: AlteracaoDTO) => void;
 }
@@ -87,7 +86,7 @@ function destrutiva(operacoes: OperacaoDTO[], confirmar: string | null): boolean
   );
 }
 
-export default function ModalAlteracao({ pedido, aberto, simulada, aoFechar, aoAplicar }: ModalAlteracaoProps) {
+export default function ModalAlteracao({ pedido, aberto, aoFechar, aoAplicar }: ModalAlteracaoProps) {
   const idFormulario = useId();
   const { marcarDesconectada } = useConexao();
   const [revisao, setRevisao] = useState<RevisaoPedida | null>(
@@ -248,7 +247,6 @@ export default function ModalAlteracao({ pedido, aberto, simulada, aoFechar, aoA
               <RevisaoAlteracao
                 revisao={revisao}
                 estado={estado}
-                simulada={simulada}
                 falha={falha}
                 confirmar={confirmar}
                 confirmacao={confirmacao}

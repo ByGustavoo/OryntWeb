@@ -1,5 +1,4 @@
 import { useId, useRef } from 'react';
-import type { ReactNode } from 'react';
 import {
   Area,
   AreaChart,
@@ -13,8 +12,8 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import type { TooltipProps } from 'recharts';
 import { useLarguraElemento } from '@/ganchos/useLarguraElemento';
+import { useLeituraDoGrafico } from '@/ganchos/useLeituraDoGrafico';
 import type { PontoAtividadeDTO } from '@/modelos/dashboard';
 import type { GranularidadeRelatorio } from '@/modelos/relatorios';
 import {
@@ -26,6 +25,7 @@ import {
   formatarNumeroCompacto,
 } from '@/utilitarios/formatacao';
 import { marcasDoEixo, posicionarRotulo, prefereMovimentoReduzido } from '@/utilitarios/graficos';
+import { LeituraDoGrafico } from './LeituraDoGrafico';
 import estilos from './GraficoEvolucao.module.css';
 
 interface GraficoEvolucaoProps {
@@ -84,36 +84,19 @@ function encontrarPico(pontos: PontoAtividadeDTO[], medida: Medida): number {
   return pontos.reduce((maior, ponto, indice) => (ponto[medida] > (pontos[maior]?.[medida] ?? 0) ? indice : maior), 0);
 }
 
-function DicaEvolucao({
-  active,
-  payload,
-  formato,
-  children,
-}: TooltipProps<number, string> & { formato: FormatoGranularidade; children: (ponto: PontoAtividadeDTO) => ReactNode }) {
-  const ponto = payload?.[0]?.payload as PontoAtividadeDTO | undefined;
-  if (!active || !ponto) return null;
-
-  return (
-    <div className={estilos.dica}>
-      <span className={estilos.dicaRotulo}>{formato.completo(ponto.instante)}</span>
-      <span className={estilos.dicaLinha}>
-        <span className={estilos.dicaMarca} aria-hidden="true" />
-        {children(ponto)}
-      </span>
-    </div>
-  );
-}
-
 export function GraficoEvolucao({ pontos, granularidade }: GraficoEvolucaoProps) {
   const idResumo = useId();
   const idGradiente = useId();
   const areaTempoRef = useRef<HTMLDivElement>(null);
   const larguraTempo = useLarguraElemento(areaTempoRef);
   const formato = formatos[granularidade];
+  const { lido, eventos } = useLeituraDoGrafico();
   const indicePicoVolume = encontrarPico(pontos, 'consultas');
   const picoVolume = pontos[indicePicoVolume];
   const picoTempo = pontos[encontrarPico(pontos, 'tempoMedioMs')];
   if (!picoVolume || !picoTempo) return null;
+  const pontoLido = lido ? pontos[lido.indice] : undefined;
+  const xLido = pontoLido && lido ? lido.x : null;
 
   const marcasVolume = marcasDoEixo(picoVolume.consultas);
   const marcasTempo = marcasDoEixo(picoTempo.tempoMedioMs);
@@ -163,10 +146,19 @@ export function GraficoEvolucao({ pontos, granularidade }: GraficoEvolucaoProps)
       </figcaption>
 
       <div className={estilos.grafico}>
-        <p className={estilos.titulo}>Consultas executadas</p>
+        <LeituraDoGrafico titulo="Consultas executadas" x={xLido}>
+          {pontoLido ? (
+            <>
+              <span className={estilos.leituraRotulo}>{formato.completo(pontoLido.instante)}</span>
+              <span>
+                <span className={estilos.dicaValor}>{formatarNumero(pontoLido.consultas)}</span> consultas
+              </span>
+            </>
+          ) : null}
+        </LeituraDoGrafico>
         <div className={estilos.area} style={{ height: ALTURA_VOLUME_PX }} aria-hidden="true">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={pontos} margin={margem} syncId={SINCRONIA}>
+            <BarChart data={pontos} margin={margem} syncId={SINCRONIA} {...eventos}>
               <CartesianGrid vertical={false} />
               <XAxis dataKey="instante" hide />
               <YAxis
@@ -179,19 +171,7 @@ export function GraficoEvolucao({ pontos, granularidade }: GraficoEvolucaoProps)
                 width={LARGURA_EIXO_PX}
                 tickMargin={6}
               />
-              <Tooltip
-                cursor={{ className: estilos.faixaCursor }}
-                content={
-                  <DicaEvolucao formato={formato}>
-                    {(ponto) => (
-                      <>
-                        <span className={estilos.dicaValor}>{formatarNumero(ponto.consultas)}</span> consultas
-                      </>
-                    )}
-                  </DicaEvolucao>
-                }
-                isAnimationActive={false}
-              />
+              <Tooltip cursor={{ className: estilos.faixaCursor }} content={() => null} isAnimationActive={false} />
               <Bar
                 dataKey="consultas"
                 name="Consultas"
@@ -209,10 +189,19 @@ export function GraficoEvolucao({ pontos, granularidade }: GraficoEvolucaoProps)
       </div>
 
       <div className={estilos.grafico}>
-        <p className={estilos.titulo}>Tempo médio de execução</p>
+        <LeituraDoGrafico titulo="Tempo médio de execução" x={xLido}>
+          {pontoLido ? (
+            <>
+              <span className={estilos.leituraRotulo}>{formato.completo(pontoLido.instante)}</span>
+              <span>
+                <span className={estilos.dicaValor}>{formatarDuracaoMs(pontoLido.tempoMedioMs)}</span> de tempo médio
+              </span>
+            </>
+          ) : null}
+        </LeituraDoGrafico>
         <div ref={areaTempoRef} className={estilos.area} style={{ height: ALTURA_TEMPO_PX }} aria-hidden="true">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={pontos} margin={margem} syncId={SINCRONIA}>
+            <AreaChart data={pontos} margin={margem} syncId={SINCRONIA} {...eventos}>
               <defs>
                 <linearGradient id={idGradiente} x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" className={estilos.gradienteTopo} />
@@ -241,19 +230,7 @@ export function GraficoEvolucao({ pontos, granularidade }: GraficoEvolucaoProps)
                 tickMargin={6}
                 unit=" ms"
               />
-              <Tooltip
-                cursor={{ className: estilos.linhaCursor }}
-                content={
-                  <DicaEvolucao formato={formato}>
-                    {(ponto) => (
-                      <>
-                        <span className={estilos.dicaValor}>{formatarDuracaoMs(ponto.tempoMedioMs)}</span> de tempo médio
-                      </>
-                    )}
-                  </DicaEvolucao>
-                }
-                isAnimationActive={false}
-              />
+              <Tooltip cursor={{ className: estilos.linhaCursor }} content={() => null} isAnimationActive={false} />
               <Area
                 type="monotone"
                 dataKey="tempoMedioMs"

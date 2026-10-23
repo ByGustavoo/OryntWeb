@@ -52,9 +52,7 @@ export function ProvedorAlteracoes({ children }: { children: ReactNode }) {
       notificacoes.notificar({
         variante: 'sucesso',
         titulo,
-        descricao: conexao?.simulada
-          ? 'Aplicado aos dados de demonstração: nenhum banco real foi alterado.'
-          : 'Os comandos rodaram no banco numa transação só.',
+        descricao: conexao?.simulada ? undefined : 'Os comandos rodaram no banco numa transação só.',
         acao: inversas
           ? {
               rotulo: 'Desfazer',
@@ -77,7 +75,6 @@ export function ProvedorAlteracoes({ children }: { children: ReactNode }) {
             key={abertura}
             pedido={pedido}
             aberto={aberto}
-            simulada={conexao.simulada}
             aoFechar={fechar}
             aoAplicar={aoAplicar}
           />

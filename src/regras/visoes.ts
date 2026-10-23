@@ -45,8 +45,8 @@ export const rotuloFiltroSituacao: Record<FiltroSituacaoVisao, string> = {
 
 export const rotuloTipoObjeto: Record<TipoObjetoBanco, string> = {
   TABELA: 'Tabela',
-  VISAO: 'Visão',
-  VISAO_MATERIALIZADA: 'Visão materializada',
+  VISAO: 'View',
+  VISAO_MATERIALIZADA: 'View materializada',
 };
 
 export const direcaoInicialDaOrdenacao: Record<OrdenacaoVisoes, DirecaoOrdenacao> = {
@@ -111,7 +111,7 @@ const tituloDoGrupo: Record<TipoPontoDeAtencao, (quantidade: string) => string> 
   DESATUALIZADA_LIDA: (quantidade) => `${quantidade} materializadas desatualizadas ainda lidas`,
   SEM_DADOS: (quantidade) => `${quantidade} materializadas sem dados`,
   ATUALIZADA_SEM_LEITURA: (quantidade) => `${quantidade} materializadas atualizadas que ninguém lê`,
-  SEM_LEITURA: (quantidade) => `${quantidade} visões sem leitura`,
+  SEM_LEITURA: (quantidade) => `${quantidade} views sem leitura`,
 };
 
 const fraseDoGrupo: Record<TipoPontoDeAtencao, (nomes: string) => string> = {
@@ -119,8 +119,8 @@ const fraseDoGrupo: Record<TipoPontoDeAtencao, (nomes: string) => string> = {
     `${nomes} foram lidas nos últimos 30 dias sem uma atualização nas últimas ${HORAS_ATE_DESATUALIZAR} horas. Quem as lê recebe dados antigos.`,
   SEM_DADOS: (nomes) => `${nomes} estão sem dados. Uma consulta que tentar lê-las recebe um erro até o próximo REFRESH.`,
   ATUALIZADA_SEM_LEITURA: (nomes) =>
-    `${nomes} foram atualizadas nos últimos 30 dias, mas nenhuma consulta as leu, nem por outra visão.`,
-  SEM_LEITURA: (nomes) => `Nenhuma consulta leu ${nomes} nos últimos 30 dias, nem por outra visão.`,
+    `${nomes} foram atualizadas nos últimos 30 dias, mas nenhuma consulta as leu, nem por outra view.`,
+  SEM_LEITURA: (nomes) => `Nenhuma consulta leu ${nomes} nos últimos 30 dias, nem por outra view.`,
 };
 
 function listarNomes(visoes: VisaoDTO[]): string {
@@ -284,8 +284,8 @@ export function filtrarVisoes(visoes: VisaoDTO[], filtros: FiltrosVisoes, contex
 }
 
 export function resumirVisoes(total: number, encontradas: number, filtros: FiltrosVisoes): string {
-  if (total === 0) return 'Nenhuma visão no banco';
-  const doBanco = `${formatarNumero(total)} ${pluralizar(total, 'visão', 'visões')}`;
+  if (total === 0) return 'Nenhuma view no banco';
+  const doBanco = `${formatarNumero(total)} ${pluralizar(total, 'view', 'views')}`;
   if (!temFiltroAtivoVisoes(filtros)) return doBanco;
   return `${formatarNumero(encontradas)} de ${doBanco}`;
 }
@@ -325,9 +325,9 @@ function fraseDoPonto(tipo: TipoPontoDeAtencao, visao: VisaoDTO, geradoEm: strin
     return 'Está sem dados: foi criada ou atualizada com WITH NO DATA. Uma consulta que tentar lê-la recebe um erro até o próximo REFRESH.';
   }
   if (tipo === 'ATUALIZADA_SEM_LEITURA' && atualizacao) {
-    return `Atualizada ${vezes(atualizacao.quantidadeExecucoes)} nos últimos 30 dias, num total de ${formatarDuracaoExtensa(atualizacao.tempoTotalMs)}, mas nenhuma consulta a leu, nem por outra visão.`;
+    return `Atualizada ${vezes(atualizacao.quantidadeExecucoes)} nos últimos 30 dias, num total de ${formatarDuracaoExtensa(atualizacao.tempoTotalMs)}, mas nenhuma consulta a leu, nem por outra view.`;
   }
-  return 'Nenhuma consulta a leu nos últimos 30 dias, nem diretamente nem por outra visão.';
+  return 'Nenhuma consulta a leu nos últimos 30 dias, nem diretamente nem por outra view.';
 }
 
 const ordemDosPontos: TipoPontoDeAtencao[] = ['DESATUALIZADA_LIDA', 'SEM_DADOS', 'ATUALIZADA_SEM_LEITURA', 'SEM_LEITURA'];
@@ -373,7 +373,7 @@ export function avisosDaVisao(visao: VisaoDTO, contexto: ContextoDasVisoes): Avi
     avisos.push({
       tom: 'erro',
       texto:
-        'A visão está sem dados: foi criada ou atualizada com WITH NO DATA. Quem tentar lê-la recebe um erro até o próximo REFRESH.',
+        'A view está sem dados: foi criada ou atualizada com WITH NO DATA. Quem tentar lê-la recebe um erro até o próximo REFRESH.',
     });
   }
 
@@ -382,8 +382,8 @@ export function avisosDaVisao(visao: VisaoDTO, contexto: ContextoDasVisoes): Avi
     avisos.push({
       tom: 'aviso',
       texto: ultimaAtualizacao
-        ? `A última atualização foi ${formatarTempoRelativo(ultimaAtualizacao, new Date(contexto.geradoEm))}, mais de ${HORAS_ATE_DESATUALIZAR} horas atrás. Quem lê a visão recebe os dados daquele momento.${lidaNoPeriodo}`
-        : `O Orynt não registrou nenhuma atualização nos últimos 30 dias. Quem lê a visão recebe dados de antes disso.${lidaNoPeriodo}`,
+        ? `A última atualização foi ${formatarTempoRelativo(ultimaAtualizacao, new Date(contexto.geradoEm))}, mais de ${HORAS_ATE_DESATUALIZAR} horas atrás. Quem lê a view recebe os dados daquele momento.${lidaNoPeriodo}`
+        : `O Orynt não registrou nenhuma atualização nos últimos 30 dias. Quem lê a view recebe dados de antes disso.${lidaNoPeriodo}`,
     });
   }
 
@@ -393,8 +393,8 @@ export function avisosDaVisao(visao: VisaoDTO, contexto: ContextoDasVisoes): Avi
       tom: 'aviso',
       texto:
         atualizacao && atualizacao.quantidadeExecucoes > 0
-          ? `Nenhuma consulta leu a visão nos últimos 30 dias, nem por outra visão, mas ela foi atualizada ${vezes(atualizacao.quantidadeExecucoes)}, num total de ${formatarDuracaoExtensa(atualizacao.tempoTotalMs)}.`
-          : 'Nenhuma consulta leu a visão nos últimos 30 dias, nem diretamente nem por outra visão. Antes de removê-la, confira se algum processo que roda com menos frequência ainda a usa.',
+          ? `Nenhuma consulta leu a view nos últimos 30 dias, nem por outra view, mas ela foi atualizada ${vezes(atualizacao.quantidadeExecucoes)}, num total de ${formatarDuracaoExtensa(atualizacao.tempoTotalMs)}.`
+          : 'Nenhuma consulta leu a view nos últimos 30 dias, nem diretamente nem por outra view. Antes de removê-la, confira se algum processo que roda com menos frequência ainda a usa.',
     });
   }
 

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { ArrowRight, FlaskConical, Info, Minus, OctagonAlert, Plus, TriangleAlert, Undo2 } from 'lucide-react';
+import { ArrowRight, Info, Minus, OctagonAlert, Plus, TriangleAlert, Undo2 } from 'lucide-react';
 import { SecaoCopiavel } from '@/componentes/objetos/DetalheObjeto';
 import { CampoTexto, Nota } from '@/componentes/ui';
 import { descreverOperacao, tituloDaAlteracao } from '@/regras/descricaoAlteracoes';
@@ -15,7 +15,6 @@ import estilos from './RevisaoAlteracao.module.css';
 interface RevisaoAlteracaoProps {
   revisao: RevisaoPedida;
   estado: EstadoDaAlteracao;
-  simulada: boolean;
   falha: FalhaAlteracao | null;
   confirmar: string | null;
   confirmacao: string;
@@ -40,7 +39,6 @@ const rotuloDoTom: Record<TomDoEfeito, string> = {
 export function RevisaoAlteracao({
   revisao,
   estado,
-  simulada,
   falha,
   confirmar,
   confirmacao,
@@ -133,12 +131,6 @@ export function RevisaoAlteracao({
             : 'A alteração fica registrada em Alterações, com quem fez e quando.'}
         </p>
       </SecaoCopiavel>
-
-      {simulada ? (
-        <Nota tom="aviso" icone={FlaskConical} titulo="Dados demonstrativos.">
-          Nenhum banco real é alterado: o simulador aplica a mudança aos dados fictícios desta conexão.
-        </Nota>
-      ) : null}
 
       {confirmar ? (
         <div className={estilos.confirmacao}>

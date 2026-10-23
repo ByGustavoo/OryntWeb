@@ -1,5 +1,5 @@
 import type { MouseEvent } from 'react';
-import { Botao } from '@/componentes/ui';
+import { Botao, Dica } from '@/componentes/ui';
 import type { BotaoProps } from '@/componentes/ui';
 import { useNotificacoes } from '@/provedores/ProvedorNotificacoes';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
@@ -19,13 +19,19 @@ export function BotaoProtegido({ motivo, tituloDoMotivo = 'Esta ação está pro
     }
     onClick?.(evento);
   };
-  return (
+  const botao = (
     <Botao
       {...resto}
       className={juntarClasses(motivo && estilos.bloqueado, className)}
       aria-disabled={motivo ? true : undefined}
-      title={motivo ?? undefined}
       onClick={aoClicar}
     />
+  );
+  return motivo ? (
+    <Dica titulo={tituloDoMotivo} conteudo={motivo} descrever>
+      {botao}
+    </Dica>
+  ) : (
+    botao
   );
 }

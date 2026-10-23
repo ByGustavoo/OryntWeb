@@ -1,0 +1,190 @@
+.dica {
+  --texto: var(--dica-texto);
+  --texto-secundario: var(--dica-texto-secundario);
+  --texto-terciario: var(--dica-texto-secundario);
+  --superficie: var(--dica-fundo);
+
+  position: fixed;
+  z-index: var(--camada-dica);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: max-content;
+  max-width: min(20rem, calc(100vw - 16px));
+  padding: 6px 10px 7px;
+  border: 1px solid var(--dica-borda);
+  border-radius: var(--raio-md);
+  background-color: var(--dica-fundo);
+  box-shadow: var(--dica-sombra);
+  color: var(--dica-texto);
+  font-family: var(--fonte-interface);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-regular);
+  letter-spacing: 0;
+  line-height: 1.45;
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.larga {
+  max-width: min(26rem, calc(100vw - 16px));
+}
+
+.visivel {
+  visibility: visible;
+  pointer-events: auto;
+  animation: entrar-dica var(--duracao-rapida) var(--curva-saida) forwards;
+}
+
+.dica[data-lado='baixo'].visivel {
+  animation-name: entrar-dica-baixo;
+}
+
+.dica[data-lado='direita'].visivel {
+  animation-name: entrar-dica-direita;
+}
+
+.dica[data-lado='esquerda'].visivel {
+  animation-name: entrar-dica-esquerda;
+}
+
+.titulo {
+  color: var(--dica-texto);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-forte);
+  line-height: 1.4;
+}
+
+.conteudo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  white-space: pre-line;
+  color: var(--dica-texto);
+  font-size: var(--tamanho-sm);
+}
+
+.titulo + .conteudo {
+  color: var(--dica-texto-secundario);
+  font-size: var(--tamanho-xs);
+}
+
+.conteudo :global(strong) {
+  color: var(--dica-texto);
+  font-family: var(--fonte-numeros);
+  font-weight: var(--peso-medio);
+}
+
+.seta {
+  position: absolute;
+  left: var(--posicao-da-seta);
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--dica-borda);
+  background-color: var(--dica-fundo);
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.dica[data-lado='cima'] .seta {
+  bottom: -5.5px;
+  border-top-color: transparent;
+  border-left-color: transparent;
+}
+
+.dica[data-lado='baixo'] .seta {
+  top: -5.5px;
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+}
+
+.dica[data-lado='direita'] .seta,
+.dica[data-lado='esquerda'] .seta {
+  top: var(--posicao-da-seta);
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.dica[data-lado='direita'] .seta {
+  left: -5.5px;
+  border-top-color: transparent;
+  border-right-color: transparent;
+}
+
+.dica[data-lado='esquerda'] .seta {
+  right: -5.5px;
+  left: auto;
+  border-bottom-color: transparent;
+  border-left-color: transparent;
+}
+
+@keyframes entrar-dica {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes entrar-dica-baixo {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes entrar-dica-direita {
+  from {
+    opacity: 0;
+    transform: translateX(-2px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes entrar-dica-esquerda {
+  from {
+    opacity: 0;
+    transform: translateX(2px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .visivel,
+  .dica[data-lado='baixo'].visivel,
+  .dica[data-lado='direita'].visivel,
+  .dica[data-lado='esquerda'].visivel {
+    animation: aparecer-dica var(--duracao-rapida) linear forwards;
+  }
+}
+
+@keyframes aparecer-dica {
+  to {
+    opacity: 1;
+  }
+}
+
+@media print {
+  .dica {
+    display: none;
+  }
+}

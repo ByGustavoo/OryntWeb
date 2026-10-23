@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeftRight, FlaskConical, Globe, Info, KeyRound, OctagonAlert, Play, SearchX, ShieldCheck, UserRound, UsersRound } from 'lucide-react';
+import { ArrowLeftRight, Globe, Info, KeyRound, OctagonAlert, Play, SearchX, ShieldCheck, UserRound, UsersRound } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { ehErroApi } from '@/api/tratamentoErros';
 import { PainelSemConexao } from '@/componentes/conexao/PainelSemConexao';
@@ -124,7 +124,6 @@ export default function PaginaPermissoes() {
       {conexao ? (
         <ListaConectada
           key={conexao.id}
-          simulada={conexao.simulada}
           filtros={filtros}
           mudarFiltros={mudarFiltros}
           aoMudarSelecao={setInicialDaConcessao}
@@ -137,7 +136,6 @@ export default function PaginaPermissoes() {
 }
 
 interface ListaConectadaProps {
-  simulada: boolean;
   filtros: FiltrosPermissoes;
   mudarFiltros: (mudanca: Partial<FiltrosPermissoes>) => void;
   aoMudarSelecao: (inicial: Partial<CamposConcessao>) => void;
@@ -195,7 +193,7 @@ function linhaDoLado(acesso: Acesso, indice: IndiceDasPermissoes): LinhaPermissa
   return { chave: acesso.sujeito, acesso, situacoes: situacoesDoAcesso(acesso, indice) };
 }
 
-function ListaConectada({ simulada, filtros, mudarFiltros, aoMudarSelecao }: ListaConectadaProps) {
+function ListaConectada({ filtros, mudarFiltros, aoMudarSelecao }: ListaConectadaProps) {
   const { marcarDesconectada } = useConexao();
   const irParaObjeto = useVerObjeto();
   const localizacao = useLocation();
@@ -412,7 +410,7 @@ function ListaConectada({ simulada, filtros, mudarFiltros, aoMudarSelecao }: Lis
         <EstadoVazio
           icone={ShieldCheck}
           titulo="O banco não tem objetos para mostrar"
-          descricao="As permissões aparecem aqui assim que o banco tiver tabelas, visões, sequências ou funções fora dos esquemas do sistema."
+          descricao="As permissões aparecem aqui assim que o banco tiver tabelas, views, sequências ou funções fora dos esquemas do sistema."
         />
       );
     }
@@ -493,18 +491,16 @@ function ListaConectada({ simulada, filtros, mudarFiltros, aoMudarSelecao }: Lis
 
   return (
     <div className={estilos.blocos}>
-      {simulada ? (
-        <Nota tom="aviso" icone={FlaskConical} titulo="Dados demonstrativos.">
-          Os papéis, os objetos e as permissões desta tela são fictícios e não vêm do seu banco. Eles dão lugar aos dados reais
-          quando o Orynt estiver ligado à API.
-        </Nota>
-      ) : null}
-
       {lista.dados === null && lista.carregando ? (
-        <EsqueletoPontosDeAtencao descricao={DESCRICAO_DOS_PONTOS} linhasPorFrase={LINHAS_POR_FRASE_EM_ESPERA} />
+        <EsqueletoPontosDeAtencao
+          descricao={DESCRICAO_DOS_PONTOS}
+          linhasPorFrase={LINHAS_POR_FRASE_EM_ESPERA}
+          variante="recolhida"
+        />
       ) : null}
       {carregado && pontos.length > 0 ? (
         <PontosDeAtencao
+          variante="recolhida"
           descricao={DESCRICAO_DOS_PONTOS}
           itens={pontos.map((ponto): ItemDeAtencao => {
             const { acao, rotulo } = acaoDoPonto(ponto);
@@ -634,7 +630,6 @@ function ListaConectada({ simulada, filtros, mudarFiltros, aoMudarSelecao }: Lis
         diferencas={detalhe?.diferencas ?? null}
         indice={indice}
         papelDaConexao={papelDaConexao}
-        simulada={simulada}
         posicao={posicaoAberta >= 0 ? posicaoAberta + 1 : null}
         total={chaves.length}
         aoPercorrer={percorrer}

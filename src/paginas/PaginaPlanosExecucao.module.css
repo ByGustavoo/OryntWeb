@@ -20,13 +20,6 @@
   gap: var(--espaco-5);
 }
 
-.abertura {
-  display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
-  align-items: stretch;
-  gap: var(--espaco-5);
-}
-
 .exame {
   display: grid;
   grid-template-columns: minmax(0, 1.7fr) minmax(19rem, 1fr);
@@ -102,12 +95,6 @@
 .voltar:focus-visible {
   outline: none;
   box-shadow: var(--anel-foco);
-}
-
-@container planos-execucao (max-width: 980px) {
-  .abertura {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }
 
 @container planos-execucao (max-width: 900px) {

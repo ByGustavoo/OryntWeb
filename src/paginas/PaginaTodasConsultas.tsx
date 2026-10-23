@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { FlaskConical, SearchX } from 'lucide-react';
+import { SearchX } from 'lucide-react';
 import { ehErroApi } from '@/api/tratamentoErros';
 import { PainelSemConexao } from '@/componentes/conexao/PainelSemConexao';
 import { BarraFiltrosConsultas } from '@/componentes/consultas/BarraFiltrosConsultas';
 import { DetalheConsulta } from '@/componentes/consultas/DetalheConsulta';
 import { EsqueletoTodasConsultas, TabelaTodasConsultas } from '@/componentes/consultas/TabelaTodasConsultas';
 import { CabecalhoPagina } from '@/componentes/layout/CabecalhoPagina';
-import { Botao, ConteudoAssincrono, Esqueleto, EstadoVazio, GrupoOpcoes, Nota, Paginacao, Painel } from '@/componentes/ui';
+import { Botao, ConteudoAssincrono, Esqueleto, EstadoVazio, GrupoOpcoes, Paginacao, Painel } from '@/componentes/ui';
 import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
 import { useFiltrosConsultas } from '@/ganchos/useFiltrosConsultas';
 import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
@@ -217,13 +217,6 @@ function ListaConectada({ conexao, filtros, mudarFiltros }: ListaConectadaProps)
 
   return (
     <div className={estilos.blocos}>
-      {conexao.simulada ? (
-        <Nota tom="aviso" icone={FlaskConical} titulo="Dados demonstrativos.">
-          As consultas e os números desta tela são fictícios e não vêm do seu banco. Eles dão lugar aos dados reais quando o
-          Orynt estiver ligado à API.
-        </Nota>
-      ) : null}
-
       <Painel espacamento="nenhum" aria-labelledby="titulo-lista-consultas" aria-busy={lista.carregando}>
         <div className={estilos.topo} ref={topo}>
           <h2 className="visualmente-oculto" id="titulo-lista-consultas">
@@ -291,7 +284,6 @@ function ListaConectada({ conexao, filtros, mudarFiltros }: ListaConectadaProps)
         consulta={aberta}
         periodo={carregada?.aplicados.periodo ?? filtros.periodo}
         termos={termos}
-        simulada={conexao.simulada}
         posicao={carregada && aberta ? posicaoNaLista(carregada.pagina, aberta.id) : null}
         total={totalFiltrado}
         trocandoDePagina={chegada !== null}

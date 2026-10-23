@@ -1,6 +1,6 @@
 import { useId, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
-import { FlaskConical, Mail, OctagonAlert, UserRound } from 'lucide-react';
+import { Mail, OctagonAlert, UserRound } from 'lucide-react';
 import { ErroApi } from '@/api/ErroApi';
 import { descreverFalha, errosDeCampo } from '@/api/tratamentoErros';
 import { Botao, CampoTexto, Interruptor, Modal, Nota } from '@/componentes/ui';
@@ -20,14 +20,13 @@ interface ModalContaProps {
   aberto: boolean;
   ator: { id: string; permissoes: CodigoPermissao[] };
   contas: ContaDTO[];
-  simulada: boolean;
   aoFechar: () => void;
   aoSalvar: (conta: ContaDTO) => void;
 }
 
 const PERFIL_INICIAL = 'LEITOR' as const;
 
-export function ModalConta({ modo, aberto, ator, contas, simulada, aoFechar, aoSalvar }: ModalContaProps) {
+export function ModalConta({ modo, aberto, ator, contas, aoFechar, aoSalvar }: ModalContaProps) {
   const idFormulario = useId();
   const editando = modo.tipo === 'EDITAR' ? modo.conta : null;
   const [campos, setCampos] = useState<Record<CampoConta, string>>({
@@ -190,11 +189,6 @@ export function ModalConta({ modo, aberto, ator, contas, simulada, aoFechar, aoS
           </>
         )}
 
-        {simulada && !editando ? (
-          <Nota tom="aviso" icone={FlaskConical} titulo="Demonstração.">
-            Nenhum e-mail sai daqui: o convite aparece no detalhe da conta, na caixa de entrada simulada.
-          </Nota>
-        ) : null}
       </form>
     </Modal>
   );

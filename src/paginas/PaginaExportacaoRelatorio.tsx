@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { CSSProperties } from 'react';
-import { FileX2, FlaskConical } from 'lucide-react';
+import { FileX2 } from 'lucide-react';
 import { ehErroApi } from '@/api/tratamentoErros';
 import { PainelSemConexao } from '@/componentes/conexao/PainelSemConexao';
 import { CabecalhoPagina } from '@/componentes/layout/CabecalhoPagina';
 import { BarraPeriodo } from '@/componentes/relatorios/BarraPeriodo';
 import { OpcoesExportacao } from '@/componentes/relatorios/OpcoesExportacao';
 import { EsqueletoPrevia, PreviaExportacao } from '@/componentes/relatorios/PreviaExportacao';
-import { EstadoErro, EstadoVazio, Nota, Painel } from '@/componentes/ui';
+import { EstadoErro, EstadoVazio, Painel } from '@/componentes/ui';
 import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
 import { usePeriodoRelatorio } from '@/ganchos/usePeriodoRelatorio';
 import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
@@ -81,13 +81,6 @@ function ExportacaoConectada({ conexao }: { conexao: ConexaoDTO }) {
 
       <div className={estilos.blocos}>
         <BarraPeriodo periodo={periodo} hoje={hoje} aoMudar={mudarPeriodo} />
-
-        {conexao.simulada ? (
-          <Nota tom="aviso" icone={FlaskConical} titulo="Dados demonstrativos.">
-            Os arquivos saem com números fictícios, que não vêm do seu banco. Cada um leva esse aviso no nome e no
-            conteúdo.
-          </Nota>
-        ) : null}
 
         <div className={estilos.conteudo} aria-busy={resumo.carregando}>
           {resumo.dados === null && resumo.erro ? (

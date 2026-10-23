@@ -57,6 +57,9 @@
   --grafico-grade: #e8ebf0;
   --grafico-1: #2563eb;
   --grafico-referencia: #7b8494;
+  --categoria-1: #2563eb;
+  --categoria-2: #eb6834;
+  --categoria-3: #1baf7a;
   --desempenho-rapida: #1f9d57;
   --desempenho-moderada: #e3a008;
   --desempenho-lenta: #b42318;
@@ -66,6 +69,12 @@
   --notificacao-fundo: #ffffff;
   --notificacao-borda: #e4e7ec;
   --notificacao-realce: #f1f3f6;
+
+  --dica-fundo: #1c1f25;
+  --dica-borda: #1c1f25;
+  --dica-texto: #f6f7f9;
+  --dica-texto-secundario: #b8bdc6;
+  --dica-sombra: 0 8px 20px -8px rgba(15, 17, 21, 0.4), 0 2px 4px rgba(15, 17, 21, 0.12);
 
   --identidade-fundo: #eef1f6;
   --identidade-superficie: #ffffff;
@@ -131,6 +140,9 @@
     --grafico-grade: #1f1f1f;
     --grafico-1: #3b82f6;
     --grafico-referencia: #8f8f8f;
+    --categoria-1: #3b82f6;
+    --categoria-2: #d95926;
+    --categoria-3: #199e70;
     --desempenho-rapida: #0f8048;
     --desempenho-moderada: #c08a18;
     --desempenho-lenta: #cf3a34;
@@ -140,6 +152,12 @@
     --notificacao-fundo: #1b1b1b;
     --notificacao-borda: #272727;
     --notificacao-realce: #272727;
+
+    --dica-fundo: #2a2a2a;
+    --dica-borda: #424242;
+    --dica-texto: #fafafa;
+    --dica-texto-secundario: #c4c4c4;
+    --dica-sombra: 0 14px 28px -12px rgba(0, 0, 0, 0.85), 0 2px 6px rgba(0, 0, 0, 0.45);
 
     --identidade-fundo: #0f0f0f;
     --identidade-superficie: #171717;

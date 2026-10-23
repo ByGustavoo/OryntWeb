@@ -1,19 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { Clock, FlaskConical, SearchX, SquareFunction, TriangleAlert } from 'lucide-react';
+import { Clock, SearchX, SquareFunction, TriangleAlert } from 'lucide-react';
 import { ehErroApi } from '@/api/tratamentoErros';
 import { PainelSemConexao } from '@/componentes/conexao/PainelSemConexao';
 import { CabecalhoPagina } from '@/componentes/layout/CabecalhoPagina';
 import { BarraFiltrosFuncoes } from '@/componentes/objetos/BarraFiltrosFuncoes';
 import { CopiarComandos } from '@/componentes/objetos/CopiarComandos';
 import { DetalheFuncao } from '@/componentes/objetos/DetalheFuncao';
+import { Panorama } from '@/componentes/objetos/Panorama';
 import { EsqueletoPontosDeAtencao, PontosDeAtencao } from '@/componentes/objetos/PontosDeAtencao';
 import type { ItemDeAtencao } from '@/componentes/objetos/PontosDeAtencao';
 import { ResumoDaLista } from '@/componentes/objetos/ResumoDaLista';
 import type { AtalhoDaLista } from '@/componentes/objetos/ResumoDaLista';
 import { iconeDaSituacaoFuncao } from '@/componentes/objetos/SeloSituacaoFuncao';
 import { EsqueletoFuncoes, TabelaFuncoes } from '@/componentes/objetos/TabelaFuncoes';
-import { Botao, ConteudoAssincrono, EstadoVazio, Nota, Paginacao, Painel } from '@/componentes/ui';
+import { EsqueletoTempoDasFuncoes, TempoDasFuncoes } from '@/componentes/objetos/TempoDasFuncoes';
+import { Botao, ConteudoAssincrono, Dica, EstadoVazio, Nota, Paginacao, Painel } from '@/componentes/ui';
 import { QuemAcessa } from '@/componentes/usuarios/QuemAcessa';
 import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
 import { useFiltrosFuncoes } from '@/ganchos/useFiltrosFuncoes';
@@ -59,7 +61,7 @@ import estilos from './PaginaObjetos.module.css';
 
 const ESPERA_DA_BUSCA_MS = 250;
 const LINHAS_DO_ESQUELETO = 8;
-const DESCRICAO_DOS_PONTOS = 'O que merece um olhar nas funções deste banco, do mais urgente ao menos urgente';
+const DESCRICAO_DOS_PONTOS = 'Do mais urgente ao menos urgente';
 const LINHAS_POR_FRASE_EM_ESPERA = [3, 3, 3];
 const ERRO_AO_COPIAR = 'O navegador bloqueou a área de transferência. Abra cada função e copie o comando pelo detalhe.';
 
@@ -107,7 +109,7 @@ export default function PaginaFuncoes() {
         }
       />
       {conexao ? (
-        <ListaConectada key={conexao.id} simulada={conexao.simulada} filtros={filtros} mudarFiltros={mudarFiltros} />
+        <ListaConectada key={conexao.id} filtros={filtros} mudarFiltros={mudarFiltros} />
       ) : (
         <PainelSemConexao />
       )}
@@ -116,12 +118,11 @@ export default function PaginaFuncoes() {
 }
 
 interface ListaConectadaProps {
-  simulada: boolean;
   filtros: FiltrosFuncoes;
   mudarFiltros: (mudanca: Partial<FiltrosFuncoes>) => void;
 }
 
-function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps) {
+function ListaConectada({ filtros, mudarFiltros }: ListaConectadaProps) {
   const { marcarDesconectada } = useConexao();
   const irParaOHistorico = useVerHistorico();
   const irParaOPlano = useVerPlano();
@@ -268,13 +269,6 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
 
   return (
     <div className={estilos.blocos}>
-      {simulada ? (
-        <Nota tom="aviso" icone={FlaskConical} titulo="Dados demonstrativos.">
-          As funções e os números desta tela são fictícios e não vêm do seu banco. Eles dão lugar aos dados reais quando o Orynt
-          estiver ligado à API.
-        </Nota>
-      ) : null}
-
       {semMedida ? (
         <Nota tom="aviso" icone={TriangleAlert} titulo="O banco não mede as chamadas das funções.">
           <span className={estilos.notaComAcao}>
@@ -289,25 +283,44 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
       ) : null}
 
       {lista.dados === null && lista.carregando ? (
-        <EsqueletoPontosDeAtencao descricao={DESCRICAO_DOS_PONTOS} linhasPorFrase={LINHAS_POR_FRASE_EM_ESPERA} />
+        <Panorama
+          figura={<EsqueletoTempoDasFuncoes />}
+          pontos={
+            <EsqueletoPontosDeAtencao
+              descricao={DESCRICAO_DOS_PONTOS}
+              linhasPorFrase={LINHAS_POR_FRASE_EM_ESPERA}
+              variante="lateral"
+            />
+          }
+        />
       ) : null}
-      {carregado && pontos.length > 0 ? (
-        <PontosDeAtencao
-          descricao={DESCRICAO_DOS_PONTOS}
-          itens={pontos.map((ponto): ItemDeAtencao => {
-            const { acao, rotulo } = acaoDoPonto(ponto);
-            return {
-              chave: chaveDoPonto(ponto),
-              tom: ponto.tom,
-              icone: iconeDaSituacaoFuncao[ponto.tipo],
-              objeto: ponto.funcao ? { esquema: ponto.funcao.esquema, nome: `${ponto.funcao.nome}(${ponto.funcao.argumentos})` } : null,
-              titulo: ponto.titulo,
-              texto: ponto.texto,
-              acao,
-              rotuloDaAcao: rotulo,
-              aoSeguir: () => seguirPonto(ponto.alvo),
-            };
-          })}
+      {carregado && funcoes.length > 0 ? (
+        <Panorama
+          figura={<TempoDasFuncoes funcoes={funcoes} contexto={contexto} aoAbrir={(funcao) => abrir(funcao, 'PAINEL')} />}
+          pontos={
+            pontos.length > 0 ? (
+              <PontosDeAtencao
+                descricao={DESCRICAO_DOS_PONTOS}
+                variante="lateral"
+                itens={pontos.map((ponto): ItemDeAtencao => {
+                  const { acao, rotulo } = acaoDoPonto(ponto);
+                  return {
+                    chave: chaveDoPonto(ponto),
+                    tom: ponto.tom,
+                    icone: iconeDaSituacaoFuncao[ponto.tipo],
+                    objeto: ponto.funcao
+                      ? { esquema: ponto.funcao.esquema, nome: `${ponto.funcao.nome}(${ponto.funcao.argumentos})` }
+                      : null,
+                    titulo: ponto.titulo,
+                    texto: ponto.texto,
+                    acao,
+                    rotuloDaAcao: rotulo,
+                    aoSeguir: () => seguirPonto(ponto.alvo),
+                  };
+                })}
+              />
+            ) : null
+          }
         />
       ) : null}
 
@@ -329,13 +342,14 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
             contagem={carregado ? resumirFuncoes(funcoes, filtradas.length, filtros) : ''}
             complemento={
               carregado && funcoes.length > 0 ? (
-                <p
-                  className={juntarClasses(estilos.coleta, coleta.incompleta && estilos.coletaIncompleta)}
-                  title={coleta.completo}
-                >
-                  <Clock size={14} strokeWidth={2} aria-hidden="true" />
-                  {coleta.incompleta && contexto.rastreamento !== 'NENHUM' ? coleta.completo : coleta.curto}
-                </p>
+                <Dica conteudo={coleta.completo}>
+                  <p
+                    className={juntarClasses(estilos.coleta, coleta.incompleta && estilos.coletaIncompleta)}
+                  >
+                    <Clock size={14} strokeWidth={2} aria-hidden="true" />
+                    {coleta.incompleta && contexto.rastreamento !== 'NENHUM' ? coleta.completo : coleta.curto}
+                  </p>
+                </Dica>
               ) : null
             }
             emEspera={lista.dados === null && lista.carregando}
@@ -406,7 +420,6 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
       <DetalheFuncao
         funcao={aberta}
         contexto={contexto}
-        simulada={simulada}
         posicao={indiceAberta >= 0 ? indiceAberta + 1 : null}
         total={filtradas.length}
         aoPercorrer={percorrer}

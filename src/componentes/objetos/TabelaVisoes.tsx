@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { AnimationEvent, CSSProperties, MouseEvent, ReactNode } from 'react';
 import { ChevronRight, Clock, DatabaseZap, EyeOff } from 'lucide-react';
-import { CampoSelecao, Esqueleto, Selo } from '@/componentes/ui';
+import { CampoSelecao, Dica, Esqueleto, Selo } from '@/componentes/ui';
 import type { DirecaoOrdenacao } from '@/modelos/consultas';
 import type { OrdenacaoVisoes, VisaoDTO } from '@/modelos/objetos';
 import { leiturasDaVisao, situacaoDaMaterializada } from '@/regras/visoes';
@@ -34,7 +34,7 @@ interface EsqueletoVisoesProps extends OrdenacaoDaTabelaProps {
   imediato?: boolean;
 }
 
-const colunaDoNome: ColunaOrdenavel<OrdenacaoVisoes> = { ordenacao: 'NOME', rotulo: 'Visão', rotuloOrdenacao: 'Nome' };
+const colunaDoNome: ColunaOrdenavel<OrdenacaoVisoes> = { ordenacao: 'NOME', rotulo: 'View', rotuloOrdenacao: 'Nome' };
 
 const colunasNumericas: ColunaOrdenavel<OrdenacaoVisoes>[] = [
   { ordenacao: 'LEITURAS', rotulo: 'Leituras em 30 dias', rotuloOrdenacao: 'Mais leituras' },
@@ -67,7 +67,7 @@ function MolduraDaTabela({
 
       <table className={estilos.tabela}>
         <caption className="visualmente-oculto">
-          Visões do banco. Use os cabeçalhos para mudar a ordenação e abra uma visão para ver a definição, as dependências e
+          Views do banco. Use os cabeçalhos para mudar a ordenação e abra uma view para ver a definição, as dependências e
           as consultas que a leem.
         </caption>
         <thead>
@@ -105,13 +105,13 @@ function MolduraDaTabela({
 function CelulaLeituras({ visao, semLeitura }: { visao: VisaoDTO; semLeitura: boolean }) {
   if (semLeitura) {
     return (
-      <Selo tom="aviso" icone={EyeOff} titulo="Nenhuma consulta leu esta visão nos últimos 30 dias">
+      <Selo tom="aviso" icone={EyeOff} titulo="Nenhuma consulta leu esta view nos últimos 30 dias">
         Sem leitura
       </Selo>
     );
   }
   const leituras = leiturasDaVisao(visao);
-  if (leituras === 0) return <span className={estilos.secundario}>Por outra visão</span>;
+  if (leituras === 0) return <span className={estilos.secundario}>Por outra view</span>;
   return <span className="numeros">{formatarNumero(leituras)}</span>;
 }
 
@@ -122,7 +122,7 @@ function CelulaAtualizacao({ visao, geradoEm }: { visao: VisaoDTO; geradoEm: str
 
   if (situacao === 'NAO_POPULADA') {
     return (
-      <Selo tom="erro" icone={DatabaseZap} titulo="A visão está sem dados até o próximo REFRESH">
+      <Selo tom="erro" icone={DatabaseZap} titulo="A view está sem dados até o próximo REFRESH">
         Sem dados
       </Selo>
     );
@@ -139,14 +139,18 @@ function CelulaAtualizacao({ visao, geradoEm }: { visao: VisaoDTO; geradoEm: str
       </Selo>
     );
   }
-  return <span title={completo}>{quando}</span>;
+  return (
+    <Dica conteudo={completo}>
+      <span>{quando}</span>
+    </Dica>
+  );
 }
 
 export function EsqueletoVisoes({ linhas, imediato = false, ...ordenacaoDaTabela }: EsqueletoVisoesProps) {
   return (
     <>
       <span className="visualmente-oculto" role="status">
-        Carregando as visões…
+        Carregando as views…
       </span>
       <MolduraDaTabela {...ordenacaoDaTabela}>
         <tbody aria-hidden="true">
@@ -232,13 +236,14 @@ export function TabelaVisoes({
                 <span className={`${estilos.nome} codigo`}>
                   <NomeObjeto esquema={visao.esquema} nome={visao.nome} classeEsquema={estilos.esquema} />
                 </span>
-                <span
-                  className={juntarClasses(estilos.descricao, !visao.descricao && estilos.semDescricao)}
-                  title={visao.descricao ?? undefined}
-                >
-                  {visao.descricao ?? 'Sem descrição no banco'}
-                </span>
-                <span className="visualmente-oculto">. Ver os detalhes desta visão</span>
+                <Dica conteudo={visao.descricao ?? undefined} soSeCortado>
+                  <span
+                    className={juntarClasses(estilos.descricao, !visao.descricao && estilos.semDescricao)}
+                  >
+                    {visao.descricao ?? 'Sem descrição no banco'}
+                  </span>
+                </Dica>
+                <span className="visualmente-oculto">. Ver os detalhes desta view</span>
               </button>
             </td>
             <td className={estilos.celulaTipo} data-rotulo="Tipo">

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { AnimationEvent, CSSProperties, MouseEvent, ReactNode } from 'react';
 import { ChevronRight } from 'lucide-react';
-import { CampoSelecao, Esqueleto } from '@/componentes/ui';
+import { CampoSelecao, Dica, Esqueleto } from '@/componentes/ui';
 import type { DirecaoOrdenacao } from '@/modelos/consultas';
 import type { IndiceDTO, OrdenacaoIndices } from '@/modelos/objetos';
 import {
@@ -220,9 +220,11 @@ export function TabelaIndices({
                   <span className={`${estilos.nome} codigo`}>
                     <NomeObjeto esquema={indice.esquema} nome={indice.nome} classeEsquema={estilos.esquema} />
                   </span>
-                  <span className={`${estilos.descricao} codigo`} title={descricaoDoIndice(indice)}>
-                    {descricaoDoIndice(indice)}
-                  </span>
+                  <Dica conteudo={descricaoDoIndice(indice)} soSeCortado>
+                    <span className={`${estilos.descricao} codigo`}>
+                      {descricaoDoIndice(indice)}
+                    </span>
+                  </Dica>
                   <span className="visualmente-oculto">. Ver os detalhes deste índice</span>
                 </button>
               </td>

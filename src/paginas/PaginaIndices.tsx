@@ -1,19 +1,31 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { Clock, CopyMinus, CopyX, EyeOff, FlaskConical, Lightbulb, OctagonAlert, SearchX, Waypoints } from 'lucide-react';
+import { Clock, CopyMinus, CopyX, EyeOff, Lightbulb, OctagonAlert, SearchX, Waypoints } from 'lucide-react';
 import { ehErroApi } from '@/api/tratamentoErros';
 import { PainelSemConexao } from '@/componentes/conexao/PainelSemConexao';
 import { CabecalhoPagina } from '@/componentes/layout/CabecalhoPagina';
 import { BarraFiltrosIndices } from '@/componentes/objetos/BarraFiltrosIndices';
 import { CopiarComandos } from '@/componentes/objetos/CopiarComandos';
+import { CustoDosIndices, EsqueletoCustoDosIndices } from '@/componentes/objetos/CustoDosIndices';
 import { DetalheIndice } from '@/componentes/objetos/DetalheIndice';
+import { Panorama } from '@/componentes/objetos/Panorama';
 import { EsqueletoPontosDeAtencao, PontosDeAtencao } from '@/componentes/objetos/PontosDeAtencao';
 import type { ItemDeAtencao } from '@/componentes/objetos/PontosDeAtencao';
 import { ResumoDaLista } from '@/componentes/objetos/ResumoDaLista';
 import type { AtalhoDaLista } from '@/componentes/objetos/ResumoDaLista';
 import { EsqueletoSugestoesDeIndices, SugestoesDeIndices } from '@/componentes/objetos/SugestoesDeIndices';
 import { EsqueletoIndices, TabelaIndices } from '@/componentes/objetos/TabelaIndices';
-import { Abas, Botao, ConteudoAssincrono, EstadoVazio, Nota, Paginacao, Painel, PainelDaAba, idDaAba } from '@/componentes/ui';
+import {
+  Abas,
+  Botao,
+  ConteudoAssincrono,
+  Dica,
+  EstadoVazio,
+  idDaAba,
+  Paginacao,
+  Painel,
+  PainelDaAba,
+} from '@/componentes/ui';
 import type { Aba } from '@/componentes/ui';
 import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
 import { useFiltrosIndices } from '@/ganchos/useFiltrosIndices';
@@ -69,7 +81,7 @@ import estilos from './PaginaObjetos.module.css';
 
 const ESPERA_DA_BUSCA_MS = 250;
 const LINHAS_DO_ESQUELETO = 8;
-const DESCRICAO_DOS_PONTOS = 'O que merece um olhar nos índices deste banco, do mais urgente ao menos urgente';
+const DESCRICAO_DOS_PONTOS = 'Do mais urgente ao menos urgente';
 const LINHAS_POR_FRASE_EM_ESPERA = [3, 2, 2, 2, 2];
 const ID_DAS_ABAS = 'indices';
 
@@ -120,7 +132,7 @@ export default function PaginaIndices() {
         }
       />
       {conexao ? (
-        <ListaConectada key={conexao.id} simulada={conexao.simulada} filtros={filtros} mudarFiltros={mudarFiltros} />
+        <ListaConectada key={conexao.id} filtros={filtros} mudarFiltros={mudarFiltros} />
       ) : (
         <PainelSemConexao />
       )}
@@ -129,12 +141,11 @@ export default function PaginaIndices() {
 }
 
 interface ListaConectadaProps {
-  simulada: boolean;
   filtros: FiltrosIndices;
   mudarFiltros: (mudanca: Partial<FiltrosIndices>) => void;
 }
 
-function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps) {
+function ListaConectada({ filtros, mudarFiltros }: ListaConectadaProps) {
   const { marcarDesconectada } = useConexao();
   const irParaOHistorico = useVerHistorico();
   const irParaOPlano = useVerPlano();
@@ -276,6 +287,18 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
   const alternarSituacao = (situacao: FiltroSituacaoIndice) =>
     mudarFiltros({ situacao: filtros.situacao === situacao ? null : situacao });
 
+  const filtrarPelaFigura = (situacao: FiltroSituacaoIndice) => {
+    const ativo = filtros.aba === 'EXISTENTES' && filtros.situacao === situacao;
+    mudarFiltros({ situacao: ativo ? null : situacao, aba: 'EXISTENTES' });
+    if (!ativo) rolarAte(inicio.current);
+  };
+
+  const filtrarTabelaPelaFigura = (tabela: string) => {
+    const ativa = filtros.aba === 'EXISTENTES' && filtros.tabela === tabela;
+    mudarFiltros({ tabela: ativa ? null : tabela, esquema: null, aba: 'EXISTENTES' });
+    if (!ativa) rolarAte(inicio.current);
+  };
+
   const atalho = (
     situacao: FiltroSituacaoIndice,
     icone: LucideIcon,
@@ -309,33 +332,52 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
 
   return (
     <div className={estilos.blocos}>
-      {simulada ? (
-        <Nota tom="aviso" icone={FlaskConical} titulo="Dados demonstrativos.">
-          Os índices e os números desta tela são fictícios e não vêm do seu banco. Eles dão lugar aos dados reais quando o Orynt
-          estiver ligado à API.
-        </Nota>
-      ) : null}
-
       {lista.dados === null && lista.carregando ? (
-        <EsqueletoPontosDeAtencao descricao={DESCRICAO_DOS_PONTOS} linhasPorFrase={LINHAS_POR_FRASE_EM_ESPERA} />
+        <Panorama
+          figura={<EsqueletoCustoDosIndices />}
+          pontos={
+            <EsqueletoPontosDeAtencao
+              descricao={DESCRICAO_DOS_PONTOS}
+              linhasPorFrase={LINHAS_POR_FRASE_EM_ESPERA}
+              variante="lateral"
+            />
+          }
+        />
       ) : null}
-      {carregado && pontos.length > 0 ? (
-        <PontosDeAtencao
-          descricao={DESCRICAO_DOS_PONTOS}
-          itens={pontos.map((ponto): ItemDeAtencao => {
-            const { acao, rotulo } = acaoDoPonto(ponto);
-            return {
-              chave: chaveDoPonto(ponto),
-              tom: ponto.tom,
-              icone: iconesDosPontos[ponto.tipo],
-              objeto: ponto.indice,
-              titulo: ponto.titulo,
-              texto: ponto.texto,
-              acao,
-              rotuloDaAcao: rotulo,
-              aoSeguir: () => seguirPonto(ponto.alvo),
-            };
-          })}
+      {carregado && indices.length > 0 ? (
+        <Panorama
+          figura={
+            <CustoDosIndices
+              indices={indices}
+              contexto={contexto}
+              situacaoAtiva={filtros.aba === 'EXISTENTES' ? filtros.situacao : null}
+              tabelaAtiva={filtros.aba === 'EXISTENTES' ? filtros.tabela : null}
+              aoFiltrarSituacao={filtrarPelaFigura}
+              aoFiltrarTabela={filtrarTabelaPelaFigura}
+            />
+          }
+          pontos={
+            pontos.length > 0 ? (
+              <PontosDeAtencao
+                descricao={DESCRICAO_DOS_PONTOS}
+                variante="lateral"
+                itens={pontos.map((ponto): ItemDeAtencao => {
+                  const { acao, rotulo } = acaoDoPonto(ponto);
+                  return {
+                    chave: chaveDoPonto(ponto),
+                    tom: ponto.tom,
+                    icone: iconesDosPontos[ponto.tipo],
+                    objeto: ponto.indice,
+                    titulo: ponto.titulo,
+                    texto: ponto.texto,
+                    acao,
+                    rotuloDaAcao: rotulo,
+                    aoSeguir: () => seguirPonto(ponto.alvo),
+                  };
+                })}
+              />
+            ) : null
+          }
         />
       ) : null}
 
@@ -365,13 +407,14 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
                 contagem={carregado ? resumirIndices(indices, filtrados.length, filtros) : ''}
                 complemento={
                   carregado && indices.length > 0 ? (
-                    <p
-                      className={juntarClasses(estilos.coleta, coleta.incompleta && estilos.coletaIncompleta)}
-                      title={coleta.completo}
-                    >
-                      <Clock size={14} strokeWidth={2} aria-hidden="true" />
-                      {coleta.incompleta ? coleta.completo : coleta.curto}
-                    </p>
+                    <Dica conteudo={coleta.completo}>
+                      <p
+                        className={juntarClasses(estilos.coleta, coleta.incompleta && estilos.coletaIncompleta)}
+                      >
+                        <Clock size={14} strokeWidth={2} aria-hidden="true" />
+                        {coleta.incompleta ? coleta.completo : coleta.curto}
+                      </p>
+                    </Dica>
                   ) : null
                 }
                 emEspera={lista.dados === null && lista.carregando}
@@ -468,7 +511,6 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
         indice={aberto}
         indices={indices}
         contexto={contexto}
-        simulada={simulada}
         posicao={indiceAberto >= 0 ? indiceAberto + 1 : null}
         total={filtrados.length}
         aoPercorrer={percorrer}

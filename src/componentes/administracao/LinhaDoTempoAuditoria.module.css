@@ -1,0 +1,44 @@
+.evento {
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+  line-height: var(--altura-linha-compacta);
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px var(--espaco-2);
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  line-height: 1.5;
+}
+
+.meta > * + *::before {
+  margin-right: var(--espaco-2);
+  color: var(--texto-desabilitado);
+  content: '·';
+}
+
+.quem {
+  color: var(--texto-secundario);
+}
+
+.email {
+  overflow: hidden;
+  max-width: 22rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@container linha-do-tempo (max-width: 560px) {
+  .meta {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .meta > * + *::before {
+    content: none;
+  }
+}

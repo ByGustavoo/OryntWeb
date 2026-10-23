@@ -10,6 +10,7 @@ import {
   filtrosPapeisIniciais,
   gruposHerdados,
   identificadorSql,
+  iniciaisDoPapel,
   lerFiltrosPapeis,
   lerNomeDoPapel,
   loteDeComandosDosPapeis,
@@ -293,5 +294,28 @@ describe('lista', () => {
     expect(resumirPapeis(papeis, 4, filtrosPapeisIniciais)).toBe('3 usuários e 1 grupo');
     expect(resumirPapeis(papeis, 1, { ...filtrosPapeisIniciais, tipo: 'GRUPO' })).toBe('1 de 4 papéis');
     expect(resumirPapeis([], 0, filtrosPapeisIniciais)).toBe('Nenhum papel no banco');
+  });
+});
+
+describe('iniciaisDoPapel', () => {
+  it('usa a primeira letra das duas primeiras partes do nome', () => {
+    expect(iniciaisDoPapel('loja_analise')).toBe('LA');
+    expect(iniciaisDoPapel('relatorio-bi')).toBe('RB');
+    expect(iniciaisDoPapel('auditoria_app_v2')).toBe('AA');
+  });
+
+  it('usa as duas primeiras letras de um nome de uma parte só', () => {
+    expect(iniciaisDoPapel('postgres')).toBe('PO');
+    expect(iniciaisDoPapel('x')).toBe('X');
+  });
+
+  it('usa a primeira letra e o número final quando o nome termina num número', () => {
+    expect(iniciaisDoPapel('usuario_01')).toBe('U1');
+    expect(iniciaisDoPapel('usuario_45')).toBe('U45');
+    expect(iniciaisDoPapel('replica_2024')).toBe('R24');
+  });
+
+  it('devolve uma interrogação quando o nome não tem letra nem número', () => {
+    expect(iniciaisDoPapel('__')).toBe('?');
   });
 });

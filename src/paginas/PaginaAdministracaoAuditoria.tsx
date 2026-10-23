@@ -1,19 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { FlaskConical, RefreshCw, ScrollText, SearchX } from 'lucide-react';
+import { RefreshCw, ScrollText, SearchX } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { BarraFiltrosAuditoria } from '@/componentes/administracao/BarraFiltrosAuditoria';
 import { DetalheEvento } from '@/componentes/administracao/DetalheEvento';
 import { ResumoDaContaAuditoria } from '@/componentes/administracao/ResumoDaContaAuditoria';
-import { EsqueletoAuditoria, TabelaAuditoria } from '@/componentes/administracao/TabelaAuditoria';
+import { EsqueletoLinhaDoTempoAuditoria, LinhaDoTempoAuditoria } from '@/componentes/administracao/LinhaDoTempoAuditoria';
 import { CabecalhoPagina } from '@/componentes/layout/CabecalhoPagina';
 import { ResumoDaLista } from '@/componentes/objetos/ResumoDaLista';
-import { Botao, ConteudoAssincrono, EstadoVazio, Nota, Paginacao, Painel } from '@/componentes/ui';
+import { Botao, ConteudoAssincrono, EstadoVazio, Paginacao, Painel } from '@/componentes/ui';
 import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
 import { useFiltrosGuardados } from '@/ganchos/useFiltrosGuardados';
 import { usePermissao } from '@/ganchos/usePermissao';
 import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
 import type { EventoAuditoriaDTO, FiltrosAuditoria, PaginaAuditoriaDTO } from '@/modelos/administracao';
-import { useAutenticacao } from '@/provedores/ProvedorAutenticacao';
 import {
   aplicarMudancaAuditoria,
   descreverFiltrosAuditoria,
@@ -44,7 +43,6 @@ type Chegada = 'PRIMEIRO' | 'ULTIMO' | null;
 
 export default function PaginaAdministracaoAuditoria() {
   useTituloDocumento('Administração: Auditoria');
-  const { usuario } = useAutenticacao();
   const navegar = useNavigate();
   const veAlteracoes = usePermissao('BANCO_ACESSOS_VER');
   const { filtros, mudarFiltros } = useFiltrosGuardados<FiltrosAuditoria>(
@@ -69,7 +67,6 @@ export default function PaginaAdministracaoAuditoria() {
   const aplicados = carga.dados?.pedido ?? filtros;
   const eventos = useMemo(() => dados?.itens ?? [], [dados]);
   const buscaDigitada = limparBusca(busca);
-  const simulada = usuario?.simulado ?? false;
   const nomeDaConta = dados?.contas.find((conta) => conta.id === aplicados.conta)?.nome ?? null;
   const indiceNaPagina = aberto ? eventos.findIndex((evento) => evento.id === aberto.id) : -1;
   const posicao = dados && indiceNaPagina >= 0 ? (dados.pagina - 1) * dados.itensPorPagina + indiceNaPagina + 1 : null;
@@ -122,7 +119,7 @@ export default function PaginaAdministracaoAuditoria() {
   };
 
   const linhaDoAberto = () =>
-    aberto === null ? null : (regiao.current?.querySelector<HTMLElement>(`tr[data-evento="${CSS.escape(aberto.id)}"] button`) ?? null);
+    aberto === null ? null : (regiao.current?.querySelector<HTMLElement>(`[data-evento="${CSS.escape(aberto.id)}"] button`) ?? null);
 
   const descricaoDaPagina = dados?.registradosDesde
     ? `O que cada conta acessou e fez no Orynt, registrado pelo servidor desde ${formatarInstante(dados.registradosDesde)}. Nada aqui pode ser editado ou apagado.`
@@ -141,13 +138,6 @@ export default function PaginaAdministracaoAuditoria() {
       />
 
       <div className={estilos.blocos}>
-        {simulada ? (
-          <Nota tom="aviso" icone={FlaskConical} titulo="Dados demonstrativos.">
-            Os eventos são os que o simulador registrou neste navegador desde que você começou a usar o Orynt, guardados até{' '}
-            {formatarNumero(5000)}. Nenhum evento foi inventado; o endereço IP não existe na simulação.
-          </Nota>
-        ) : null}
-
         {dados?.resumoDaConta && aplicados.conta ? (
           <ResumoDaContaAuditoria
             resumo={dados.resumoDaConta}
@@ -182,7 +172,7 @@ export default function PaginaAdministracaoAuditoria() {
           <div ref={regiao} className={juntarClasses(proprios.lista, atualizando && proprios.atualizando)}>
             <ConteudoAssincrono
               resultado={carga}
-              esqueleto={<EsqueletoAuditoria linhas={LINHAS_DO_ESQUELETO} />}
+              esqueleto={<EsqueletoLinhaDoTempoAuditoria linhas={LINHAS_DO_ESQUELETO} />}
               tituloErro="Não foi possível carregar a auditoria"
             >
               {({ pagina }) =>
@@ -205,7 +195,12 @@ export default function PaginaAdministracaoAuditoria() {
                   />
                 ) : (
                   <>
-                    <TabelaAuditoria eventos={pagina.itens} geradoEm={pagina.geradoEm} idAberto={aberto?.id ?? null} aoAbrir={setAberto} />
+                    <LinhaDoTempoAuditoria
+                      eventos={pagina.itens}
+                      geradoEm={pagina.geradoEm}
+                      idAberto={aberto?.id ?? null}
+                      aoAbrir={setAberto}
+                    />
                     {pagina.totalPaginas > 1 ? (
                       <Paginacao
                         rotulo="Páginas da auditoria"
@@ -228,7 +223,6 @@ export default function PaginaAdministracaoAuditoria() {
 
       <DetalheEvento
         evento={aberto}
-        simulada={simulada}
         posicao={posicao}
         total={dados?.totalItens ?? 0}
         temAnterior={posicao !== null && posicao > 1 && chegada === null}

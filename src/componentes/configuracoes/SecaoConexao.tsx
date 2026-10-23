@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FlaskConical, Unplug } from 'lucide-react';
+import { Unplug } from 'lucide-react';
 import { descreverFalha } from '@/api/tratamentoErros';
 import { ResumoConexao } from '@/componentes/conexao/ResumoConexao';
 import {
@@ -10,7 +10,6 @@ import {
   EstadoErro,
   EstadoVazio,
   IndicadorGiratorio,
-  Nota,
   Painel,
 } from '@/componentes/ui';
 import { useConexao } from '@/provedores/ProvedorConexao';
@@ -52,12 +51,6 @@ export function SecaoConexao() {
 
       {conexao ? (
         <>
-          {conexao.simulada ? (
-            <Nota tom="aviso" icone={FlaskConical} titulo="Conexão simulada.">
-              Os dados abaixo são os que você informou, mas nenhum banco real está sendo acessado nesta versão.
-            </Nota>
-          ) : null}
-
           <ResumoConexao conexao={conexao} />
 
           <div className={estilos.acoes}>

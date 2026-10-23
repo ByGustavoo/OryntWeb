@@ -1,5 +1,4 @@
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
-import { FlaskConical } from 'lucide-react';
 import { Botao, Modal, Nota } from '@/componentes/ui';
 import { ambiente } from '@/configuracoes/ambiente';
 import { useFluxoConexao } from '@/ganchos/useFluxoConexao';
@@ -73,21 +72,12 @@ export default function ModalConexao({ aberto, aoFechar, aoConectar }: ModalCone
       }
     >
       <div className={estilos.conteudo}>
-        {ambiente.dadosSimulados || conexaoSubstituida ? (
+        {conexaoSubstituida ? (
           <div className={estilos.avisos}>
-            {ambiente.dadosSimulados ? (
-              <Nota tom="aviso" icone={FlaskConical} titulo="Conexão simulada.">
-                Nesta versão o Orynt ainda não acessa bancos reais: qualquer dado válido conecta e o que aparece depois é
-                demonstrativo. A conexão fica salva neste navegador, sem a senha.
-              </Nota>
-            ) : null}
-
-            {conexaoSubstituida ? (
-              <Nota tom="info">
-                Você está conectado a <strong>{conexaoSubstituida.nome}</strong>. Ao conectar, o Orynt passa a mostrar o
-                novo banco, e a conexão atual continua salva.
-              </Nota>
-            ) : null}
+            <Nota tom="info">
+              Você está conectado a <strong>{conexaoSubstituida.nome}</strong>. Ao conectar, o Orynt passa a mostrar o novo
+              banco, e a conexão atual continua salva.
+            </Nota>
           </div>
         ) : null}
 

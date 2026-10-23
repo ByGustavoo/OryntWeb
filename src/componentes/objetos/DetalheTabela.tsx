@@ -6,7 +6,6 @@ import {
   ChevronRight,
   ChevronUp,
   Eye,
-  FlaskConical,
   History,
   KeyRound,
   Layers,
@@ -16,7 +15,7 @@ import {
   Waypoints,
   Zap,
 } from 'lucide-react';
-import { Botao, BotaoIcone, Modal, Nota, Selo } from '@/componentes/ui';
+import { Botao, BotaoIcone, Dica, Modal, Nota, Selo } from '@/componentes/ui';
 import type { ConsultaDetalhadaDTO } from '@/modelos/consultas';
 import type { IndiceDaTabelaDTO, ParticaoDTO, TabelaDTO, TipoObjetoBanco } from '@/modelos/objetos';
 import { descreverDisparo } from '@/regras/funcoes';
@@ -72,7 +71,6 @@ interface AcoesDoDetalhe {
 interface DetalheTabelaProps extends AcoesDoDetalhe {
   tabela: TabelaDTO | null;
   contexto: ContextoDasTabelas;
-  simulada: boolean;
   posicao: number | null;
   total: number;
   aoPercorrer: (sentido: SentidoDoPasso) => void;
@@ -88,7 +86,6 @@ const iconeDaVisao: Record<Exclude<TipoObjetoBanco, 'TABELA'>, LucideIcon> = {
 export function DetalheTabela({
   tabela,
   contexto,
-  simulada,
   posicao,
   total,
   aoPercorrer,
@@ -141,7 +138,7 @@ export function DetalheTabela({
         </div>
       }
     >
-      {exibida ? <CorpoDetalhe key={exibida.id} tabela={exibida} contexto={contexto} simulada={simulada} {...acoes} /> : null}
+      {exibida ? <CorpoDetalhe key={exibida.id} tabela={exibida} contexto={contexto} {...acoes} /> : null}
     </Modal>
   );
 }
@@ -153,10 +150,9 @@ function descreverTabela(tabela: TabelaDTO): string {
 interface CorpoDetalheProps extends AcoesDoDetalhe {
   tabela: TabelaDTO;
   contexto: ContextoDasTabelas;
-  simulada: boolean;
 }
 
-function CorpoDetalhe({ tabela, contexto, simulada, ...acoes }: CorpoDetalheProps) {
+function CorpoDetalhe({ tabela, contexto, ...acoes }: CorpoDetalheProps) {
   const raiz = useRef<HTMLDivElement>(null);
   const avisos = avisosDaTabela(tabela, contexto);
   const comando = comandoDaTabela(tabela);
@@ -185,11 +181,6 @@ function CorpoDetalhe({ tabela, contexto, simulada, ...acoes }: CorpoDetalheProp
           {situacoesDaTabela(tabela).map((situacao) => (
             <SeloSituacaoTabela key={situacao} situacao={situacao} />
           ))}
-          {simulada ? (
-            <Selo tom="aviso" icone={FlaskConical}>
-              Dados demonstrativos
-            </Selo>
-          ) : null}
         </div>
       </header>
 
@@ -342,9 +333,11 @@ function SecaoManutencao({ tabela, contexto }: { tabela: TabelaDTO; contexto: Co
           return (
             <div key={rotulo} className={estilos.coluna}>
               <dt className={estilos.nomeColuna}>{rotulo}</dt>
-              <dd className={juntarClasses(estilos.tipoColuna, 'numeros')} title={dica}>
-                {valor}
-              </dd>
+              <Dica conteudo={dica}>
+                <dd className={juntarClasses(estilos.tipoColuna, 'numeros')}>
+                  {valor}
+                </dd>
+              </Dica>
             </div>
           );
         })}
@@ -535,12 +528,13 @@ function ItemParticao({ particao, limite, geradoEm }: { particao: ParticaoDTO; l
           <span className="numeros">{formatarTamanho(particao.tamanhoBytes)}</span> · {autovacuum}
         </span>
       </span>
-      <span
-        className={juntarClasses(proprios.idade, alta && proprios.idadeAlta, 'numeros')}
-        title={`Idade das transações: ${formatarNumero(particao.idadeTransacoes)} de ${formatarNumero(limite)}`}
-      >
-        {formatarNumero(Math.round(parte * 100))}%<span className="visualmente-oculto"> do limite de congelamento</span>
-      </span>
+      <Dica conteudo={`Idade das transações: ${formatarNumero(particao.idadeTransacoes)} de ${formatarNumero(limite)}`}>
+        <span
+          className={juntarClasses(proprios.idade, alta && proprios.idadeAlta, 'numeros')}
+        >
+          {formatarNumero(Math.round(parte * 100))}%<span className="visualmente-oculto"> do limite de congelamento</span>
+        </span>
+      </Dica>
     </div>
   );
 }
@@ -562,13 +556,14 @@ function SecaoColunas({ tabela }: { tabela: TabelaDTO }) {
               ) : null}
               {coluna.nome}
             </dt>
-            <dd
-              className={`${estilos.tipoColuna} codigo`}
-              title={[coluna.tipo, coluna.padrao ? `padrão ${coluna.padrao}` : null].filter(Boolean).join(', ')}
-            >
-              {tipoCurto(coluna.tipo)}
-              {coluna.anulavel ? '' : ' not null'}
-            </dd>
+            <Dica conteudo={[coluna.tipo, coluna.padrao ? `padrão ${coluna.padrao}` : null].filter(Boolean).join(', ')}>
+              <dd
+                className={`${estilos.tipoColuna} codigo`}
+              >
+                {tipoCurto(coluna.tipo)}
+                {coluna.anulavel ? '' : ' not null'}
+              </dd>
+            </Dica>
           </div>
         ))}
       </dl>
@@ -681,9 +676,9 @@ function SecaoGatilhos({ tabela, aoAbrirFuncao }: Pick<AcoesDoDetalhe, 'aoAbrirF
 
 function SecaoVisoes({ tabela, aoAbrirVisao }: Pick<AcoesDoDetalhe, 'aoAbrirVisao'> & { tabela: TabelaDTO }) {
   return (
-    <section className={estilos.secao} aria-labelledby="titulo-visoes-tabela" data-indice="Visões">
+    <section className={estilos.secao} aria-labelledby="titulo-visoes-tabela" data-indice="Views">
       <h3 className={estilos.tituloSecao} id="titulo-visoes-tabela">
-        Visões que dependem dela <span className={`${estilos.contagem} numeros`}>{formatarNumero(tabela.usadaPor.length)}</span>
+        Views que dependem dela <span className={`${estilos.contagem} numeros`}>{formatarNumero(tabela.usadaPor.length)}</span>
       </h3>
       {tabela.usadaPor.length > 0 ? (
         <ul className={estilos.objetos}>
@@ -705,14 +700,14 @@ function SecaoVisoes({ tabela, aoAbrirVisao }: Pick<AcoesDoDetalhe, 'aoAbrirVisa
                     <span className={estilos.tipoObjeto}>{rotuloTipoObjeto[visao.tipo]}</span>
                   </span>
                   <ChevronRight className={estilos.setaObjeto} size={16} strokeWidth={2} aria-hidden="true" />
-                  <span className="visualmente-oculto">. Abrir esta visão em Visões</span>
+                  <span className="visualmente-oculto">. Abrir esta view em Views</span>
                 </button>
               </li>
             );
           })}
         </ul>
       ) : (
-        <p className={estilos.leitura}>Nenhuma visão lê esta tabela. Ela pode ser alterada sem quebrar uma visão.</p>
+        <p className={estilos.leitura}>Nenhuma view lê esta tabela. Ela pode ser alterada sem quebrar uma view.</p>
       )}
     </section>
   );

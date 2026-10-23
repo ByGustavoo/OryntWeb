@@ -1,0 +1,136 @@
+.figura {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  gap: var(--espaco-5) var(--espaco-6);
+}
+
+.bloco {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-1);
+  min-width: 0;
+}
+
+.subtitulo {
+  margin-bottom: var(--espaco-1);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+  line-height: 1.5;
+}
+
+.bloco > ul {
+  margin-inline: calc(-1 * var(--espaco-2));
+}
+
+.bloco > ul > li > button,
+.bloco > ul > li.linhaFrescor,
+.bloco > ul > li.linhaLeitura {
+  grid-template-columns: minmax(0, 1.25fr) minmax(3rem, 1fr) 5.75rem;
+  gap: var(--espaco-3);
+  min-height: 32px;
+  padding: var(--espaco-1) var(--espaco-2);
+}
+
+.bloco > ul > li.linhaEixo {
+  min-height: 0;
+  padding-top: 0;
+}
+
+.escala {
+  position: relative;
+  display: block;
+  height: 10px;
+  border-radius: 2px;
+  background-color: var(--superficie-suave);
+}
+
+.limite {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 1px;
+  background-color: var(--texto-terciario);
+}
+
+.idade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  border-radius: 0 4px 4px 0;
+  --cor-segmento: var(--grafico-1);
+}
+
+.velha {
+  --cor-segmento: var(--aviso-grafico);
+}
+
+.alem {
+  border-radius: 0;
+  mask-image: linear-gradient(to right, black 88%, transparent);
+}
+
+.vazia {
+  display: block;
+  height: 10px;
+  border: 1px dashed var(--borda-forte);
+  border-radius: 2px;
+}
+
+.eixo {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  line-height: 1.5;
+}
+
+.marcaDoLimite {
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.textoDaIdade {
+  font-family: var(--fonte-interface);
+}
+
+.textoSemLeitura {
+  color: var(--texto-terciario);
+  font-family: var(--fonte-interface);
+  font-size: var(--tamanho-xs);
+}
+
+.textoAviso {
+  color: var(--aviso);
+}
+
+.textoErro {
+  color: var(--erro);
+}
+
+@container figura-panorama (min-width: 640px) {
+  .figura {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+@container figura-panorama (max-width: 520px) {
+  .bloco > ul > li > button,
+  .bloco > ul > li.linhaFrescor,
+  .bloco > ul > li.linhaLeitura {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .bloco > ul > li.linhaEixo > span:first-child,
+  .bloco > ul > li.linhaEixo > span:last-child {
+    display: none;
+  }
+
+  .bloco > ul > li.linhaEixo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

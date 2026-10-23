@@ -1,17 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { Clock, DatabaseZap, EyeOff, FlaskConical, ScanEye, SearchX } from 'lucide-react';
+import { Clock, DatabaseZap, EyeOff, ScanEye, SearchX } from 'lucide-react';
 import { ehErroApi } from '@/api/tratamentoErros';
 import { PainelSemConexao } from '@/componentes/conexao/PainelSemConexao';
 import { CabecalhoPagina } from '@/componentes/layout/CabecalhoPagina';
 import { BarraFiltrosVisoes } from '@/componentes/objetos/BarraFiltrosVisoes';
 import { DetalheVisao } from '@/componentes/objetos/DetalheVisao';
+import { Panorama } from '@/componentes/objetos/Panorama';
 import { EsqueletoPontosDeAtencao, PontosDeAtencao } from '@/componentes/objetos/PontosDeAtencao';
 import type { ItemDeAtencao } from '@/componentes/objetos/PontosDeAtencao';
 import { ResumoDaLista } from '@/componentes/objetos/ResumoDaLista';
 import type { AtalhoDaLista } from '@/componentes/objetos/ResumoDaLista';
 import { EsqueletoVisoes, TabelaVisoes } from '@/componentes/objetos/TabelaVisoes';
-import { Botao, ConteudoAssincrono, EstadoVazio, Nota, Paginacao, Painel } from '@/componentes/ui';
+import { EsqueletoUsoDasVisoes, UsoDasVisoes } from '@/componentes/objetos/UsoDasVisoes';
+import { Botao, ConteudoAssincrono, EstadoVazio, Paginacao, Painel } from '@/componentes/ui';
 import { QuemAcessa } from '@/componentes/usuarios/QuemAcessa';
 import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
 import { useFiltrosVisoes } from '@/ganchos/useFiltrosVisoes';
@@ -53,7 +55,7 @@ import estilos from './PaginaObjetos.module.css';
 
 const ESPERA_DA_BUSCA_MS = 250;
 const LINHAS_DO_ESQUELETO = 8;
-const DESCRICAO_DOS_PONTOS = 'O que merece um olhar nas visões deste banco, do mais urgente ao menos urgente';
+const DESCRICAO_DOS_PONTOS = 'Do mais urgente ao menos urgente';
 const LINHAS_POR_FRASE_EM_ESPERA = [2, 2, 1, 2];
 
 const iconesDosPontos: Record<TipoPontoDeAtencao, LucideIcon> = {
@@ -65,34 +67,34 @@ const iconesDosPontos: Record<TipoPontoDeAtencao, LucideIcon> = {
 
 function rotuloDaAcaoDoPonto(ponto: PontoDeAtencao): string {
   if (ponto.alvo.tipo === 'FILTRO') {
-    return `Filtrar a lista pelas visões ${rotuloFiltroSituacao[ponto.alvo.situacao].toLowerCase()}`;
+    return `Filtrar a lista pelas views ${rotuloFiltroSituacao[ponto.alvo.situacao].toLowerCase()}`;
   }
-  return `Abrir ${ponto.visao ? idDoObjeto(ponto.visao) : 'a visão'}`;
+  return `Abrir ${ponto.visao ? idDoObjeto(ponto.visao) : 'a view'}`;
 }
 
 function descreverSemConexao(situacao: SituacaoConexao): string {
-  if (situacao === 'DESCONECTADA') return 'Conecte um banco para ver as visões que ele tem.';
+  if (situacao === 'DESCONECTADA') return 'Conecte um banco para ver as views que ele tem.';
   if (situacao === 'INDISPONIVEL') return 'O Orynt não conseguiu confirmar a conexão com o banco.';
   return 'Preparando a conexão com o banco.';
 }
 
 export default function PaginaVisoes() {
-  useTituloDocumento('Objetos do banco: Visões');
+  useTituloDocumento('Objetos do banco: Views');
   const { situacao, conexao } = useConexao();
   const { filtros, mudarFiltros } = useFiltrosVisoes(caminhos.objetosVisoes);
 
   return (
     <>
       <CabecalhoPagina
-        titulo="Visões"
+        titulo="Views"
         descricao={
           conexao
-            ? 'As visões comuns e materializadas do banco, com o que cada uma lê e quem as consulta.'
+            ? 'As views comuns e materializadas do banco, com o que cada uma lê e quem as consulta.'
             : descreverSemConexao(situacao)
         }
       />
       {conexao ? (
-        <ListaConectada key={conexao.id} simulada={conexao.simulada} filtros={filtros} mudarFiltros={mudarFiltros} />
+        <ListaConectada key={conexao.id} filtros={filtros} mudarFiltros={mudarFiltros} />
       ) : (
         <PainelSemConexao />
       )}
@@ -101,12 +103,11 @@ export default function PaginaVisoes() {
 }
 
 interface ListaConectadaProps {
-  simulada: boolean;
   filtros: FiltrosVisoes;
   mudarFiltros: (mudanca: Partial<FiltrosVisoes>) => void;
 }
 
-function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps) {
+function ListaConectada({ filtros, mudarFiltros }: ListaConectadaProps) {
   const { marcarDesconectada } = useConexao();
   const irParaOHistorico = useVerHistorico();
   const irParaOPlano = useVerPlano();
@@ -180,6 +181,11 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
     if (visao) abrir(visao);
   };
 
+  const abrirPelaFigura = (visao: VisaoDTO) => {
+    setAbertaPeloPainel(true);
+    abrir(visao);
+  };
+
   const abrirPelaTabela = (visao: VisaoDTO) => {
     setAbertaPeloPainel(false);
     abrir(visao);
@@ -231,39 +237,49 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
 
   return (
     <div className={estilos.blocos}>
-      {simulada ? (
-        <Nota tom="aviso" icone={FlaskConical} titulo="Dados demonstrativos.">
-          As visões e os números desta tela são fictícios e não vêm do seu banco. Eles dão lugar aos dados reais quando o Orynt
-          estiver ligado à API.
-        </Nota>
-      ) : null}
-
       {lista.dados === null && lista.carregando ? (
-        <EsqueletoPontosDeAtencao descricao={DESCRICAO_DOS_PONTOS} linhasPorFrase={LINHAS_POR_FRASE_EM_ESPERA} />
+        <Panorama
+          figura={<EsqueletoUsoDasVisoes />}
+          pontos={
+            <EsqueletoPontosDeAtencao
+              descricao={DESCRICAO_DOS_PONTOS}
+              linhasPorFrase={LINHAS_POR_FRASE_EM_ESPERA}
+              variante="lateral"
+            />
+          }
+        />
       ) : null}
-      {lista.dados !== null && pontos.length > 0 ? (
-        <PontosDeAtencao
-          descricao={DESCRICAO_DOS_PONTOS}
-          itens={pontos.map(
-            (ponto): ItemDeAtencao => ({
-              chave: ponto.alvo.tipo === 'VISAO' ? ponto.alvo.id : `${ponto.tipo}-${ponto.alvo.situacao}`,
-              tom: ponto.tom,
-              icone: iconesDosPontos[ponto.tipo],
-              objeto: ponto.visao,
-              titulo: ponto.titulo,
-              texto: ponto.texto,
-              acao: ponto.alvo.tipo === 'FILTRO' ? 'Ver na lista' : 'Abrir',
-              rotuloDaAcao: rotuloDaAcaoDoPonto(ponto),
-              aoSeguir: () => seguirPonto(ponto.alvo),
-            }),
-          )}
+      {lista.dados !== null && visoes.length > 0 ? (
+        <Panorama
+          figura={<UsoDasVisoes visoes={visoes} contexto={contexto} aoAbrir={abrirPelaFigura} />}
+          pontos={
+            pontos.length > 0 ? (
+              <PontosDeAtencao
+                descricao={DESCRICAO_DOS_PONTOS}
+                variante="lateral"
+                itens={pontos.map(
+                  (ponto): ItemDeAtencao => ({
+                    chave: ponto.alvo.tipo === 'VISAO' ? ponto.alvo.id : `${ponto.tipo}-${ponto.alvo.situacao}`,
+                    tom: ponto.tom,
+                    icone: iconesDosPontos[ponto.tipo],
+                    objeto: ponto.visao,
+                    titulo: ponto.titulo,
+                    texto: ponto.texto,
+                    acao: ponto.alvo.tipo === 'FILTRO' ? 'Ver na lista' : 'Abrir',
+                    rotuloDaAcao: rotuloDaAcaoDoPonto(ponto),
+                    aoSeguir: () => seguirPonto(ponto.alvo),
+                  }),
+                )}
+              />
+            ) : null
+          }
         />
       ) : null}
 
       <Painel espacamento="nenhum" aria-labelledby="titulo-lista-visoes" aria-busy={lista.carregando}>
         <div className={estilos.topo} ref={topo}>
           <h2 className="visualmente-oculto" id="titulo-lista-visoes">
-            Lista de visões
+            Lista de views
           </h2>
           <BarraFiltrosVisoes
             busca={busca}
@@ -276,7 +292,7 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
           <ResumoDaLista
             contagem={lista.dados ? resumirVisoes(visoes.length, filtradas.length, filtros) : ''}
             emEspera={lista.dados === null && lista.carregando}
-            rotuloDosAtalhos="Visões que pedem atenção"
+            rotuloDosAtalhos="Views que pedem atenção"
             atalhos={atalhosDeAtencao(visoes, contexto, filtros.situacao, (situacao) =>
               mudarFiltros({ situacao: filtros.situacao === situacao ? null : situacao }),
             )}
@@ -289,20 +305,20 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
           <ConteudoAssincrono
             resultado={lista}
             esqueleto={<EsqueletoVisoes linhas={LINHAS_DO_ESQUELETO} {...ordenacaoDaTabela} />}
-            tituloErro="Não foi possível carregar as visões"
+            tituloErro="Não foi possível carregar as views"
           >
             {() =>
               visoes.length === 0 ? (
                 <EstadoVazio
                   icone={ScanEye}
-                  titulo="O banco não tem visões"
-                  descricao="As visões comuns e materializadas aparecem aqui assim que o banco tiver ao menos uma fora dos esquemas do sistema."
+                  titulo="O banco não tem views"
+                  descricao="As views comuns e materializadas aparecem aqui assim que o banco tiver ao menos uma fora dos esquemas do sistema."
                 />
               ) : filtradas.length === 0 ? (
                 <EstadoVazio
                   icone={SearchX}
-                  titulo="Nenhuma visão encontrada"
-                  descricao={`Nenhuma das ${formatarNumero(visoes.length)} visões corresponde aos filtros (${descreverFiltrosVisoes(filtros).join(', ')}).`}
+                  titulo="Nenhuma view encontrada"
+                  descricao={`Nenhuma das ${formatarNumero(visoes.length)} views corresponde aos filtros (${descreverFiltrosVisoes(filtros).join(', ')}).`}
                   acao={
                     <Botao variante="secundario" onClick={limparFiltros}>
                       Limpar filtros
@@ -321,7 +337,7 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
                   />
                   {paginaAtual.totalPaginas > 1 ? (
                     <Paginacao
-                      rotulo="Páginas da lista de visões"
+                      rotulo="Páginas da lista de views"
                       resumo={`${formatarNumero(paginaAtual.primeiro)} a ${formatarNumero(paginaAtual.ultimo)} de ${formatarNumero(filtradas.length)}`}
                       pagina={paginaAtual.pagina}
                       totalPaginas={paginaAtual.totalPaginas}
@@ -340,7 +356,6 @@ function ListaConectada({ simulada, filtros, mudarFiltros }: ListaConectadaProps
         visao={aberta}
         contexto={contexto}
         conhecidas={conhecidas}
-        simulada={simulada}
         posicao={indiceAberta >= 0 ? indiceAberta + 1 : null}
         total={filtradas.length}
         aoPercorrer={percorrer}

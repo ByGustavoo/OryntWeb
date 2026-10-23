@@ -19,8 +19,8 @@ export interface VinculosDoPapel {
 
 const plural = {
   TABELA: ['tabela', 'tabelas'],
-  VISAO: ['visão', 'visões'],
-  VISAO_MATERIALIZADA: ['visão materializada', 'visões materializadas'],
+  VISAO: ['view', 'views'],
+  VISAO_MATERIALIZADA: ['view materializada', 'views materializadas'],
   FUNCAO: ['função', 'funções'],
   PROCEDIMENTO: ['procedimento', 'procedimentos'],
 } as const;

@@ -11,6 +11,8 @@ export type { OpcaoSelecao } from './CampoSelecao';
 export { CampoSenha } from './CampoSenha';
 export { CampoTexto } from './CampoTexto';
 export { ConteudoAssincrono } from './ConteudoAssincrono';
+export { Dica } from './Dica';
+export type { DicaProps, LadoDaDica } from './Dica';
 export { DialogoConfirmacao } from './DialogoConfirmacao';
 export { Esqueleto, EsqueletoCartao, EsqueletoLista } from './Esqueleto';
 export { EstadoErro } from './EstadoErro';
