@@ -1,0 +1,153 @@
+.terminal {
+  container: terminal-psql / inline-size;
+  width: 100%;
+  overflow: hidden;
+  background-color: var(--fundo);
+  border: 1px solid var(--borda-forte);
+  border-radius: var(--raio-md);
+  box-shadow: var(--sombra-cartao);
+  animation: surgirTerminal var(--duracao-expressiva) var(--curva-saida) 120ms backwards;
+}
+
+.barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-3);
+  padding: var(--espaco-2) var(--espaco-4);
+  border-bottom: 1px solid var(--borda);
+  background-color: var(--superficie);
+}
+
+.titulo {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+}
+
+.codigoDaResposta {
+  padding: 1px var(--espaco-2);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-pilula);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+}
+
+.tomDestaque {
+  color: var(--destaque);
+}
+
+.tomErro {
+  color: var(--erro);
+}
+
+.saida {
+  display: flex;
+  flex-direction: column;
+  padding: var(--espaco-4) var(--espaco-4) var(--espaco-5);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  line-height: 1.65;
+  text-align: left;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.saida p {
+  margin: 0;
+}
+
+.saida .espacoAntes {
+  margin-top: var(--espaco-2);
+}
+
+.prompt {
+  color: var(--texto-terciario);
+}
+
+.palavra {
+  color: var(--destaque);
+}
+
+.literal {
+  color: var(--sucesso);
+}
+
+.forte {
+  color: var(--texto);
+}
+
+.apagado {
+  color: var(--texto-terciario);
+}
+
+.aviso {
+  color: var(--aviso);
+  font-weight: var(--peso-medio);
+}
+
+.erro {
+  color: var(--erro);
+  font-weight: var(--peso-medio);
+}
+
+.pendente,
+.oculta {
+  visibility: hidden;
+}
+
+.surgiu {
+  animation: surgir var(--duracao-base) var(--curva-saida);
+}
+
+.cursor {
+  position: relative;
+  display: inline-block;
+  width: 0;
+  height: 1lh;
+  vertical-align: top;
+}
+
+.cursor::after {
+  content: '';
+  position: absolute;
+  top: 0.2lh;
+  left: 0;
+  width: 0.6em;
+  height: 0.6lh;
+  border-radius: 1px;
+  background-color: var(--destaque);
+}
+
+.piscando::after {
+  animation: piscar 1.06s steps(1, end) infinite;
+}
+
+@keyframes surgirTerminal {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+}
+
+@keyframes surgir {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes piscar {
+  50% {
+    opacity: 0;
+  }
+}
+
+@container terminal-psql (max-width: 520px) {
+  .barra {
+    padding-inline: var(--espaco-3);
+  }
+
+  .saida {
+    padding: var(--espaco-3) var(--espaco-3) var(--espaco-4);
+    font-size: var(--tamanho-xs);
+  }
+}

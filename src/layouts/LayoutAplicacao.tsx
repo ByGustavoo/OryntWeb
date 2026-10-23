@@ -3,8 +3,9 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { LimiteDeErro } from '@/componentes/comum/LimiteDeErro';
 import { Cabecalho } from '@/componentes/layout/Cabecalho';
 import { FalhaNaTela } from '@/componentes/layout/FalhaNaTela';
-import { GuardaDaTela, deveDesviarDaTela } from '@/componentes/layout/GuardaDaTela';
+import { GuardaDaTela, deveDesviarDaTela, telaNegada } from '@/componentes/layout/GuardaDaTela';
 import { MenuLateral } from '@/componentes/layout/MenuLateral';
+import { SemAcessoNaTela } from '@/componentes/layout/SemAcessoNaTela';
 import { EsqueletoLista } from '@/componentes/ui';
 import { CHAVE_MENU_RECOLHIDO, ID_CONTEUDO_PRINCIPAL } from '@/configuracoes/aplicacao';
 import { useArmazenamentoLocal } from '@/ganchos/useArmazenamentoLocal';
@@ -44,6 +45,9 @@ export function LayoutAplicacao() {
   }, [emGaveta]);
 
   useTravarRolagem(gavetaAberta && emGaveta);
+
+  const negada = telaNegada(usuario, localizacao.pathname);
+  if (negada) return <SemAcessoNaTela key={negada.caminho} tela={negada} />;
 
   return (
     <ProvedorNovaConexao>

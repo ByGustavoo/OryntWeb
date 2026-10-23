@@ -5,7 +5,7 @@
 <br>
 
 <div align="center">
-  <strong>Orynt</strong> é o frontend de uma aplicação para monitorar, analisar e administrar bancos PostgreSQL, que guia quem desenvolve até a origem de um problema: <em>toda lentidão tem uma origem</em>. Nesta primeira fase ele entrega a tela de login, o cadastro e a troca de conexões, a estrutura da aplicação e um dashboard inicial. O backend ainda não existe: o login, a conexão e os dados são simulados, e a interface avisa isso em todas as telas.
+  <strong>Orynt</strong> é o frontend de uma aplicação para monitorar, analisar e administrar bancos PostgreSQL, que guia quem desenvolve até a origem de um problema: <em>toda lentidão tem uma origem</em>. Ele reúne o dashboard, os relatórios, as consultas SQL com histórico e planos de execução, os objetos do banco, os papéis, as sessões e as permissões, e a administração das contas que usam o Orynt. O backend ainda não existe: o login, a conexão e os dados são simulados, e só os arquivos exportados e os textos copiados levam a marca de dados demonstrativos.
 </div>
 
 <br> <br>
@@ -46,11 +46,13 @@ consulta que explica.
 
 * **Relatórios (concluído):** as telas Resumo, Exportação e Comparação estão prontas, com dados demonstrativos.
 
-* **Consultas SQL:** as telas Todas, Histórico e Planos de execução estão prontas, com dados demonstrativos.
+* **Consultas SQL (concluído):** as telas Todas, Histórico e Planos de execução estão prontas, com dados demonstrativos.
 
 * **Objetos do banco (concluído):** as telas Views, Índices, Tabelas e Funções estão prontas, com dados demonstrativos.
 
 * **Usuários e permissões (concluído):** as telas Papéis, Sessões, Alterações e Permissões estão prontas, com dados demonstrativos. Papéis e Permissões criam, alteram e excluem papéis e concedem e revogam acesso, sempre depois de uma revisão.
+
+* **Administração (concluído):** as telas Usuários e Auditoria estão prontas: contas do Orynt com perfil e permissões, convite, bloqueio de login e o registro do que cada conta acessou e fez.
 
 * **Pendente:** a API (OryntAPI). O contrato que ela precisa cumprir está em [`docs/api-contrato.md`](docs/api-contrato.md).
 
@@ -90,9 +92,17 @@ consulta que explica.
 
 * Menu lateral recolhível, organizado em grupos com itens que abrem as suas telas, e que vira gaveta em telas menores
 
-* Menu da conta no cabeçalho, com a conexão em uso, o selo de demonstração, a troca entre conexões salvas e o botão "Sair"
+* Menu da conta no cabeçalho, com a conexão em uso, a troca entre conexões salvas e o botão "Sair"
 
 * Tema escuro, claro ou automático
+
+* Dicas legíveis nos dois temas, abertas pelo mouse, pelo teclado ou pelo toque, que não cobrem a linha que está sendo lida
+
+* Quando uma tela quebra ou uma parte do Orynt não chega ao navegador, uma tela de erro com "Recarregar a página" no lugar da página em branco, com o menu e o cabeçalho funcionando
+
+* Páginas de erro 404, 403 e de falha geral no mesmo visual: um terminal psql que digita a consulta pelo endereço e mostra a resposta do banco (0 linhas, permissão negada ou conexão perdida), sobre um fundo animado com grade, brilhos e pulsos de luz
+
+* A página 404 sugere a tela mais parecida com o endereço digitado, entre as que a conta pode abrir, tolerando erros de digitação, acentos e o grupo que faltou (`/tabelas` leva a Objetos do banco › Tabelas)
 
 * Versão e data de lançamento do Orynt Web e da Orynt API em Configurações
 
@@ -204,17 +214,17 @@ consulta que explica.
 
 🔹 **Objetos do banco › Views**
 
-* Inventário das visões comuns e materializadas de cada esquema, com busca pelo nome ou pela descrição e filtros de tipo, esquema e situação
+* Inventário das views comuns e materializadas de cada esquema, com busca pelo nome ou pela descrição e filtros de tipo, esquema e situação
 
-* Leituras nos últimos 30 dias, tamanho e última atualização de cada visão, com ordenação pelas colunas e 15 visões por página
+* Leituras nos últimos 30 dias, tamanho e última atualização de cada view, com ordenação pelas colunas e 15 views por página
 
-* Materializadas desatualizadas (mais de 24 horas sem atualizar) e sem dados marcadas na lista, e visões que nenhuma consulta leu em 30 dias em destaque, com atalhos que filtram cada caso
+* Materializadas desatualizadas (mais de 24 horas sem atualizar) e sem dados marcadas na lista, e views que nenhuma consulta leu em 30 dias em destaque, com atalhos que filtram cada caso
 
-* Panorama "Frescor e leitura": há quanto tempo cada materializada foi atualizada, contra o limite de 24 horas, e as leituras de cada visão em 30 dias
+* Panorama "Frescor e leitura": há quanto tempo cada materializada foi atualizada, contra o limite de 24 horas, e as leituras de cada view em 30 dias
 
-* Pontos de atenção ao lado do panorama, do mais urgente ao menos urgente, cada um com o atalho para a visão ou para a lista filtrada
+* Pontos de atenção ao lado do panorama, do mais urgente ao menos urgente, cada um com o atalho para a view ou para a lista filtrada
 
-* Detalhe de cada visão: definição com cópia, colunas, do que ela depende e quem depende dela, e as consultas que a leem, com atalhos para o Histórico e o plano de execução
+* Detalhe de cada view: definição com cópia, colunas, do que ela depende e quem depende dela, e as consultas que a leem, com atalhos para o Histórico e o plano de execução
 
 * Nas materializadas, o tamanho, as linhas e o comando REFRESH que as atualiza, com quantas vezes rodou e quanto tempo levou
 
@@ -250,11 +260,11 @@ consulta que explica.
 
 * Pontos de atenção ao lado do panorama, do mais urgente ao menos urgente, cada um com o atalho para a tabela ou para a lista filtrada
 
-* Detalhe de cada tabela: o comando de manutenção e os índices sugeridos pelos planos, prontos para copiar; o crescimento em 30 dias com um gráfico diário; o espaço em dados, índices e TOAST; as linhas vivas e mortas, a idade das transações e as datas de VACUUM e ANALYZE; os ajustes de autovacuum da tabela, com o valor do servidor; as partições, as colunas, os índices, as visões que dependem dela e as consultas cujo plano a lê
+* Detalhe de cada tabela: o comando de manutenção e os índices sugeridos pelos planos, prontos para copiar; o crescimento em 30 dias com um gráfico diário; o espaço em dados, índices e TOAST; as linhas vivas e mortas, a idade das transações e as datas de VACUUM e ANALYZE; os ajustes de autovacuum da tabela, com o valor do servidor; as partições, as colunas, os índices, as views que dependem dela e as consultas cujo plano a lê
 
 * Com um filtro de situação, os comandos de todas as tabelas da lista copiados de uma vez, um por linha
 
-* Caminhos entre as telas: os índices da tabela abrem Índices, as visões abrem Views, os gatilhos abrem a função deles em Funções, e a tabela de um índice ou de uma visão abre o detalhe dela em Tabelas
+* Caminhos entre as telas: os índices da tabela abrem Índices, as views abrem Views, os gatilhos abrem a função deles em Funções, e a tabela de um índice ou de uma view abre o detalhe dela em Tabelas
 
 🔹 **Objetos do banco › Funções**
 
@@ -262,13 +272,13 @@ consulta que explica.
 
 * Chamadas, tempo total e tempo por chamada dos últimos 30 dias, com ordenação pelas colunas e 15 funções por página; cada sobrecarga numa linha, com os argumentos ao lado do nome
 
-* Funções que rodam com os privilégios do dono sem fixar o search_path, funções pesadas (100 ms ou mais por chamada) e funções sem chamadas em 30 dias em destaque, com atalhos que filtram cada caso; uma função de que dependem um gatilho ativo, um índice ou uma visão nunca entra como sem chamadas
+* Funções que rodam com os privilégios do dono sem fixar o search_path, funções pesadas (100 ms ou mais por chamada) e funções sem chamadas em 30 dias em destaque, com atalhos que filtram cada caso; uma função de que dependem um gatilho ativo, um índice ou uma view nunca entra como sem chamadas
 
 * Panorama "Onde vai o tempo das funções": as funções que mais gastaram tempo em 30 dias, separando o tempo delas do tempo nas funções que chamam
 
 * Pontos de atenção ao lado do panorama, do mais urgente ao menos urgente, cada um com o atalho para a função ou para a lista filtrada
 
-* Detalhe de cada função: o comando que fixa o caminho de busca ou remove a função, pronto para copiar; o uso, com a parte do tempo gasta dentro da própria função; os parâmetros, o retorno e a volatilidade explicados; o código com cópia; os gatilhos que a chamam, com atalho para a tabela; as consultas que a citam, com atalhos para o plano e o Histórico; e os índices e as visões que dependem dela
+* Detalhe de cada função: o comando que fixa o caminho de busca ou remove a função, pronto para copiar; o uso, com a parte do tempo gasta dentro da própria função; os parâmetros, o retorno e a volatilidade explicados; o código com cópia; os gatilhos que a chamam, com atalho para a tabela; as consultas que a citam, com atalhos para o plano e o Histórico; e os índices e as views que dependem dela
 
 * Com um filtro de situação, os comandos de todas as funções da lista copiados de uma vez, um por linha
 
@@ -282,9 +292,9 @@ consulta que explica.
 
 * Superusuários com login além do criado na instalação, senhas vencidas ou que vencem em até 7 dias, senhas em MD5, usuários com 80% ou mais do limite de conexões, usuários sem nenhuma sessão em 30 dias e grupos vazios em destaque, com atalhos que filtram cada caso
 
-* Mapa "Quem pertence a quem": cada grupo com os membros, os usuários fora de grupo, os superusuários e as sessões abertas agora
+* Pontos de atenção numa faixa recolhida no alto, com os três mais urgentes e o atalho para o papel ou para a lista filtrada
 
-* Pontos de atenção ao lado do mapa, do mais urgente ao menos urgente, cada um com o atalho para o papel ou para a lista filtrada
+* Mapa "Quem pertence a quem" na largura toda: uma linha por grupo com os membros, os usuários sem grupo, os superusuários, as participações sem herança e as sessões abertas agora, com busca, o filtro "Com sessão aberta" e os grupos maiores primeiro quando há muitos
 
 * Detalhe de cada papel: o comando que resolve cada ponto, pronto para copiar e sem nenhuma senha no texto; o acesso; os atributos explicados, incluindo os que ele só ganha com SET ROLE num grupo; de quem ele é membro e quem é membro dele; as configurações próprias, com aviso quando um usuário comum não tem `statement_timeout`; e os objetos de que é dono, com atalho para Tabelas, Views e Funções
 
@@ -292,7 +302,7 @@ consulta que explica.
 
 * Com um filtro de situação, os comandos de todos os papéis da lista copiados de uma vez, um por linha
 
-* O dono no detalhe de uma tabela, de uma visão ou de uma função abre o papel em Papéis
+* O dono no detalhe de uma tabela, de uma view ou de uma função abre o papel em Papéis
 
 * O detalhe de um usuário com sessões abertas leva às sessões dele em Sessões
 
@@ -318,11 +328,11 @@ consulta que explica.
 
 🔹 **Usuários e permissões › Permissões**
 
-* O que cada papel pode fazer em cada objeto do banco: o banco, os esquemas, as tabelas, as visões, as sequências e as funções, com o acesso efetivo e a origem de cada privilégio (direto, por um grupo, por PUBLIC, por ser dono ou superusuário)
+* O que cada papel pode fazer em cada objeto do banco: o banco, os esquemas, as tabelas, as views, as sequências e as funções, com o acesso efetivo e a origem de cada privilégio (direto, por um grupo, por PUBLIC, por ser dono ou superusuário)
 
 * Três modos: tudo o que um papel alcança, todos que alcançam um objeto e dois papéis lado a lado, só com as diferenças, começando no papel mais parecido
 
-* Funções `SECURITY DEFINER` que qualquer papel executa, esquemas em que qualquer papel cria objetos, escrita num grupo de leitura, `WITH GRANT OPTION` dado a um usuário, privilégio sem `USAGE` no esquema, `USAGE` sem nenhum objeto e esquema sem privilégio padrão para o grupo que o lê, com atalhos que filtram cada caso e pontos de atenção ao lado das cadeias de bloqueio
+* Funções `SECURITY DEFINER` que qualquer papel executa, esquemas em que qualquer papel cria objetos, escrita num grupo de leitura, `WITH GRANT OPTION` dado a um usuário, privilégio sem `USAGE` no esquema, `USAGE` sem nenhum objeto e esquema sem privilégio padrão para o grupo que o lê, com atalhos que filtram cada caso e os pontos de atenção numa faixa recolhida no alto
 
 * Detalhe de cada acesso: o comando que resolve cada ponto, cada privilégio com o efeito e todas as origens, como tirar o acesso ou, sem acesso, o `GRANT` mínimo, e atalhos para o objeto, o papel e a comparação
 
@@ -330,7 +340,7 @@ consulta que explica.
 
 * Com um filtro de situação, os comandos de todas as linhas copiados de uma vez, um por linha
 
-* O detalhe de uma tabela, de uma visão ou de uma função mostra quem a acessa e leva a Permissões
+* O detalhe de uma tabela, de uma view ou de uma função mostra quem a acessa e leva a Permissões
 
 🔹 **Usuários e permissões › administração**
 
@@ -368,7 +378,7 @@ consulta que explica.
 
 * Proteções: ninguém desativa, exclui ou tira a gestão de usuários de si mesmo, o último administrador ativo fica protegido e só se concede o que a própria conta tem
 
-* Cada tela e cada rota pedem a sua permissão: sem ela, a tela some do menu, o endereço digitado mostra "Sem acesso" e a chamada direta à API recebe `403`
+* Cada tela e cada rota pedem a sua permissão: sem ela, a tela some do menu, o endereço digitado mostra a página 403 "Sem acesso a esta tela" (sem dizer qual permissão falta) e registra a tentativa na auditoria, e a chamada direta à API recebe `403`
 
 * O login bloqueia por 15 minutos depois de 5 senhas erradas seguidas, e o administrador pode desbloquear
 
@@ -467,6 +477,12 @@ oryntSimulacao.latencia(8000)
 // Com '/relatorios', o resumo, a exportação e a comparação mostram o estado de erro
 oryntSimulacao.falhar('/relatorios')
 
+// Com '/consultas', as telas Todas, Histórico e Planos de execução mostram o estado de erro
+oryntSimulacao.falhar('/consultas')
+
+// Com '/sistema', o cartão da versão da API em Configurações mostra o estado de erro
+oryntSimulacao.falhar('/sistema')
+
 // Com '/objetos' ou '/usuarios', as telas de Objetos do banco ou as de Papéis, Sessões, Permissões e Alterações mostram o estado de erro
 oryntSimulacao.falhar('/usuarios')
 
@@ -552,8 +568,9 @@ Página → Serviço → Cliente HTTP → Transporte simulado  (VITE_FONTE_DADOS
 ```
 
 Quando a API existir, trocar a origem dos dados é mudar as duas variáveis acima. Com
-`VITE_FONTE_DADOS=api`, o simulador nem entra no pacote. O selo de demonstração e os avisos de dados
-fictícios dependem do campo `simulada` da conexão, e somem quando a API responder `false`.
+`VITE_FONTE_DADOS=api`, o simulador nem entra no pacote. As marcas de dados demonstrativos dos
+arquivos exportados e dos textos copiados dependem do campo `simulada` da conexão, e somem quando a API
+responder `false`.
 
 <br>
 
@@ -581,29 +598,32 @@ fictícios dependem do campo `simulada` da conexão, e somem quando a API respon
 src
 ├── api             # Cliente HTTP, rotas da API, erros e transporte fetch
 ├── componentes
-│   ├── comum       # Marca e tela de verificação
-│   ├── conexao     # Modal e formulário, URL de conexão, conexões salvas e alerta
+│   ├── administracao # Lista, detalhe, editor de permissões e perfis das contas; linha do tempo e detalhe da auditoria
+│   ├── comum         # Marca, SQL com cópia, linha do tempo por dia, terminal psql, páginas 404, 403 e de erro e tela de verificação
+│   ├── conexao       # Modal e formulário, URL de conexão, conexões salvas e alerta
 │   ├── configuracoes # Seções de conexão em uso, de conexões salvas, de aparência e de versões
-│   ├── consultas   # Filtros, tabela e modal da lista de consultas; seletor, gráficos e tabela do histórico
-│   ├── dashboard   # Indicadores, gráfico de atividade e tabela de consultas
-│   ├── layout      # Menu lateral, cabeçalho e menu da conta
-│   ├── login       # Formulário de acesso e painel animado de monitoramento
-│   ├── recuperacao # Etapas da recuperação de senha, medidor de força e cartão de demonstração
-│   ├── relatorios  # Barra de período, blocos do resumo, da exportação e da comparação
-│   └── ui          # Design system
-├── configuracoes   # Ambiente, nome da aplicação e navegação
+│   ├── consultas     # Lista de consultas, histórico de uma consulta e planos de execução
+│   ├── dashboard     # Indicadores, gráfico de atividade e tabela de consultas
+│   ├── layout        # Menu lateral, cabeçalho, menu da conta, erro dentro da tela e a página "Sem acesso"
+│   ├── login         # Formulário de acesso e painel animado de monitoramento
+│   ├── objetos       # Views, Índices, Tabelas e Funções: panoramas, pontos de atenção, tabelas e detalhes
+│   ├── recuperacao   # Etapas da recuperação de senha, medidor de força e cartão de demonstração
+│   ├── relatorios    # Barra de período, blocos do resumo, da exportação e da comparação
+│   ├── ui            # Design system
+│   └── usuarios      # Papéis, Sessões e Permissões, e o formulário, a revisão e o histórico das alterações
+├── configuracoes     # Ambiente, nome da aplicação e navegação
 ├── dados
-│   └── simulacao   # Simulador da API e dados demonstrativos
-├── estilos         # Tokens, temas e estilos globais
-├── ganchos         # Fluxos de acesso, de recuperação de senha e de conexão, cena do login e dados assíncronos
-├── layouts         # Estrutura com menu, cabeçalho e conteúdo, e a do login e da recuperação de senha
-├── modelos         # DTOs, enums e rótulos
-├── paginas         # Uma página por rota
-├── provedores      # Tema, notificações, autenticação, conexões e modal de nova conexão
-├── regras          # Validação, URL de conexão, conexões salvas, leitura de falhas e períodos, destaques e exportação dos relatórios, com testes
-├── rotas           # Caminhos, tabela de rotas e guardas de acesso e de conexão
-├── servicos        # Serviços de autenticação, de conexão, de dashboard e de relatórios
-└── utilitarios     # Formatação, SQL, gráficos, área de transferência, download e foco
+│   └── simulacao     # Simulador da API e dados demonstrativos
+├── estilos           # Tokens, temas e estilos globais
+├── ganchos           # Fluxos de acesso, de recuperação e de conexão, filtros guardados no histórico, navegação entre telas e permissões
+├── layouts           # Estrutura com menu, cabeçalho e conteúdo, e a do login e da recuperação de senha
+├── modelos           # DTOs, enums e rótulos
+├── paginas           # Uma página por rota
+├── provedores        # Tema, notificações, autenticação, conexões, modal de nova conexão e alterações no banco
+├── regras            # Regras puras de cada tela, com testes: filtros, situações, pontos de atenção, comandos SQL e exportações
+├── rotas             # Caminhos, tabela de rotas e guardas de acesso e de conexão
+├── servicos          # Serviços de cada área, sobre o cliente HTTP
+└── utilitarios       # Formatação, SQL, gráficos, SCRAM, gerador de senha, área de transferência e download
 ```
 
 <br>
@@ -619,7 +639,7 @@ src
 
 ## ⚠️ Limitações
 
-* Nenhum banco real é acessado: a conexão é simulada e os números do dashboard e do resumo são fictícios.
+* Nenhum banco real é acessado: a conexão é simulada e os números de todas as telas são fictícios. As alterações de papéis e permissões ficam só no simulador, no `localStorage` deste navegador.
 
 * As contas, as senhas (só o hash) e a auditoria ficam no simulador, no `localStorage` deste navegador. A autorização é verificada pelo simulador em cada requisição, como a API vai fazer, mas sem um servidor qualquer pessoa com acesso ao navegador consegue editar esses dados pelas ferramentas de desenvolvedor. O contrato das rotas está em [`docs/api-contrato.md`](docs/api-contrato.md), seções 13 e 14.
 

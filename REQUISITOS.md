@@ -1001,6 +1001,29 @@ Pedida pelo usuário no mesmo dia, porque as dicas ainda cobriam informação e 
   saíram do mapa: estão nos pontos de atenção e na lista logo abaixo. Uma legenda no rodapé explica a borda
   tracejada quando existe uma participação sem herança. Abaixo de 640px do card o grupo fica acima das fichas.
 
+## Páginas de erro (23 de outubro de 2026)
+
+Pedido pelo usuário: as páginas 404, 403 e de falha geral seguem o modelo das 404 de PrismaWeb e OrbitWeb, com
+elementos de banco de dados. Duas versões da 404 foram recusadas (uma busca num índice B-tree e um painel de
+pontos), e a escolhida, entre quatro propostas, foi o terminal psql.
+
+* **Um visual para as três:** marca e slogan no topo, cartão com um terminal psql que digita um comando e mostra a
+  resposta, sobretítulo com o código ("Erro 404", "Erro 403", "Erro inesperado"), título, descrição e ações. O
+  fundo da página tem uma grade de pontos, dois brilhos azuis que se deslocam devagar e pulsos de luz que correm
+  pela grade; no celular os pulsos somem. Com movimento reduzido, o terminal já aparece completo e o fundo fica
+  parado.
+* **404:** o terminal procura o endereço na tabela de telas, devolve `(0 linhas)` e, quando há uma tela parecida
+  com o endereço entre as que a conta pode abrir, mostra "DICA: você quis dizer …?", e o botão principal abre essa
+  tela. A semelhança tolera erros de digitação, acentos, maiúsculas, barras a mais e o grupo que faltou. Sem
+  login não há sugestão e a ação é ir para a tela de login.
+* **403:** a página "Sem acesso a esta tela" ocupa a página inteira, como a 404, no lugar do menu e do
+  cabeçalho. O terminal tenta ler a tabela da área da tela e recebe "permissão negada". A mensagem não diz qual
+  permissão falta: diz a tela, que quem administra o Orynt pode liberar o acesso e que a tentativa ficou
+  registrada na auditoria, o que continua valendo. Continua valendo também que a tela some do menu.
+* **Falha geral:** quando o Orynt quebra fora de uma tela, o terminal mostra `FATAL` e a conexão perdida, ou
+  `ERRO` e a explicação da versão nova ou da rede quando uma parte do Orynt não chegou; a ação é "Recarregar a
+  página". A falha de uma tela só continua dentro do shell, com o menu funcionando.
+
 ## Fora desta fase
 
 Backend, coleta de métricas reais, modo SSL, Docker, CI e vídeo de apresentação.
