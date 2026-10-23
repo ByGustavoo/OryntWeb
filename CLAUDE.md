@@ -24,7 +24,7 @@ o design system (`src/componentes/ui/`), a camada HTTP e o layout.
 ## Notas detalhadas
 Este arquivo guarda só o que vale para o projeto inteiro. As decisões, medidas e armadilhas de cada área ficam em
 `docs/notas/`, movidas para lá sem alteração em 23 de outubro de 2026, quando este arquivo passou de 160 mil
-caracteres. **Leia o arquivo da área antes de mexer nela** e registre ali as armadilhas novas daquela área, não
+caracteres, e traduzidas para o português no mesmo dia. **Leia o arquivo da área antes de mexer nela** e registre ali as armadilhas novas daquela área, não
 aqui:
 
 | Arquivo | Cobre |
@@ -52,8 +52,10 @@ aqui:
 | `src/componentes/` | `ui/` (design system), `layout/`, `comum/` e uma pasta por área (`login/`, `recuperacao/`, `conexao/`, `dashboard/`, `relatorios/`, `consultas/`, `objetos/`, `usuarios/`, `administracao/`, `configuracoes/`); `usuarios/` e `administracao/` reaproveitam o CSS de `objetos/` |
 | `src/layouts/` | `LayoutAplicacao` (o shell) e `LayoutAcesso` (em volta de `/login`, `/recuperar-senha` e `/ativar-conta`) |
 | `src/paginas/` | Uma página por rota; as telas planejadas compartilham `PaginaFuncionalidadePlanejada` |
+| `src/rotas/` | `caminhos` (todos os caminhos das telas), `RotasAplicacao` (a tabela de rotas) e as guardas `RotaVisitante`, `RotaAutenticada` e `RotaProtegida` |
 | `src/configuracoes/` | `ambiente` (único leitor do env e de `window.__ORYNT_CONFIG__`), `aplicacao`, `navegacao` (grupos, itens e telas do menu) |
 | `src/estilos/` | `tokens.css` (escala), `temas.css` (cores por tema), `global.css` |
+| `src/utilitarios/` | Formatação em pt-BR, realce de SQL, gráficos e traçados, SCRAM, gerador de senha, área de transferência, download, foco, título da aba e a transição de entrada e saída do shell |
 
 Arquivo por arquivo: `docs/notas/estrutura.md`.
 
