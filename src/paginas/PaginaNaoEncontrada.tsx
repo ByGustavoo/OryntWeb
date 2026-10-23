@@ -1,44 +1,146 @@
-import { Link, useLocation } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
-import { MarcaOrynt } from '@/componentes/comum/MarcaOrynt';
-import { NomeOrynt } from '@/componentes/comum/NomeOrynt';
-import { ID_CONTEUDO_PRINCIPAL } from '@/configuracoes/aplicacao';
+import { useMemo } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { ArrowLeft, ArrowRight, LayoutDashboard, LogIn } from 'lucide-react';
+import { TelaDeErroHttp } from '@/componentes/comum/TelaDeErroHttp';
+import { TerminalPsql } from '@/componentes/comum/TerminalPsql';
+import type { LinhaDoTerminal } from '@/componentes/comum/TerminalPsql';
+import { Botao } from '@/componentes/ui';
+import { NOME_APLICACAO } from '@/configuracoes/aplicacao';
 import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
 import { useAutenticacao } from '@/provedores/ProvedorAutenticacao';
+import { telasPermitidas } from '@/regras/permissoesConta';
+import { sugerirTela } from '@/regras/sugestaoDeTela';
 import { caminhos } from '@/rotas/caminhos';
-import estilos from './PaginaNaoEncontrada.module.css';
+import { juntarClasses } from '@/utilitarios/juntarClasses';
+import estilos from '@/componentes/comum/MolduraDeErro.module.css';
+
+const ESPERA_DA_EXECUCAO_MS = 460;
+const ESPERA_DA_DICA_MS = 520;
+
+function decodificar(endereco: string): string {
+  try {
+    return decodeURIComponent(endereco);
+  } catch {
+    return endereco;
+  }
+}
+
+function linhasDaBusca(endereco: string, sugestao: { caminho: string; rotulo: string } | null): LinhaDoTerminal[] {
+  const dica: LinhaDoTerminal[] = sugestao
+    ? [
+        {
+          tipo: 'SAIDA',
+          espera: ESPERA_DA_DICA_MS,
+          espacoAntes: true,
+          trechos: [
+            { texto: 'DICA:', tipo: 'aviso' },
+            { texto: ' você quis dizer ' },
+            { texto: `'${sugestao.caminho}'`, tipo: 'literal' },
+            { texto: '?' },
+          ],
+        },
+        { tipo: 'SAIDA', recuo: '6ch', trechos: [{ texto: sugestao.rotulo, tipo: 'apagado' }] },
+      ]
+    : [
+        {
+          tipo: 'SAIDA',
+          espera: ESPERA_DA_DICA_MS,
+          espacoAntes: true,
+          trechos: [{ texto: 'DICA:', tipo: 'aviso' }, { texto: ' confira o endereço ou volte para o Dashboard.' }],
+        },
+      ];
+
+  return [
+    {
+      tipo: 'COMANDO',
+      prompt: 'orynt=>',
+      trechos: [
+        { texto: 'SELECT', tipo: 'palavra' },
+        { texto: ' caminho, titulo ' },
+        { texto: 'FROM', tipo: 'palavra' },
+        { texto: ' telas' },
+      ],
+    },
+    {
+      tipo: 'COMANDO',
+      prompt: 'orynt->',
+      trechos: [
+        { texto: ' ' },
+        { texto: 'WHERE', tipo: 'palavra' },
+        { texto: ' caminho = ' },
+        { texto: `'${endereco}'`, tipo: 'literal' },
+        { texto: ';' },
+      ],
+    },
+    {
+      tipo: 'SAIDA',
+      espera: ESPERA_DA_EXECUCAO_MS,
+      espacoAntes: true,
+      trechos: [{ texto: ' caminho | titulo', tipo: 'forte' }],
+    },
+    { tipo: 'SAIDA', trechos: [{ texto: '---------+--------', tipo: 'apagado' }] },
+    { tipo: 'SAIDA', trechos: [{ texto: '(0 linhas)', tipo: 'apagado' }] },
+    ...dica,
+  ];
+}
 
 export default function PaginaNaoEncontrada() {
   useTituloDocumento('Página não encontrada');
-  const { pathname } = useLocation();
-  const { situacao } = useAutenticacao();
-  const destino =
-    situacao === 'AUTENTICADA'
-      ? { caminho: caminhos.dashboard, rotulo: 'Ir para o Dashboard' }
-      : { caminho: caminhos.login, rotulo: 'Ir para a tela de login' };
+  const navegar = useNavigate();
+  const { pathname, key } = useLocation();
+  const { situacao, usuario } = useAutenticacao();
+  const autenticada = situacao === 'AUTENTICADA';
+  const podeVoltar = key !== 'default';
+  const endereco = decodificar(pathname);
+
+  const sugestao = autenticada ? sugerirTela(endereco, telasPermitidas(usuario)) : null;
+  const linhas = useMemo(() => linhasDaBusca(endereco, sugestao), [endereco, sugestao]);
 
   return (
-    <div className={estilos.pagina}>
-      <Link to={caminhos.inicio} className={estilos.marca} aria-label="Orynt, ir para o início">
-        <MarcaOrynt tamanho={32} />
-        <NomeOrynt className={estilos.nome} />
-      </Link>
-
-      <main className={estilos.conteudo} id={ID_CONTEUDO_PRINCIPAL}>
-        <p className={`${estilos.consulta} codigo`}>
-          <span className={estilos.palavra}>SELECT</span> pagina <span className={estilos.palavra}>FROM</span> orynt{' '}
-          <span className={estilos.palavra}>WHERE</span> caminho = <span className={estilos.caminho}>'{pathname}'</span>;
-        </p>
-        <p className={`${estilos.resultado} codigo`}>(0 linhas)</p>
-        <h1 className={estilos.titulo}>Esta página não existe</h1>
-        <p className={estilos.descricao}>
-          O endereço pode ter sido digitado errado ou a tela ainda não foi criada. Nenhum dado foi afetado.
-        </p>
-        <Link to={destino.caminho} className={estilos.acao}>
-          {destino.rotulo}
-          <ArrowRight size={16} strokeWidth={2} aria-hidden="true" />
-        </Link>
-      </main>
-    </div>
+    <TelaDeErroHttp
+      terminal={<TerminalPsql key={endereco} linhas={linhas} codigo="404" />}
+      sobretitulo="Erro 404"
+      titulo="Página não encontrada"
+      descricao={
+        <>
+          Nenhuma tela do {NOME_APLICACAO} responde pelo endereço{' '}
+          <code className={juntarClasses(estilos.endereco, 'codigo')}>{endereco}</code>.{' '}
+          {sugestao ? (
+            <>
+              A mais parecida é <strong className={estilos.nomeDaTela}>{sugestao.rotulo}</strong>.
+            </>
+          ) : (
+            'Ele pode ter sido digitado com um erro ou pertencer a uma tela que mudou de lugar.'
+          )}
+        </>
+      }
+      acoes={
+        <>
+          {sugestao ? (
+            <Botao iconeDireita={ArrowRight} className={estilos.abrirSugestao} onClick={() => navegar(sugestao.caminho)}>
+              Abrir {sugestao.rotulo}
+            </Botao>
+          ) : null}
+          {autenticada ? (
+            <Botao
+              variante={sugestao ? 'secundario' : 'primario'}
+              icone={LayoutDashboard}
+              onClick={() => navegar(caminhos.dashboard)}
+            >
+              Ir para o Dashboard
+            </Botao>
+          ) : (
+            <Botao icone={LogIn} onClick={() => navegar(caminhos.login)}>
+              Ir para a tela de login
+            </Botao>
+          )}
+          {podeVoltar ? (
+            <Botao variante={sugestao ? 'terciario' : 'secundario'} icone={ArrowLeft} onClick={() => navegar(-1)}>
+              Voltar
+            </Botao>
+          ) : null}
+        </>
+      }
+    />
   );
 }
