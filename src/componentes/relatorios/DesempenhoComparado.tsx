@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { CabecalhoPainel, Painel } from '@/componentes/ui';
 import type { DesempenhoConsulta } from '@/modelos/dashboard';
 import { rotuloFaixaDesempenho } from '@/modelos/rotulos';
@@ -5,6 +6,7 @@ import { resumirMudancaDeDesempenho } from '@/regras/comparacaoRelatorio';
 import type { FaixaComparada, RotulosDaComparacao, ValorComparado } from '@/regras/comparacaoRelatorio';
 import { formatarPercentual, formatarPontosPercentuais } from '@/utilitarios/formatacao';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
+import { eventosDoFoco } from './DistribuicaoDesempenho';
 import estilosFaixas from './DistribuicaoDesempenho.module.css';
 import { DesempenhoEmEspera, PainelEmEspera } from './EsqueletoRelatorio';
 import estilos from './DesempenhoComparado.module.css';
@@ -21,11 +23,11 @@ interface DesempenhoComparadoProps {
 
 interface GrupoDeBarrasProps {
   titulo: string;
-  complemento: string;
   faixas: FaixaComparada[];
-  rotulos: RotulosDaComparacao;
   titulos: RotulosDaComparacao;
   ler: (faixa: FaixaComparada) => ValorComparado;
+  foco: DesempenhoConsulta | null;
+  aoFocar: (faixa: DesempenhoConsulta | null) => void;
 }
 
 type Lado = 'principal' | 'base';
@@ -38,7 +40,7 @@ const corDaFaixa: Record<DesempenhoConsulta, string | undefined> = {
   LENTA: estilosFaixas.lenta,
 };
 
-function GrupoDeBarras({ titulo, complemento, faixas, rotulos, titulos, ler }: GrupoDeBarrasProps) {
+function GrupoDeBarras({ titulo, faixas, titulos, ler, foco, aoFocar }: GrupoDeBarrasProps) {
   return (
     <div className={estilos.grupo}>
       <span className={estilosFaixas.tituloBarra}>{titulo}</span>
@@ -54,9 +56,13 @@ function GrupoDeBarras({ titulo, complemento, faixas, rotulos, titulos, ler }: G
                 .map((faixa) => (
                   <span
                     key={faixa.desempenho}
-                    className={juntarClasses(estilosFaixas.segmento, corDaFaixa[faixa.desempenho])}
+                    className={juntarClasses(
+                      estilosFaixas.segmento,
+                      corDaFaixa[faixa.desempenho],
+                      foco !== null && foco !== faixa.desempenho && estilosFaixas.apagado,
+                    )}
                     style={{ flexGrow: ler(faixa)[lado] }}
-                    title={`${rotuloFaixaDesempenho[faixa.desempenho]}: ${formatarPercentual(ler(faixa)[lado])} ${complemento} em ${rotulos[lado]}`}
+                    {...eventosDoFoco(faixa.desempenho, foco, aoFocar)}
                   />
                 ))}
             </div>
@@ -69,6 +75,7 @@ function GrupoDeBarras({ titulo, complemento, faixas, rotulos, titulos, ler }: G
 
 export function DesempenhoComparado({ faixas, rotulos, titulos, referencia }: DesempenhoComparadoProps) {
   const leitura = resumirMudancaDeDesempenho(faixas, referencia);
+  const [foco, setFoco] = useState<DesempenhoConsulta | null>(null);
 
   return (
     <Painel aria-labelledby="titulo-desempenho-comparado">
@@ -84,19 +91,19 @@ export function DesempenhoComparado({ faixas, rotulos, titulos, referencia }: De
             <div className={estilos.barras} aria-hidden="true">
               <GrupoDeBarras
                 titulo="Execuções"
-                complemento="das execuções"
                 faixas={faixas}
-                rotulos={rotulos}
                 titulos={titulos}
                 ler={(faixa) => faixa.execucoes}
+                foco={foco}
+                aoFocar={setFoco}
               />
               <GrupoDeBarras
                 titulo="Tempo do banco"
-                complemento="do tempo do banco"
                 faixas={faixas}
-                rotulos={rotulos}
                 titulos={titulos}
                 ler={(faixa) => faixa.tempo}
+                foco={foco}
+                aoFocar={setFoco}
               />
             </div>
           </div>
@@ -138,7 +145,11 @@ export function DesempenhoComparado({ faixas, rotulos, titulos, referencia }: De
               </thead>
               <tbody>
                 {faixas.map((faixa) => (
-                  <tr key={faixa.desempenho}>
+                  <tr
+                    key={faixa.desempenho}
+                    className={juntarClasses(foco !== null && foco !== faixa.desempenho && estilosFaixas.linhaApagada)}
+                    {...eventosDoFoco(faixa.desempenho, foco, setFoco)}
+                  >
                     <th scope="row" className={estilos.colunaFaixa}>
                       <span className={estilosFaixas.faixa}>
                         <span className={juntarClasses(estilosFaixas.amostra, corDaFaixa[faixa.desempenho])} aria-hidden="true" />

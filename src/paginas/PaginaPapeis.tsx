@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Clock, FlaskConical, Play, SearchX, ShieldAlert, UserPlus, UsersRound } from 'lucide-react';
+import { Clock, Play, SearchX, ShieldAlert, UserPlus, UsersRound } from 'lucide-react';
 import { ehErroApi } from '@/api/tratamentoErros';
 import { PainelSemConexao } from '@/componentes/conexao/PainelSemConexao';
 import { CabecalhoPagina } from '@/componentes/layout/CabecalhoPagina';
@@ -11,10 +11,11 @@ import type { AtalhoDaLista } from '@/componentes/objetos/ResumoDaLista';
 import { BarraFiltrosPapeis } from '@/componentes/usuarios/BarraFiltrosPapeis';
 import { BotaoDeAlteracao } from '@/componentes/usuarios/BotaoDeAlteracao';
 import { DetalhePapel } from '@/componentes/usuarios/DetalhePapel';
+import { EsqueletoMapaDosPapeis, MapaDosPapeis } from '@/componentes/usuarios/MapaDosPapeis';
 import { iconeDaSituacaoPapel } from '@/componentes/usuarios/SeloSituacaoPapel';
 import { EsqueletoPapeis, TabelaPapeis } from '@/componentes/usuarios/TabelaPapeis';
 import { PermissaoDasAlteracoes } from '@/componentes/usuarios/BotaoDeAlteracao';
-import { Botao, ConteudoAssincrono, EstadoVazio, Nota, Paginacao, Painel } from '@/componentes/ui';
+import { Botao, ConteudoAssincrono, Dica, EstadoVazio, Nota, Paginacao, Painel } from '@/componentes/ui';
 import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
 import { useFiltrosPapeis } from '@/ganchos/useFiltrosPapeis';
 import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
@@ -55,7 +56,7 @@ import estilos from './PaginaObjetos.module.css';
 
 const ESPERA_DA_BUSCA_MS = 250;
 const LINHAS_DO_ESQUELETO = 8;
-const DESCRICAO_DOS_PONTOS = 'O que merece um olhar nos papéis deste banco, do mais urgente ao menos urgente';
+const DESCRICAO_DOS_PONTOS = 'Do mais urgente ao menos urgente';
 const LINHAS_POR_FRASE_EM_ESPERA = [3, 2, 2, 2, 2, 2, 2];
 const ERRO_AO_COPIAR = 'O navegador bloqueou a área de transferência. Abra cada papel e copie o comando pelo detalhe.';
 
@@ -117,7 +118,6 @@ export default function PaginaPapeis() {
       {conexao ? (
         <ListaConectada
           key={conexao.id}
-          simulada={conexao.simulada}
           filtros={filtros}
           mudarFiltros={mudarFiltros}
           aoCapacidadeDeCriar={setCriacao}
@@ -130,13 +130,12 @@ export default function PaginaPapeis() {
 }
 
 interface ListaConectadaProps {
-  simulada: boolean;
   filtros: FiltrosPapeis;
   mudarFiltros: (mudanca: Partial<FiltrosPapeis>) => void;
   aoCapacidadeDeCriar: (capacidade: Capacidade | null) => void;
 }
 
-function ListaConectada({ simulada, filtros, mudarFiltros, aoCapacidadeDeCriar }: ListaConectadaProps) {
+function ListaConectada({ filtros, mudarFiltros, aoCapacidadeDeCriar }: ListaConectadaProps) {
   const { marcarDesconectada } = useConexao();
   const irParaObjeto = useVerObjeto();
   const chegada = useObjetoDaChegada();
@@ -306,13 +305,6 @@ function ListaConectada({ simulada, filtros, mudarFiltros, aoCapacidadeDeCriar }
 
   return (
     <div className={estilos.blocos}>
-      {simulada ? (
-        <Nota tom="aviso" icone={FlaskConical} titulo="Dados demonstrativos.">
-          Os papéis e os números desta tela são fictícios e não vêm do seu banco. Eles dão lugar aos dados reais quando o Orynt
-          estiver ligado à API.
-        </Nota>
-      ) : null}
-
       {capacidade && !podeCriarPapeis(capacidade).permitido ? (
         <Nota tom="info" icone={ShieldAlert} titulo={`${capacidade.ator} só lê os papéis.`}>
           Ele não tem CREATEROLE nem é superusuário, então criar, alterar e excluir papéis por aqui fica bloqueado, como o
@@ -321,11 +313,19 @@ function ListaConectada({ simulada, filtros, mudarFiltros, aoCapacidadeDeCriar }
       ) : null}
 
       {lista.dados === null && lista.carregando ? (
-        <EsqueletoPontosDeAtencao descricao={DESCRICAO_DOS_PONTOS} linhasPorFrase={LINHAS_POR_FRASE_EM_ESPERA} />
+        <>
+          <EsqueletoPontosDeAtencao
+            descricao={DESCRICAO_DOS_PONTOS}
+            linhasPorFrase={LINHAS_POR_FRASE_EM_ESPERA}
+            variante="recolhida"
+          />
+          <EsqueletoMapaDosPapeis />
+        </>
       ) : null}
       {carregado && pontos.length > 0 ? (
         <PontosDeAtencao
           descricao={DESCRICAO_DOS_PONTOS}
+          variante="recolhida"
           itens={pontos.map((ponto): ItemDeAtencao => {
             const { acao, rotulo } = acaoDoPonto(ponto);
             return {
@@ -341,6 +341,9 @@ function ListaConectada({ simulada, filtros, mudarFiltros, aoCapacidadeDeCriar }
             };
           })}
         />
+      ) : null}
+      {carregado && papeis.length > 0 ? (
+        <MapaDosPapeis papeis={papeis} contexto={contexto} aoAbrir={(papel) => abrir(papel, 'PAINEL')} />
       ) : null}
 
       <Painel espacamento="nenhum" aria-labelledby="titulo-lista-papeis" aria-busy={lista.carregando}>
@@ -359,13 +362,12 @@ function ListaConectada({ simulada, filtros, mudarFiltros, aoCapacidadeDeCriar }
             contagem={carregado ? resumirPapeis(papeis, filtrados.length, filtros) : ''}
             complemento={
               carregado && papeis.length > 0 ? (
-                <p
-                  className={juntarClasses(estilos.coleta, coleta.incompleta && estilos.coletaIncompleta)}
-                  title={coleta.completo}
-                >
-                  <Clock size={14} strokeWidth={2} aria-hidden="true" />
-                  {coleta.incompleta ? coleta.completo : coleta.curto}
-                </p>
+                <Dica conteudo={coleta.completo}>
+                  <p className={juntarClasses(estilos.coleta, coleta.incompleta && estilos.coletaIncompleta)}>
+                    <Clock size={14} strokeWidth={2} aria-hidden="true" />
+                    {coleta.incompleta ? coleta.completo : coleta.curto}
+                  </p>
+                </Dica>
               ) : null
             }
             emEspera={lista.dados === null && lista.carregando}
@@ -456,7 +458,6 @@ function ListaConectada({ simulada, filtros, mudarFiltros, aoCapacidadeDeCriar }
         papeis={papeis}
         contexto={contexto}
         limiteOciosoDoServidor={lista.dados?.limiteOciosoEmTransacao ?? null}
-        simulada={simulada}
         posicao={indiceAberto >= 0 ? indiceAberto + 1 : null}
         total={filtrados.length}
         aoPercorrer={percorrer}

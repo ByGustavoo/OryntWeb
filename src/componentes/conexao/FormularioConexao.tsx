@@ -161,11 +161,10 @@ export function FormularioConexao({
           ref={testeRef}
           tom="sucesso"
           icone={CircleCheck}
-          titulo={teste.simulado ? 'Teste simulado concluído.' : 'Teste concluído.'}
+          titulo="Teste concluído."
           role="status"
         >
           {teste.versaoServidor} respondeu em {formatarNumero(teste.latenciaMs)} ms.
-          {teste.simulado ? ' Nenhum banco real foi acessado.' : ''}
         </Nota>
       ) : null}
 

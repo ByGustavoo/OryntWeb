@@ -4,7 +4,7 @@ import { ChevronRight } from 'lucide-react';
 import { NomeObjeto } from '@/componentes/objetos/NomeObjeto';
 import { ESMAECIMENTO_DO_ESQUELETO } from '@/componentes/objetos/TabelaObjetos';
 import estilos from '@/componentes/objetos/TabelaObjetos.module.css';
-import { Esqueleto, Selo } from '@/componentes/ui';
+import { Dica, Esqueleto, Selo } from '@/componentes/ui';
 import type { ModoPermissoes, Privilegio } from '@/modelos/permissoes';
 import {
   origensDistintas,
@@ -74,9 +74,11 @@ export function CelulaSituacoes({ linha }: { linha: LinhaPermissao }) {
     <span className={juntarClasses(estilos.celulaEmLinhas, estilos.alinhadaAoInicio)}>
       <SeloSituacaoPermissao situacao={principal} />
       {outras.length > 0 ? (
-        <span className={estilos.textoSecundario} title={outras.map((situacao) => rotuloSituacaoPermissao[situacao]).join(', ')}>
-          e mais {formatarNumero(outras.length)} {pluralizar(outras.length, 'ponto', 'pontos')}
-        </span>
+        <Dica conteudo={outras.map((situacao) => rotuloSituacaoPermissao[situacao]).join(', ')}>
+          <span className={estilos.textoSecundario}>
+            e mais {formatarNumero(outras.length)} {pluralizar(outras.length, 'ponto', 'pontos')}
+          </span>
+        </Dica>
       ) : null}
     </span>
   );
@@ -116,9 +118,11 @@ export function CelulaAcesso({ acesso, destaque }: { acesso: Acesso; destaque?: 
 function CelulaOrigem({ acesso }: { acesso: Acesso }) {
   if (acesso.nivel === 'NENHUM') return <span className={juntarClasses(estilos.secundario, proprios.larguraDaOrigem)}>—</span>;
   return (
-    <span className={juntarClasses(proprios.origem, proprios.larguraDaOrigem)} title={origensDistintas(acesso).join(', ')}>
-      {resumoDasOrigens(acesso)}
-    </span>
+    <Dica conteudo={origensDistintas(acesso).join(', ')}>
+      <span className={juntarClasses(proprios.origem, proprios.larguraDaOrigem)}>
+        {resumoDasOrigens(acesso)}
+      </span>
+    </Dica>
   );
 }
 
@@ -126,9 +130,11 @@ function CelulaObjeto({ linha }: { linha: { acesso: Acesso } }) {
   const { objeto } = linha.acesso;
   return (
     <>
-      <span className={`${estilos.nome} codigo`} title={objeto.esquema ? `${objeto.esquema}.${objeto.nome}` : objeto.nome}>
-        <NomeObjeto esquema={objeto.esquema} nome={objeto.nome} classeEsquema={estilos.esquema} />
-      </span>
+      <Dica conteudo={objeto.esquema ? `${objeto.esquema}.${objeto.nome}` : objeto.nome} soSeCortado>
+        <span className={`${estilos.nome} codigo`}>
+          <NomeObjeto esquema={objeto.esquema} nome={objeto.nome} classeEsquema={estilos.esquema} />
+        </span>
+      </Dica>
       <span className={estilos.descricao}>
         {rotuloTipoObjetoPermissao[objeto.tipo]} · dono {objeto.dono}
       </span>
@@ -150,18 +156,22 @@ function CelulaPapel({
   return (
     <>
       <span className={proprios.linhaDoNome}>
-        <span className={`${estilos.nome} codigo`} title={sujeito}>
-          <NomeObjeto esquema={null} nome={sujeito} />
-        </span>
+        <Dica conteudo={sujeito} soSeCortado>
+          <span className={`${estilos.nome} codigo`}>
+            <NomeObjeto esquema={null} nome={sujeito} />
+          </span>
+        </Dica>
         {sujeito === papelDaConexao ? (
           <Selo tom="destaque" className={proprios.voce} titulo="O papel com que o Orynt está conectado">
             Você
           </Selo>
         ) : null}
       </span>
-      <span className={juntarClasses(estilos.descricao, !descricao && estilos.semDescricao)} title={descricao ?? undefined}>
-        {descricao ?? `${papel?.login ? 'Usuário' : 'Grupo'} sem descrição no banco`}
-      </span>
+      <Dica conteudo={descricao ?? undefined} soSeCortado>
+        <span className={juntarClasses(estilos.descricao, !descricao && estilos.semDescricao)}>
+          {descricao ?? `${papel?.login ? 'Usuário' : 'Grupo'} sem descrição no banco`}
+        </span>
+      </Dica>
     </>
   );
 }

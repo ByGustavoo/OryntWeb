@@ -72,7 +72,7 @@ describe('definicaoLegivel', () => {
 });
 
 describe('situacaoDaMaterializada', () => {
-  it('separa as visões comuns, as sem dados, as recentes e as de mais de 24 horas', () => {
+  it('separa as views comuns, as sem dados, as recentes e as de mais de 24 horas', () => {
     expect(situacaoDaMaterializada(visao('public.a'), geradoEm)).toBeNull();
     expect(situacaoDaMaterializada(visao('r.b', { materializacao: materializacao({ populada: false }) }), geradoEm)).toBe(
       'NAO_POPULADA',
@@ -90,7 +90,7 @@ describe('situacaoDaMaterializada', () => {
 });
 
 describe('visoesSemLeitura', () => {
-  it('conta como lida a visão lida por outra visão ou pela atualização de uma materializada', () => {
+  it('conta como lida a view lida por outra view ou pela atualização de uma materializada', () => {
     const visoes = [
       visao('public.base', { usadaPor: [ref('public.meio')] }),
       visao('public.meio', { dependeDe: [ref('public.base')], usadaPor: [ref('public.topo')] }),
@@ -116,7 +116,7 @@ describe('visoesSemLeitura', () => {
   });
 });
 
-describe('filtros das visões', () => {
+describe('filtros das views', () => {
   const visoes = [
     visao('public.produtos_ativos', { descricao: 'Os produtos à venda.', consultas: [consulta('q1', 50)] }),
     visao('relatorios.vendas', { materializacao: materializacao({ tamanhoBytes: 4000, ultimaAtualizacao: '2026-10-14T10:00:00.000Z' }) }),
@@ -151,7 +151,7 @@ describe('filtros das visões', () => {
     expect(ids({ situacao: 'SEM_LEITURA' })).toEqual(['auditoria.acoes', 'relatorios.estoque', 'relatorios.vendas']);
   });
 
-  it('deixa as visões comuns no fim ao ordenar por tamanho e por atualização, nos dois sentidos', () => {
+  it('deixa as views comuns no fim ao ordenar por tamanho e por atualização, nos dois sentidos', () => {
     expect(ids({ ordenacao: 'TAMANHO', direcao: 'DESC' })).toEqual([
       'relatorios.avaliacoes',
       'relatorios.vendas',
@@ -201,9 +201,9 @@ describe('filtros das visões', () => {
   });
 
   it('resume a contagem e descreve os filtros em uso', () => {
-    expect(resumirVisoes(0, 0, filtrosVisoesIniciais)).toBe('Nenhuma visão no banco');
-    expect(resumirVisoes(1, 1, filtrosVisoesIniciais)).toBe('1 visão');
-    expect(resumirVisoes(9, 2, { ...filtrosVisoesIniciais, tipo: 'MATERIALIZADA' })).toBe('2 de 9 visões');
+    expect(resumirVisoes(0, 0, filtrosVisoesIniciais)).toBe('Nenhuma view no banco');
+    expect(resumirVisoes(1, 1, filtrosVisoesIniciais)).toBe('1 view');
+    expect(resumirVisoes(9, 2, { ...filtrosVisoesIniciais, tipo: 'MATERIALIZADA' })).toBe('2 de 9 views');
     expect(
       descreverFiltrosVisoes({ ...filtrosVisoesIniciais, busca: 'vendas', tipo: 'COMUM', esquema: 'public', situacao: 'SEM_DADOS' }),
     ).toEqual(['busca por “vendas”', 'tipo: comuns', 'esquema: public', 'situação: sem dados']);
@@ -225,7 +225,7 @@ describe('pontosDeAtencao', () => {
   ];
   const contexto = { geradoEm, semLeitura: visoesSemLeitura(visoes) };
 
-  it('começa pelo que já entrega dado antigo e junta as visões comuns sem leitura numa frase', () => {
+  it('começa pelo que já entrega dado antigo e junta as views comuns sem leitura numa frase', () => {
     const pontos = pontosDeAtencao(visoes, contexto);
 
     expect(pontos.map((ponto) => [ponto.tipo, ponto.alvo])).toEqual([
@@ -238,16 +238,16 @@ describe('pontosDeAtencao', () => {
       'Lida 2.345 vezes nos últimos 30 dias sem nenhuma atualização registrada no período. Quem a lê recebe dados de antes disso.',
     );
     expect(pontos[2]?.texto).toBe(
-      'Atualizada 58 vezes nos últimos 30 dias, num total de 3,90 s, mas nenhuma consulta a leu, nem por outra visão.',
+      'Atualizada 58 vezes nos últimos 30 dias, num total de 3,90 s, mas nenhuma consulta a leu, nem por outra view.',
     );
     expect(pontos[3]).toMatchObject({
       visao: null,
-      titulo: '3 visões sem leitura',
-      texto: 'Nenhuma consulta leu auditoria.antiga, public.esquecida e public.fonte nos últimos 30 dias, nem por outra visão.',
+      titulo: '3 views sem leitura',
+      texto: 'Nenhuma consulta leu auditoria.antiga, public.esquecida e public.fonte nos últimos 30 dias, nem por outra view.',
     });
   });
 
-  it('cita a visão sem leitura sozinha quando é uma só', () => {
+  it('cita a view sem leitura sozinha quando é uma só', () => {
     const pontos = pontosDeAtencao([visao('public.esquecida')], { geradoEm, semLeitura: new Set(['public.esquecida']) });
 
     expect(pontos).toEqual([
@@ -256,7 +256,7 @@ describe('pontosDeAtencao', () => {
         tom: 'aviso',
         visao: { esquema: 'public', nome: 'esquecida' },
         titulo: null,
-        texto: 'Nenhuma consulta a leu nos últimos 30 dias, nem diretamente nem por outra visão.',
+        texto: 'Nenhuma consulta a leu nos últimos 30 dias, nem diretamente nem por outra view.',
         alvo: { tipo: 'VISAO', id: 'public.esquecida' },
       },
     ]);
@@ -294,23 +294,23 @@ describe('avisosDaVisao', () => {
       {
         tom: 'aviso',
         texto:
-          'A última atualização foi há 3 dias, mais de 24 horas atrás. Quem lê a visão recebe os dados daquele momento. Ela foi lida 2.345 vezes nos últimos 30 dias.',
+          'A última atualização foi há 3 dias, mais de 24 horas atrás. Quem lê a view recebe os dados daquele momento. Ela foi lida 2.345 vezes nos últimos 30 dias.',
       },
     ]);
   });
 
-  it('diz quando o Orynt não viu atualização e quando a visão está sem dados', () => {
+  it('diz quando o Orynt não viu atualização e quando a view está sem dados', () => {
     const semRegistro = visao('r.a', { materializacao: materializacao({ ultimaAtualizacao: null }) });
     const semDados = visao('r.b', { materializacao: materializacao({ populada: false }) });
 
     expect(avisosDaVisao(semRegistro, { geradoEm, semLeitura: new Set() })[0]?.texto).toBe(
-      'O Orynt não registrou nenhuma atualização nos últimos 30 dias. Quem lê a visão recebe dados de antes disso.',
+      'O Orynt não registrou nenhuma atualização nos últimos 30 dias. Quem lê a view recebe dados de antes disso.',
     );
     expect(avisosDaVisao(semDados, { geradoEm, semLeitura: new Set() })).toEqual([
       {
         tom: 'erro',
         texto:
-          'A visão está sem dados: foi criada ou atualizada com WITH NO DATA. Quem tentar lê-la recebe um erro até o próximo REFRESH.',
+          'A view está sem dados: foi criada ou atualizada com WITH NO DATA. Quem tentar lê-la recebe um erro até o próximo REFRESH.',
       },
     ]);
   });
@@ -322,11 +322,11 @@ describe('avisosDaVisao', () => {
     expect(avisosDaVisao(atual, { geradoEm, semLeitura: new Set(['r.vendas']) })).toEqual([
       {
         tom: 'aviso',
-        texto: 'Nenhuma consulta leu a visão nos últimos 30 dias, nem por outra visão, mas ela foi atualizada 58 vezes, num total de 3,90 s.',
+        texto: 'Nenhuma consulta leu a view nos últimos 30 dias, nem por outra view, mas ela foi atualizada 58 vezes, num total de 3,90 s.',
       },
     ]);
     expect(avisosDaVisao(comum, { geradoEm, semLeitura: new Set(['public.esquecida']) })[0]?.texto).toMatch(
-      /^Nenhuma consulta leu a visão nos últimos 30 dias, nem diretamente nem por outra visão\./,
+      /^Nenhuma consulta leu a view nos últimos 30 dias, nem diretamente nem por outra view\./,
     );
   });
 });

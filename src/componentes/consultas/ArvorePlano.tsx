@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import type { CSSProperties, KeyboardEvent, MouseEvent } from 'react';
 import { ChevronRight, TriangleAlert } from 'lucide-react';
-import { Esqueleto, Selo } from '@/componentes/ui';
+import { Dica, Esqueleto, Selo } from '@/componentes/ui';
 import type { PlanoExecucaoDTO } from '@/modelos/planos';
 import {
   alvoDoNo,
@@ -226,14 +226,15 @@ function Etapa({ linha, ordem, selecionada, alterada, recolhida, trilha, aoSelec
 
       <span className={estilos.conteudo}>
         {aoAlternar && temFilhos ? (
-          <span
-            className={juntarClasses(estilos.alternador, recolhida && estilos.alternadorRecolhido)}
-            aria-hidden="true"
-            title={recolhida ? 'Mostrar as etapas abaixo' : 'Recolher as etapas abaixo'}
-            onClick={alternar}
-          >
-            <ChevronRight size={12} strokeWidth={2.5} />
-          </span>
+          <Dica conteudo={recolhida ? 'Mostrar as etapas abaixo' : 'Recolher as etapas abaixo'}>
+            <span
+              className={juntarClasses(estilos.alternador, recolhida && estilos.alternadorRecolhido)}
+              aria-hidden="true"
+              onClick={alternar}
+            >
+              <ChevronRight size={12} strokeWidth={2.5} />
+            </span>
+          </Dica>
         ) : null}
         <span className={estilos.textos}>
           <span className={estilos.cabecaDaEtapa}>

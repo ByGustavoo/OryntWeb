@@ -131,14 +131,19 @@
 }
 
 .dica {
+  --texto: var(--dica-texto);
+  --texto-secundario: var(--dica-texto-secundario);
+  --texto-terciario: var(--dica-texto-secundario);
+  --superficie: var(--dica-fundo);
+
   display: flex;
   flex-direction: column;
   gap: var(--espaco-1);
-  padding: var(--espaco-3);
-  background-color: var(--superficie-elevada);
-  border: 1px solid var(--borda-forte);
+  padding: var(--espaco-2) var(--espaco-3);
+  background-color: var(--dica-fundo);
+  border: 1px solid var(--dica-borda);
   border-radius: var(--raio-md);
-  box-shadow: var(--sombra-flutuante);
+  box-shadow: var(--dica-sombra);
   font-family: var(--fonte-interface);
 }
 

@@ -40,7 +40,7 @@ describe('gerarPapeis', () => {
     expect(papel('migracao', gerarPapeis(agora, 'migracao')).sessoes).toBe(1);
   });
 
-  it('dá a cada dono de Tabelas, Visões e Funções um papel, com os objetos dele', () => {
+  it('dá a cada dono de Tabelas, Views e Funções um papel, com os objetos dele', () => {
     const donos = [
       ...gerarTabelas(agora).tabelas.map((item) => [item.dono, item.id]),
       ...gerarVisoes(agora).visoes.map((item) => [item.dono, item.id]),

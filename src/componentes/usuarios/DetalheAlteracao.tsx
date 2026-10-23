@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import { ChevronDown, ChevronRight, ChevronUp, FlaskConical, OctagonAlert, Undo2 } from 'lucide-react';
+import { ChevronDown, ChevronRight, ChevronUp, OctagonAlert, Undo2 } from 'lucide-react';
 import { SecaoCopiavel } from '@/componentes/objetos/DetalheObjeto';
 import estilos from '@/componentes/objetos/DetalheObjeto.module.css';
 import { BotaoIcone, Modal, Nota, Selo } from '@/componentes/ui';
@@ -17,7 +17,6 @@ import locais from './DetalheAlteracao.module.css';
 interface DetalheAlteracaoProps {
   alteracao: AlteracaoDTO | null;
   todas: AlteracaoDTO[];
-  simulada: boolean;
   posicao: number | null;
   total: number;
   capacidadeDeDesfazer: (alteracao: AlteracaoDTO) => Capacidade | null;
@@ -31,7 +30,6 @@ interface DetalheAlteracaoProps {
 export function DetalheAlteracao({
   alteracao,
   todas,
-  simulada,
   posicao,
   total,
   capacidadeDeDesfazer,
@@ -97,7 +95,7 @@ export function DetalheAlteracao({
       }
     >
       {exibida ? (
-        <CorpoDetalhe key={exibida.id} alteracao={exibida} todas={todas} simulada={simulada} aoAbrirAlteracao={aoAbrirAlteracao} />
+        <CorpoDetalhe key={exibida.id} alteracao={exibida} todas={todas} aoAbrirAlteracao={aoAbrirAlteracao} />
       ) : null}
     </Modal>
   );
@@ -106,11 +104,10 @@ export function DetalheAlteracao({
 interface CorpoDetalheProps {
   alteracao: AlteracaoDTO;
   todas: AlteracaoDTO[];
-  simulada: boolean;
   aoAbrirAlteracao: (id: string) => void;
 }
 
-function CorpoDetalhe({ alteracao, todas, simulada, aoAbrirAlteracao }: CorpoDetalheProps) {
+function CorpoDetalhe({ alteracao, todas, aoAbrirAlteracao }: CorpoDetalheProps) {
   const raiz = useRef<HTMLDivElement>(null);
   const desfeitaPor = alteracao.desfeitaPor ? todas.find((item) => item.id === alteracao.desfeitaPor) : undefined;
   const desfaz = alteracao.desfaz ? todas.find((item) => item.id === alteracao.desfaz) : undefined;
@@ -136,11 +133,6 @@ function CorpoDetalhe({ alteracao, todas, simulada, aoAbrirAlteracao }: CorpoDet
         <div className={estilos.selos}>
           <SeloEstadoAlteracao estado={estado} />
           <Selo tom="neutro">{rotuloOrigemAlteracao[alteracao.origem]}</Selo>
-          {simulada ? (
-            <Selo tom="aviso" icone={FlaskConical}>
-              Dados demonstrativos
-            </Selo>
-          ) : null}
         </div>
       </header>
 

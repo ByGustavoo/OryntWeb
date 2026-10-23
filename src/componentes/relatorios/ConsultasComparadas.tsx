@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { ArrowDown, ArrowDownRight, ArrowUp, ArrowUpDown, ArrowUpRight, History, ListTree, Minus } from 'lucide-react';
 import { TrechoSql } from '@/componentes/comum/TrechoSql';
 import { SeloDesempenho } from '@/componentes/dashboard/SeloDesempenho';
-import { BotaoIcone, CabecalhoPainel, CampoSelecao, GrupoOpcoes, Painel } from '@/componentes/ui';
+import { BotaoIcone, CabecalhoPainel, CampoSelecao, Dica, GrupoOpcoes, Painel } from '@/componentes/ui';
 import { rotuloDesempenho } from '@/modelos/rotulos';
 import { filtrarConsultas, resumirTendencias } from '@/regras/comparacaoRelatorio';
 import type { ConsultaComparada, FiltroConsultas, RotulosDaComparacao } from '@/regras/comparacaoRelatorio';
@@ -70,10 +70,12 @@ function ordenar(consultas: ConsultaComparada[], { coluna, direcao }: Ordenacao)
 
 function Ausente({ rotulo }: { rotulo: string }) {
   return (
-    <span className={estilos.ausente} title={`Fora da lista das consultas que mais pesaram em ${rotulo}`}>
-      <span aria-hidden="true">—</span>
-      <span className="visualmente-oculto">Fora da lista das consultas que mais pesaram em {rotulo}</span>
-    </span>
+    <Dica conteudo={`Fora da lista das consultas que mais pesaram em ${rotulo}`}>
+      <span className={estilos.ausente}>
+        <span aria-hidden="true">—</span>
+        <span className="visualmente-oculto">Fora da lista das consultas que mais pesaram em {rotulo}</span>
+      </span>
+    </Dica>
   );
 }
 

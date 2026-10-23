@@ -1,6 +1,6 @@
 import { ChevronsRight } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { Botao, GrupoOpcoes } from '@/componentes/ui';
+import { Botao, Dica, GrupoOpcoes } from '@/componentes/ui';
 import type { PeriodoRelatorio } from '@/modelos/relatorios';
 import { passoAnterior, passoSeguinte, rotuloGranularidade } from '@/modelos/rotulos';
 import {
@@ -95,17 +95,17 @@ export function BarraPeriodo({ periodo, hoje, aoMudar, acoes = [], className }: 
         {acoes.length > 0 ? (
           <div className={`${estilos.acoes} nao-imprimir`}>
             {acoes.map((acao) => (
-              <Botao
-                key={acao.rotulo}
-                variante="secundario"
-                icone={acao.icone}
-                title={acao.rotulo}
-                carregando={acao.carregando}
-                className={estilos.acao}
-                onClick={acao.aoAcionar}
-              >
-                <span className={estilos.nomeAcao}>{acao.rotulo}</span>
-              </Botao>
+              <Dica key={acao.rotulo} conteudo={acao.rotulo}>
+                <Botao
+                  variante="secundario"
+                  icone={acao.icone}
+                  carregando={acao.carregando}
+                  className={estilos.acao}
+                  onClick={acao.aoAcionar}
+                >
+                  <span className={estilos.nomeAcao}>{acao.rotulo}</span>
+                </Botao>
+              </Dica>
             ))}
           </div>
         ) : null}

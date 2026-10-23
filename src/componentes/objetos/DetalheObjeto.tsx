@@ -3,7 +3,7 @@ import type { ReactNode, RefObject } from 'react';
 import { Check, Copy, UserRound } from 'lucide-react';
 import { TrechoSql } from '@/componentes/comum/TrechoSql';
 import { SeloDesempenho } from '@/componentes/dashboard/SeloDesempenho';
-import { Botao } from '@/componentes/ui';
+import { Botao, Dica } from '@/componentes/ui';
 import type { ConsultaDetalhadaDTO } from '@/modelos/consultas';
 import { useNotificacoes } from '@/provedores/ProvedorNotificacoes';
 import { copiarTexto } from '@/utilitarios/areaTransferencia';
@@ -55,9 +55,11 @@ export function Medida({ rotulo, valor, dica }: { rotulo: string; valor: string;
   return (
     <div className={estilos.medida}>
       <dt className={estilos.rotuloMedida}>{rotulo}</dt>
-      <dd className={`${estilos.valorMedida} numeros`} title={dica}>
-        {valor}
-      </dd>
+      <Dica conteudo={dica}>
+        <dd className={`${estilos.valorMedida} numeros`}>
+          {valor}
+        </dd>
+      </Dica>
     </div>
   );
 }

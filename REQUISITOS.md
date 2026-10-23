@@ -39,8 +39,8 @@ silenciosa no resto.
 * **Navegação:** menu lateral recolhível no desktop e gaveta abaixo de 1100px.
 * **Tipo de banco:** aparece como campo já resolvido (PostgreSQL), não como lista de uma opção.
 * **Rótulos:** capitalização de frase ("Usuários e permissões", "Objetos do banco"), como nos outros projetos.
-* **Navegação em grupos e subgrupos:** pedido do usuário em 11 de outubro de 2026, no modelo do PrismaWeb. O menu tem o Dashboard, o grupo "Análise" (Relatórios e Consultas SQL), o grupo "Gerenciamento" (Objetos do banco e Usuários e permissões) e, desde 20 de outubro de 2026, o grupo "Administração" (Usuários e Auditoria), que só aparece para quem tem as permissões; Configurações segue no rodapé. O menu mostra só as telas que a conta pode abrir. Cada item de grupo abre as suas telas: Relatórios (Resumo, Exportação, Comparação), Consultas SQL (Todas, Histórico, Planos de execução), Objetos do banco (Visões, Índices, Tabelas, Funções) e Usuários e permissões (Papéis, Sessões, Alterações, Permissões; Alterações entrou em 20 de outubro de 2026). Os nomes dos grupos e das telas foram escolhidos por boa prática, a partir do que já estava previsto para cada funcionalidade.
-* **Telas planejadas:** o grupo em que nada está pronto leva o selo "Em breve" ao lado do título (antes havia um único grupo chamado "Em breve"). Num grupo que já tem tela pronta, a marca "Em breve" desce para cada tela planejada. Não sobrou nenhuma: Papéis, Sessões e Permissões ficaram prontas em 19 de outubro de 2026. Objetos do banco não tem mais tela planejada: Visões e Índices ficaram prontas em 18 de outubro de 2026, e Tabelas e Funções, em 19 de outubro. O item em que nada está pronto não leva a marca ao lado do nome desde então: "Usuários e permissões" com a marca não cabia no menu e aparecia cortado; as telas dele, ao abrir o item, mostram a marca uma a uma. Cada tela planejada tem a própria rota, mostra o que está previsto para a funcionalidade, com a tela aberta em evidência, e não simula nada.
+* **Navegação em grupos e subgrupos:** pedido do usuário em 11 de outubro de 2026, no modelo do PrismaWeb. O menu tem o Dashboard, o grupo "Análise" (Relatórios e Consultas SQL), o grupo "Gerenciamento" (Objetos do banco e Usuários e permissões) e, desde 20 de outubro de 2026, o grupo "Administração" (Usuários e Auditoria), que só aparece para quem tem as permissões; Configurações segue no rodapé. O menu mostra só as telas que a conta pode abrir. Cada item de grupo abre as suas telas: Relatórios (Resumo, Exportação, Comparação), Consultas SQL (Todas, Histórico, Planos de execução), Objetos do banco (Views, Índices, Tabelas, Funções) e Usuários e permissões (Papéis, Sessões, Alterações, Permissões; Alterações entrou em 20 de outubro de 2026). Os nomes dos grupos e das telas foram escolhidos por boa prática, a partir do que já estava previsto para cada funcionalidade.
+* **Telas planejadas:** o grupo em que nada está pronto leva o selo "Em breve" ao lado do título (antes havia um único grupo chamado "Em breve"). Num grupo que já tem tela pronta, a marca "Em breve" desce para cada tela planejada. Não sobrou nenhuma: Papéis, Sessões e Permissões ficaram prontas em 19 de outubro de 2026. Objetos do banco não tem mais tela planejada: Views e Índices ficaram prontas em 18 de outubro de 2026, e Tabelas e Funções, em 19 de outubro. O item em que nada está pronto não leva a marca ao lado do nome desde então: "Usuários e permissões" com a marca não cabia no menu e aparecia cortado; as telas dele, ao abrir o item, mostram a marca uma a uma. Cada tela planejada tem a própria rota, mostra o que está previsto para a funcionalidade, com a tela aberta em evidência, e não simula nada.
 * **Demonstração:** selo "Demonstração" no menu da conta enquanto há uma conexão simulada ativa e aviso "Dados demonstrativos" no dashboard. Sem conexão, o selo não aparece. O selo saiu do cabeçalho a pedido do usuário em 11 de outubro de 2026.
 * **Dashboard:** períodos de 1 h, 24 h, 7 dias e 30 dias; a tabela vira cartões em telas estreitas.
 * **Carregamento do Dashboard:** ao trocar o período, os indicadores, o gráfico e a tabela dão lugar na hora a um esqueleto no formato deles, com as molduras, os títulos e o cabeçalho da tabela no lugar, até a resposta chegar (pedido pelo usuário em 12 de outubro de 2026; antes os dados do período anterior ficavam na tela, esmaecidos). Os três blocos voltam em sequência, de cima para baixo, e a ordenação escolhida na tabela é mantida. Na primeira carga o esqueleto só aparece se a resposta demorar.
@@ -360,9 +360,9 @@ Regras:
 * **Sem conexão e demonstração:** o mesmo painel e o mesmo aviso "Dados demonstrativos" das outras telas.
 * **Simulação:** planos escritos à mão para as dez consultas principais, coerentes com o desempenho de cada uma (a que mais pesa faz uma varredura sequencial em `usuarios` por falta de um índice em `lower(email)`), e planos simples por índice para as 32 secundárias; COMMIT, ANALYZE e REFRESH MATERIALIZED VIEW não têm plano. O tempo de execução fica a menos de 10% do tempo médio da consulta. A consulta dos pedidos por cliente trocou de plano há três dias às 9h, o mesmo momento em que o Histórico mostra a piora dela: as execuções das duas versões somam as dos 30 dias.
 
-## Objetos do banco: Visões
+## Objetos do banco: Views
 
-Pedido pelo usuário em 18 de outubro de 2026: a tela "Visões" de Objetos do banco deixa de ser planejada. É
+Pedido pelo usuário em 18 de outubro de 2026: a tela "Views" de Objetos do banco deixa de ser planejada. É
 o inventário das visões comuns e materializadas do banco conectado e responde a três perguntas: que visões
 existem e o que cada uma faz, do que cada uma depende e quem depende dela (se dá para alterar uma tabela sem
 quebrar nada), e se as materializadas estão atualizadas e quanto custa atualizá-las.
@@ -377,7 +377,7 @@ quebrar nada), e se as materializadas estão atualizadas e quanto custa atualiz�
 | Q6 | Dependências | "Depende de" e "Usada por" no detalhe. |
 | Q7 | Ligação com Consultas SQL | O detalhe lista as consultas que leem a visão, com "Ver histórico" e "Ver plano", e o `REFRESH` da materializada, com "Ver histórico". |
 | S1 | Materializadas desatualizadas | Marcadas quando a última atualização tem mais de 24 horas ou não foi registrada nos 30 dias. Aprovada; o limite de 24 horas foi o do exemplo da descoberta. |
-| S2 | Visões sem leitura | Destacadas quando nenhuma consulta as leu nos últimos 30 dias, nem diretamente nem por outra visão. Aprovada. |
+| S2 | Views sem leitura | Destacadas quando nenhuma consulta as leu nos últimos 30 dias, nem diretamente nem por outra visão. Aprovada. |
 | S3 | Exportar CSV | Recusada. |
 | S4 | Diagrama de dependências | Fica para uma fase futura. |
 
@@ -405,12 +405,12 @@ descoberta, e as quatro sugestões foram aprovadas.
 
 | # | Tema | Decisão |
 |---|---|---|
-| Q1 | Origem dos dados | `GET /objetos/indices` devolve a lista inteira; a busca, os filtros e a ordem são feitos no navegador, como em Visões. |
+| Q1 | Origem dos dados | `GET /objetos/indices` devolve a lista inteira; a busca, os filtros e a ordem são feitos no navegador, como em Views. |
 | Q2 | Janela do uso | As leituras dos últimos 30 dias: a API amostra os contadores do PostgreSQL, que só dão o acumulado desde o último reset. |
 | Q3 | Chave primária e restrição única | Aparecem na lista com o selo da restrição e nunca são marcadas como sem uso nem recebem comando de remoção. Vale também para o índice único sem restrição. |
 | Q4 | Ações sobre o banco | Só leitura. A tela mostra o comando pronto para copiar: `DROP INDEX CONCURRENTLY` para o sem uso, o duplicado e o redundante, e `REINDEX INDEX CONCURRENTLY` para o inválido. |
 | Q5 | Situações apontadas | Sem uso em 30 dias, duplicado ou redundante e inválido. O inchaço estimado ficou de fora, porque sem `pgstattuple` a estimativa não é confiável. |
-| Q6 | Clique no índice | Abre o modal centralizado com setas no rodapé, como em Visões. |
+| Q6 | Clique no índice | Abre o modal centralizado com setas no rodapé, como em Views. |
 | Q7 | Organização da lista | Uma lista só, com a coluna da tabela e um filtro por tabela. |
 | S1 | Custo de manter | As frases e o detalhe dizem quanto o índice ocupa e quantas gravações recebeu em 30 dias: as inserções e as atualizações que não são HOT na tabela dele. Aprovada. |
 | S2 | Consultas que usam o índice | O detalhe lista as consultas cujo plano registrado lê o índice, com "Ver plano" e "Ver histórico"; uma consulta que o usava num plano anterior oferece "Comparar planos". Aprovada. |
@@ -431,7 +431,7 @@ Regras:
 * **Paginação e abas:** pedido pelo usuário no mesmo dia, porque era preciso rolar muito para chegar ao fim da lista e às sugestões. A lista mostra 15 índices por página (eram 25 na primeira versão, o usuário achou muito), com "1 a 15 de 40" e as setas de página embaixo dela; com uma página só, a paginação não aparece. A paginação é feita no navegador, sobre a lista filtrada, e qualquer mudança de busca, filtro ou ordem volta à primeira página. As setas do detalhe percorrem a lista filtrada inteira e trocam de página quando o índice seguinte está na outra. Acima da lista, duas abas dividem o painel: "Índices existentes", com a busca, os filtros, a contagem, a tabela e a paginação, e "Sugeridos pelos planos", cada uma com a sua quantidade; em telas estreitas elas dizem só "Existentes" e "Sugeridos". Os pontos de atenção ficam acima das duas abas: "Ver na lista" volta para a primeira e "Ver sugestões" abre a segunda.
 * **URL:** sempre `/objetos/indices`, sem parâmetros. A busca, os filtros, a ordem, a página e a aba ficam no histórico do navegador, como nas outras telas.
 * **Sem conexão e demonstração:** o mesmo painel e o mesmo aviso "Dados demonstrativos" das outras telas.
-* **Simulação:** 40 índices nas tabelas que as consultas fictícias já usam e nas duas materializadas de Visões (41 desde 19 de outubro de 2026, quando `clientes_documento_key`, o índice único sobre `somente_digitos(documento)`, entrou com a tela Funções). As leituras de cada índice saem dos planos simulados (as execuções da versão atual do plano de cada consulta vezes os laços da etapa que lê o índice), e as gravações saem das consultas `INSERT` e `UPDATE` de cada tabela, para as telas contarem a mesma história. `pedidos_cliente_id_idx` está inválido desde o instante em que a consulta dos pedidos por cliente trocou de plano, há três dias às 9h, e passou a ler a tabela inteira; `usuarios_email_idx` repete `usuarios_email_key`; `avaliacoes_produto_id_idx` é o começo de `avaliacoes_produto_id_criado_em_idx`; `pedidos_atualizado_em_idx`, `sessoes_usuario_id_idx` e `auditoria_alvo_idx` não são lidos; `cupons_valido_ate_idx` foi visto pela primeira vez há cinco dias. A coleta começou há 47 dias.
+* **Simulação:** 40 índices nas tabelas que as consultas fictícias já usam e nas duas materializadas de Views (41 desde 19 de outubro de 2026, quando `clientes_documento_key`, o índice único sobre `somente_digitos(documento)`, entrou com a tela Funções). As leituras de cada índice saem dos planos simulados (as execuções da versão atual do plano de cada consulta vezes os laços da etapa que lê o índice), e as gravações saem das consultas `INSERT` e `UPDATE` de cada tabela, para as telas contarem a mesma história. `pedidos_cliente_id_idx` está inválido desde o instante em que a consulta dos pedidos por cliente trocou de plano, há três dias às 9h, e passou a ler a tabela inteira; `usuarios_email_idx` repete `usuarios_email_key`; `avaliacoes_produto_id_idx` é o começo de `avaliacoes_produto_id_criado_em_idx`; `pedidos_atualizado_em_idx`, `sessoes_usuario_id_idx` e `auditoria_alvo_idx` não são lidos; `cupons_valido_ate_idx` foi visto pela primeira vez há cinco dias. A coleta começou há 47 dias.
 
 ## Objetos do banco: Tabelas
 
@@ -443,16 +443,16 @@ primária). As decisões foram as recomendadas na descoberta, e as quatro sugest
 
 | # | Tema | Decisão |
 |---|---|---|
-| Q1 | Origem dos dados | `GET /objetos/tabelas` devolve a lista inteira; a busca, os filtros e a ordem são feitos no navegador, como em Visões e Índices. |
-| Q2 | O que entra na lista | Só tabelas comuns. A tabela particionada aparece uma vez, com as partições somadas e listadas no detalhe; as visões materializadas continuam em Visões. |
+| Q1 | Origem dos dados | `GET /objetos/tabelas` devolve a lista inteira; a busca, os filtros e a ordem são feitos no navegador, como em Views e Índices. |
+| Q2 | O que entra na lista | Só tabelas comuns. A tabela particionada aparece uma vez, com as partições somadas e listadas no detalhe; as visões materializadas continuam em Views. |
 | Q3 | Ações sobre o banco | Só leitura, como Índices: a tela mostra o comando pronto para copiar (`VACUUM (FREEZE)`, `VACUUM (ANALYZE)`, `ANALYZE`) e o cuidado que ele pede. |
 | Q4 | Situações apontadas | As cinco: linhas mortas, estatísticas desatualizadas, sem chave primária, lida inteira e idade de transação perto do limite. |
 | Q5 | Janela do uso | As leituras e as gravações dos últimos 30 dias, a mesma janela de Índices. |
 | Q6 | Tamanho na lista | O total na coluna; a divisão entre dados, índices e TOAST fica no detalhe. |
-| Q7 | Ligação com as outras telas | Os índices do detalhe abrem Índices filtrado pela tabela, com o índice aberto; as visões que dependem dela abrem o detalhe em Visões; as consultas têm "Ver plano" e "Ver histórico". |
+| Q7 | Ligação com as outras telas | Os índices do detalhe abrem Índices filtrado pela tabela, com o índice aberto; as visões que dependem dela abrem o detalhe em Views; as consultas têm "Ver plano" e "Ver histórico". |
 | S1 | Crescimento em 30 dias | O tamanho e as linhas no início e no fim do período, com um gráfico diário do tamanho no detalhe. Aprovada. |
 | S2 | Comandos em lote | Com um filtro de situação, "Copiar os N comandos", como em Índices. Aprovada. |
-| S3 | Caminho de volta | O detalhe de um índice ganha a tabela dele, que abre o detalhe em Tabelas (ou em Visões, numa materializada), e as tabelas das dependências em Visões abrem o detalhe em Tabelas. Aprovada. |
+| S3 | Caminho de volta | O detalhe de um índice ganha a tabela dele, que abre o detalhe em Tabelas (ou em Views, numa materializada), e as tabelas das dependências em Views abrem o detalhe em Tabelas. Aprovada. |
 | S4 | Autovacuum por tabela | Os ajustes de autovacuum da tabela no detalhe, com o valor do servidor e o comando que volta ao padrão. Aprovada. |
 
 Regras:
@@ -463,8 +463,8 @@ Regras:
 * **Pontos de atenção:** painel acima da lista, com uma frase por tabela que pede atenção, na ordem das situações e, em cada uma, da maior tabela para a menor. A partir de três tabelas na mesma situação, elas viram uma frase só, e "Ver na lista" aplica o filtro de situação. Uma tabela que precisa de VACUUM e tem estatísticas antigas aparece uma vez, na frase do VACUUM, que diz que o `VACUUM (ANALYZE)` resolve as duas coisas. Sem nenhum ponto, o painel não aparece.
 * **Atalhos de atenção:** ao lado da contagem, um atalho por situação com tabelas ("1 com idade alta", "1 precisa de VACUUM", "5 lidas inteiras", "2 com estatísticas antigas", "1 sem chave primária") aplica o filtro com um clique e o tira no segundo. Ao lado da contagem também aparece "Uso medido desde 2 de setembro".
 * **Comandos:** a idade alta pede `VACUUM (FREEZE)` em cada partição acima do limite (ou na tabela), as linhas mortas pedem `VACUUM (ANALYZE)` e as estatísticas antigas, sozinhas, pedem `ANALYZE`. A tabela lida inteira mostra os índices sugeridos pelos planos, cada um com o `CREATE INDEX CONCURRENTLY` e a extensão que ele precisa. Com o filtro de situação, "Copiar os N comandos" copia os comandos da lista filtrada, um por linha (os índices sugeridos, no caso da leitura inteira); a falta de chave primária não tem comando, porque a coluna certa depende dos dados.
-* **Detalhe:** nome, descrição, selos (particionada, situações e demonstração); os avisos em frases; o comando de manutenção e os índices sugeridos, com "Copiar"; o crescimento em 30 dias, com o tamanho e as linhas de hoje, a variação no período, uma frase (que diz quando o espaço cresceu sem novas linhas) e o gráfico do tamanho por dia; o espaço em dados, índices e TOAST; as linhas vivas, mortas e alteradas, a idade das transações em porcentagem do limite e as quatro datas de manutenção; os ajustes de autovacuum da tabela, com o valor do servidor e o comando `ALTER TABLE … RESET`, ou a frase de que ela segue o servidor; as leituras e as gravações dos 30 dias; as consultas cujo plano lê a tabela, com a etapa e o índice, "Ver plano" e "Ver histórico"; as partições, com as linhas, o tamanho, o último autovacuum e a idade de cada uma; as colunas, com a chave primária marcada; os índices, que abrem Índices; e as visões que dependem dela, que abrem Visões. O texto copiado é só o comando, sem aviso de demonstração.
-* **Chegada de outra tela:** Índices, Visões e Tabelas abrem o detalhe do objeto que a outra tela indicou ao navegar (no histórico do navegador, nunca na URL), já na página da lista em que ele está.
+* **Detalhe:** nome, descrição, selos (particionada, situações e demonstração); os avisos em frases; o comando de manutenção e os índices sugeridos, com "Copiar"; o crescimento em 30 dias, com o tamanho e as linhas de hoje, a variação no período, uma frase (que diz quando o espaço cresceu sem novas linhas) e o gráfico do tamanho por dia; o espaço em dados, índices e TOAST; as linhas vivas, mortas e alteradas, a idade das transações em porcentagem do limite e as quatro datas de manutenção; os ajustes de autovacuum da tabela, com o valor do servidor e o comando `ALTER TABLE … RESET`, ou a frase de que ela segue o servidor; as leituras e as gravações dos 30 dias; as consultas cujo plano lê a tabela, com a etapa e o índice, "Ver plano" e "Ver histórico"; as partições, com as linhas, o tamanho, o último autovacuum e a idade de cada uma; as colunas, com a chave primária marcada; os índices, que abrem Índices; e as visões que dependem dela, que abrem Views. O texto copiado é só o comando, sem aviso de demonstração.
+* **Chegada de outra tela:** Índices, Views e Tabelas abrem o detalhe do objeto que a outra tela indicou ao navegar (no histórico do navegador, nunca na URL), já na página da lista em que ele está.
 * **URL:** sempre `/objetos/tabelas`, sem parâmetros. A busca, os filtros, a ordem e a página ficam no histórico do navegador, como nas outras telas.
 * **Sem conexão e demonstração:** o mesmo painel e o mesmo aviso "Dados demonstrativos" das outras telas.
 * **Simulação:** as 18 tabelas de `public` que as consultas fictícias e os índices simulados já usam, mais `importacoes_legado`, uma cópia da plataforma antiga sem chave primária e sem índices. As gravações saem das consultas `INSERT`, `UPDATE` e `DELETE` de cada tabela, as leituras por índice são as de Índices e as leituras inteiras saem dos `Seq Scan` dos planos atuais. `auditoria` é particionada por ano em sete partições, e a de 2020 chegou a 64% do limite de congelamento; `notificacoes` está com o autovacuum desligado, 1,2 milhão de linhas mortas, estatísticas de 1,2 milhão de linhas atrás e 8 MB a mais em 30 dias sem nenhuma linha nova; `sessoes` analisa a partir de 20% de alterações, o dobro do padrão, e está com as estatísticas antigas; `itens_pedido` tem os limites do autovacuum mais baixos que o servidor, sem nenhum problema; `usuarios`, `clientes`, `pedidos`, `produtos` e `sessoes` são lidas inteiras, e os planos sugerem índices para quatro delas. O último ANALYZE de `pedidos` sai do histórico do comando `ANALYZE pedidos`. A chave primária de `auditoria` passou a ser `(id, criado_em)` também em Índices, porque o PostgreSQL exige a chave de partição nela.
@@ -531,7 +531,7 @@ foram as recomendadas na descoberta, e as quatro sugestões foram aprovadas.
 | Q9 | Sessões na lista | Só a contagem de agora e o limite. Desde que Sessões ficou pronta, o detalhe abre as sessões do papel lá. |
 | S1 | Comandos em lote | Com um filtro de situação, "Copiar os N comandos", como em Índices. Aprovada. |
 | S2 | Configurações por papel | O detalhe mostra o `statement_timeout`, o `search_path` e as outras configurações definidas com `ALTER ROLE … SET`, e avisa quando um usuário comum não tem `statement_timeout`. Aprovada. |
-| S3 | Caminho de volta | O dono no detalhe de Tabelas, Visões e Funções vira link para o papel aqui. Aprovada. |
+| S3 | Caminho de volta | O dono no detalhe de Tabelas, Views e Funções vira link para o papel aqui. Aprovada. |
 | S4 | Cruzamento com Funções | A função `SECURITY DEFINER` sem `search_path` fixo aparece no detalhe do papel dono dela, como risco herdado. Aprovada. |
 
 Regras:
@@ -575,7 +575,7 @@ Regras:
   os comandos, com "Copiar"; o acesso de um usuário (sessões, limite, último uso e formato da senha, com a
   validade em frase); os atributos explicados e os que ele ganha com SET ROLE; "Membro de" e "Membros", que abrem
   o outro papel (um papel predefinido aparece sem link); as configurações próprias explicadas, com o aviso do
-  `statement_timeout` (S2); e os objetos de que é dono, seis de cada vez, que abrem Tabelas, Visões e Funções.
+  `statement_timeout` (S2); e os objetos de que é dono, seis de cada vez, que abrem Tabelas, Views e Funções.
 * **Risco herdado (S4):** o papel dono de uma função `SECURITY DEFINER` que não fixa o `search_path` recebe o
   aviso no detalhe, em vermelho quando ele é superusuário.
 * **Dono em Objetos do banco (S3):** o detalhe de uma tabela, de uma visão e de uma função mostra "Dono" com o nome
@@ -584,7 +584,7 @@ Regras:
   no histórico do navegador, como nas outras telas.
 * **Sem conexão e demonstração:** o mesmo painel e o mesmo aviso "Dados demonstrativos" das outras telas.
 * **Simulação:** 15 papéis, mais o papel da conexão quando ele não está entre eles. Os donos são os de Tabelas,
-  Visões e Funções, e as sessões somadas dão as conexões ativas do Dashboard: `loja_app` fica com o que sobra.
+  Views e Funções, e as sessões somadas dão as conexões ativas do Dashboard: `loja_app` fica com o que sobra.
   `migracao` faz login como superusuário; a senha de `relatorio_bi` venceu há 12 dias e a de `loja_analise` vence
   em 5; `auditoria_app` guarda a senha em MD5; `fila_pedidos` usa 4 das 5 conexões dele; `integracao_erp` não
   conecta há 41 dias; `relatorios_antigos` é um grupo vazio; `exportacao_temp` foi criado há quatro dias e está em
@@ -694,7 +694,7 @@ foram aprovadas.
 | Q5 | Situações apontadas | Função `SECURITY DEFINER` que PUBLIC executa; PUBLIC com `CREATE` num esquema; `WITH GRANT OPTION` dado a um usuário que não é dono; escrita num grupo de leitura; privilégio num objeto sem `USAGE` no esquema dele, e `USAGE` num esquema sem nenhum objeto dele; grupo que lê um esquema sem privilégio padrão para os objetos novos. A permissão dada direto a um usuário não é apontada. |
 | Q6 | Ações sobre o banco | Só leitura, com os comandos `GRANT`, `REVOKE` e `ALTER DEFAULT PRIVILEGES` prontos para copiar. Revista em 20 de outubro de 2026: esses comandos passam a ser executados depois de uma revisão (ver "Usuários e permissões: administração e Alterações"). |
 | S1 | Comandos em lote | Com um filtro de situação, "Copiar os N comandos" da lista filtrada, como em Índices. Aprovada. |
-| S2 | Quem acessa | O detalhe de Tabelas, Visões e Funções ganha a seção "Quem acessa", com os papéis que alcançam o objeto, que abrem a linha em Permissões. Aprovada. |
+| S2 | Quem acessa | O detalhe de Tabelas, Views e Funções ganha a seção "Quem acessa", com os papéis que alcançam o objeto, que abrem a linha em Permissões. Aprovada. |
 | S3 | Caminho a partir de Papéis | O detalhe de um papel ganha "Ver o que ele pode fazer em Permissões". Aprovada. |
 | S4 | Comparar dois papéis | O modo "Comparar papéis" mostra lado a lado o acesso de dois papéis a cada objeto, só as diferenças por padrão, e começa no papel mais parecido. Aprovada. |
 
@@ -747,17 +747,17 @@ Regras:
   concedente, o `WITH GRANT OPTION` e as colunas), como tirar o acesso (a concessão direta, a participação no
   grupo ou PUBLIC; o dono e o superusuário não têm um `REVOKE`) ou, sem acesso, os comandos que concedem o
   mínimo, com o `USAGE` no esquema quando falta. "Ver também" leva a todos que acessam o objeto, a tudo o que o
-  papel acessa, à comparação, a Papéis e a Tabelas, Visões ou Funções. As setas percorrem a lista filtrada.
+  papel acessa, à comparação, a Papéis e a Tabelas, Views ou Funções. As setas percorrem a lista filtrada.
 * **Privilégios padrão:** painel abaixo da lista com cada privilégio padrão em frase e o comando, marcando os que
   alcançam o papel em análise.
-* **Quem acessa (S2):** no detalhe de Tabelas, Visões e Funções, os papéis com acesso próprio, PUBLIC quando tem
+* **Quem acessa (S2):** no detalhe de Tabelas, Views e Funções, os papéis com acesso próprio, PUBLIC quando tem
   algum privilégio, e os superusuários numa frase; cada item abre a linha em Permissões, no modo "Por objeto". As
   permissões são pedidas uma vez, quando o primeiro detalhe abre.
 * **Papéis (S3):** a seção "Participação" do detalhe ganha "Ver o que ele pode fazer em Permissões".
 * **URL:** sempre `/usuarios-e-permissoes/permissoes`, sem parâmetros. O modo, os papéis, o objeto, a busca, os
   filtros e a página ficam no histórico do navegador, como nas outras telas.
 * **Sem conexão e demonstração:** o mesmo painel e o mesmo aviso "Dados demonstrativos" das outras telas.
-* **Simulação:** os papéis de Papéis e os objetos de Tabelas, Visões e Funções, com os mesmos donos, mais as
+* **Simulação:** os papéis de Papéis e os objetos de Tabelas, Views e Funções, com os mesmos donos, mais as
   sequências das chaves e os três esquemas. O banco veio de uma versão anterior ao PostgreSQL 15, e PUBLIC ainda
   cria objetos em `public`; PUBLIC executa todas as funções, inclusive `arquivar_pedidos_antigos`, a `SECURITY
   DEFINER` de `postgres`, menos `auditoria.registrar_alteracao`; o grupo `leitura` lê as tabelas e visões de
@@ -822,7 +822,7 @@ Regras:
   `/usuarios-e-permissoes/alteracoes`, com os filtros no histórico do navegador.
 * **Simulação:** as alterações ficam no `localStorage` (`orynt:simulacao:alteracoes`), por conexão, sem senha nem
   verificador, e são reaplicadas sobre os dados gerados a cada leitura, em Papéis, Permissões, Sessões e nos donos de
-  Tabelas, Visões e Funções. As sessões de um papel excluído vão para `loja_app`, para a soma seguir igual às
+  Tabelas, Views e Funções. As sessões de um papel excluído vão para `loja_app`, para a soma seguir igual às
   conexões ativas do Dashboard. O simulador valida como o PostgreSQL e recusa com o SQLSTATE: papel que já existe,
   falta de permissão, dependências sem herdeiro, ciclo de grupos, excluir ou renomear o papel da conexão.
   `oryntSimulacao.restaurarPapeis()` volta ao início e `oryntSimulacao.recusarAlteracoes()` recusa tudo (`false`
@@ -895,7 +895,7 @@ Regras:
 Pedida pelo usuário: composição de cada tela, espaços vazios, modais e a árvore do plano, sem inventar conteúdo nem mudar o que cada tela faz.
 
 * **Pontos de atenção:** com mais de quatro pontos, o painel mostra os três mais urgentes e "Mostrar os outros N pontos" abre o resto, na mesma ordem; "Mostrar só os 3 mais urgentes" recolhe de novo. Assim a lista de Papéis, Permissões, Sessões, Índices e Tabelas começa na primeira tela. Com quatro ou menos, todos aparecem.
-* **Detalhes longos:** os detalhes de Tabelas, Funções, Índices, Visões, Papéis e Sessões ganham, abaixo da identificação, uma linha de atalhos para as seções, que fica fixa no topo do modal ao rolar e marca a seção em tela. O detalhe da tabela usa o modal largo.
+* **Detalhes longos:** os detalhes de Tabelas, Funções, Índices, Views, Papéis e Sessões ganham, abaixo da identificação, uma linha de atalhos para as seções, que fica fixa no topo do modal ao rolar e marca a seção em tela. O detalhe da tabela usa o modal largo.
 * **Exportação:** a prévia acompanha a altura de "O que exportar" e mostra até 24 linhas de cada arquivo.
 * **Histórico, Por intervalo:** a coluna de execuções vira uma barra larga, e a hora deixa de ocupar metade da tabela.
 * **Comparação de planos:** os dois planos lado a lado têm a mesma altura.
@@ -903,6 +903,103 @@ Pedida pelo usuário: composição de cada tela, espaços vazios, modais e a ár
 * **Planos de execução:** "Mudanças de plano" termina na mesma linha do detalhe da etapa.
 * **Sessões, cadeias de bloqueio:** cada cadeia abre com uma frase (quantas sessões, em quantos níveis, a espera mais longa), e cada sessão mostra o que espera e de quem, o que segura e o tempo, alinhado à direita.
 * **Cabeçalho das telas:** a descrição ocupa uma linha ao lado das ações nas telas largas, e trocar entre uma tela curta e uma longa não desloca mais o conteúdo para o lado.
+
+## Redesenho das composições (22 de outubro de 2026)
+
+Pedido pelo usuário: as telas pareciam o mesmo esqueleto (título, aviso, pontos de atenção, filtros, tabela) com
+outros dados. Cada tela passa a ter a composição da sua tarefa, sem mudar dados, regras, rotas nem o que cada
+tela faz. As regras de "Pontos de atenção" e do aviso de demonstração das seções acima continuam valendo; muda só
+onde e como aparecem.
+
+* **Aviso de demonstração:** em todas as telas, deixa de ser uma caixa âmbar no corpo e vira uma linha sob a
+  descrição, com o selo "Dados demonstrativos." e a frase da tela. O texto e as condições não mudam, e ele
+  continua na folha impressa. O modal de revisão das alterações mantém a nota.
+* **Panorama das telas de inventário:** acima da lista, uma figura própria de cada tela e, ao lado, os pontos de
+  atenção numa coluna (o ícone, o objeto, a frase em até duas linhas e a ação; a frase inteira está no detalhe).
+  Em telas estreitas a coluna desce para baixo da figura. Sem nenhum ponto, a figura ocupa a largura toda.
+  * **Tabelas, "Onde está o espaço":** o espaço total, a soma de dados, índices e TOAST e as sete maiores tabelas
+    em barras divididas nas três partes, com a situação mais urgente marcada; clicar abre o detalhe.
+  * **Índices, "Para que serve o espaço dos índices":** o espaço total, o espaço que não ajuda nenhuma consulta
+    (sem leitura, duplicados ou redundantes e inválidos) e uma barra por situação; cada situação com problema
+    filtra a lista, e as cinco tabelas com mais espaço em índices filtram a lista pela tabela.
+  * **Views, "Frescor e leitura":** há quanto tempo cada materializada foi atualizada, numa escala de 72 h com a
+    marca das 24 h, e as leituras de 30 dias de cada visão, com "Sem leitura" e "Por outra visão".
+  * **Funções, "Onde vai o tempo das funções":** o tempo total e as seis funções medidas que mais gastaram, com o
+    tempo dentro delas separado do tempo nas funções que elas chamam; as não medidas são contadas no rodapé.
+  * **Papéis, "Quem pertence a quem":** usuários, grupos, superusuários e sessões agora, e uma linha por grupo com
+    os membros (a participação sem herança tracejada), mais os usuários fora de grupo.
+* **Sessões:** os pontos de atenção ficam na coluna ao lado das cadeias de bloqueio, quando há cadeia.
+* **Permissões:** a tela é uma ferramenta de consulta, então os pontos de atenção ficam numa faixa recolhida com a
+  contagem e os três mais urgentes; "Ver todos" abre a lista inteira.
+* **Auditoria e Alterações:** a tabela vira uma linha do tempo agrupada por dia ("Hoje", "Ontem", o dia da
+  semana), com a hora, um marco com o ícone da ação e a cor do resultado (Auditoria: neutro, falha em âmbar,
+  negado em vermelho, e o selo só quando não deu certo; Alterações: aplicada, desfeita, recusada).
+* **Administração › Usuários:** cada conta ganha a inicial num círculo, e um painel "Perfis" ao lado da lista
+  mostra o que cada perfil pode fazer, quantas contas tem e quantas permissões dá; escolher um filtra a lista.
+* **Planos de execução:** os números da execução ficam numa faixa logo abaixo da consulta, a árvore e o detalhe
+  da etapa vêm em seguida, e o diagnóstico passa para baixo da árvore, antes dos índices sugeridos.
+* **Telas mantidas:** Dashboard, Resumo, Comparação, Exportação, Todas as consultas, Histórico, Configurações e as
+  telas de acesso já têm composição própria da tarefa e não mudaram.
+
+## Refinamento de 22 de outubro de 2026: dicas, Views, mapa de Papéis e avisos
+
+Pedido pelo usuário no mesmo dia, depois do redesenho das composições.
+
+* **Views:** a tela e o objeto passam a se chamar "Views", em inglês, em toda a interface: menu, título, aba do
+  navegador, seções e atalhos dos detalhes de Tabelas, Funções e Índices, tipos ("View comum", "View
+  materializada"), frases e rótulos de acessibilidade. A rota (`/objetos/visoes`), os identificadores e o contrato
+  da API não mudam. "Visão" no sentido comum (como em "uma visão clara") continua em português.
+* **Avisos de demonstração:** saem da interface. Não aparecem mais o aviso "Dados demonstrativos." das telas, o
+  selo "Dados demonstrativos" dos detalhes, o selo "Demonstração" do menu da conta, as notas "Conexão simulada." do
+  modal de conexão e das configurações, a nota "Demonstração." do convite, a nota da revisão de uma alteração, as
+  frases de demonstração das notificações (conexão e alteração aplicada) e do teste de conexão, a frase "Login
+  fictício…" do cartão de acesso e a frase "os dados vêm do simulador" do cartão de versões. Isso substitui as
+  regras "Sem conexão e demonstração" e o item "Demonstração" das seções acima no que diz respeito ao que aparece
+  na tela. Continuam, porque têm outra função: o cartão com as credenciais de acesso, a caixa de entrada simulada
+  da recuperação e do convite (sem elas os fluxos não terminam), o painel de cenários, que só existe em
+  desenvolvimento, e a marca dentro dos arquivos exportados e do texto copiado ("Origem dos dados", `-demonstracao`
+  no nome, `dadosDemonstrativos` no JSON, "(dados demonstrativos)" nos destaques), para que um arquivo com números
+  fictícios não passe por real fora do Orynt. Nenhuma notificação diz que uma alteração rodou num banco quando a
+  conexão é simulada.
+* **Dicas:** toda informação que aparecia no `title` do navegador vira a dica do Orynt (`Dica`): mesma aparência
+  nos dois temas, com seta, título opcional, posição que não sai da tela e troca de lado quando falta espaço,
+  abertura com o mouse depois de uma pequena espera (sem espera ao passar de uma dica para outra), com o foco do
+  teclado e com um toque nos textos que não são botões, e fechamento com Esc, ao rolar ou ao tocar fora. Os nomes
+  e descrições cortados com reticências só mostram a dica quando estão cortados. As dicas dos gráficos usam as
+  mesmas cores, borda e sombra.
+* **Papéis, "Quem pertence a quem":** a figura ocupa a largura toda e os pontos de atenção viram a faixa
+  recolhida de Permissões, acima dela. Um resumo (grupos, usuários, quantos têm sessão aberta e o total de
+  sessões, superusuários), os grupos em blocos com o cabeçalho (nome e quantos membros, quantos com sessão) e uma
+  linha por membro com as iniciais, o nome, as marcas (superusuário, a situação mais urgente, "Sem herança", "Esta
+  conexão") e as sessões abertas em texto e ponto verde; os usuários sem grupo numa área separada, com a
+  explicação. Um grupo com mais de cinco membros mostra quatro e "Mostrar mais N". "Com sessão aberta" mostra só
+  quem tem sessão agora, conforme o número de sessões que a API devolve.
+
+## Segunda revisão de 22 de outubro de 2026: dicas, gráficos dos relatórios e mapa de Papéis
+
+Pedida pelo usuário no mesmo dia, porque as dicas ainda cobriam informação e o mapa de Papéis não agradou.
+
+* **Dicas que não cobrem o que se está lendo:** numa tabela, a dica sai da linha inteira (acima dela ou, sem
+  espaço, abaixo), então nunca cobre a própria linha. Nas figuras de Tabelas e Funções, a dica fica ao lado da
+  ponta da barra, no trecho vazio da trilha, e só vai para o outro lado quando não cabe; ela não repete o nome que
+  já está na linha (Funções mostra a assinatura inteira, que a linha corta). O mouse pode passar para cima da
+  dica sem que ela suma, e ela fecha ao sair, com Esc ou ao tocar fora (WCAG 1.4.13). No tema claro a dica é
+  escura, e no escuro um cinza mais claro que os cartões, para se separar do conteúdo.
+* **Gráficos de linha do tempo:** nos dois gráficos de Resumo, de Comparação e de Histórico a dica flutuante deu
+  lugar a uma leitura na linha do título de cada gráfico, que acompanha a coluna sob o mouse e nunca fica em cima
+  de barras, linhas ou rótulos de pico. Em Histórico ela mostra "Novo plano" no intervalo da troca de plano, e o
+  rótulo "Novo plano" da linha tracejada fica do lado oposto ao do pico. O gráfico de atividade do Dashboard
+  mantém a dica flutuante, com as cores novas.
+* **Desempenho das consultas:** as barras de Resumo e Comparação não têm mais dica. Passar o mouse numa faixa da
+  barra ou numa linha da tabela ao lado destaca a mesma faixa nos dois lugares (as outras ficam apagadas); no
+  toque, um toque liga e desliga o destaque. Os números exatos estão na tabela.
+* **Papéis, "Quem pertence a quem":** uma lista com uma linha por grupo, como uma tabela: à esquerda o grupo
+  (nome e quantos membros, quantos com sessão), à direita os membros em fichas com as iniciais, o nome, a coroa
+  de superusuário, "esta conexão", "sem herança" (borda tracejada) e, quando há, "N sessões" com o ponto verde. A
+  última linha, "Sem grupo", com fundo e borda própria, traz os usuários fora de grupo e a explicação. Um grupo
+  vazio ocupa uma linha só. Quando os membros de um grupo passam de duas linhas, a linha mostra só o que cabe numa e "Mais N". Com mais de sete grupos aparecem os seis maiores (quatro em telas estreitas) e "Mostrar os outros N grupos"; os grupos vazios ficam juntos numa linha "Sem membros". Uma busca no card encontra um grupo ou um usuário pelo nome e mostra só as linhas onde ele aparece, e "Com sessão aberta" esconde os grupos sem ninguém conectado. Assim o card tem altura limitada mesmo com muitos usuários. As situações de senha e de uso
+  saíram do mapa: estão nos pontos de atenção e na lista logo abaixo. Uma legenda no rodapé explica a borda
+  tracejada quando existe uma participação sem herança. Abaixo de 640px do card o grupo fica acima das fichas.
 
 ## Fora desta fase
 

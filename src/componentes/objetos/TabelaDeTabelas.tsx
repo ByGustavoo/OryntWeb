@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { AnimationEvent, CSSProperties, MouseEvent, ReactNode } from 'react';
 import { ChevronRight } from 'lucide-react';
-import { CampoSelecao, Esqueleto } from '@/componentes/ui';
+import { CampoSelecao, Dica, Esqueleto } from '@/componentes/ui';
 import type { DirecaoOrdenacao } from '@/modelos/consultas';
 import type { OrdenacaoTabelas, TabelaDTO } from '@/modelos/objetos';
 import { leiturasDaTabela, rotuloSituacaoTabela, situacoesDaTabela, tamanhoTotal, ultimaManutencao } from '@/regras/tabelas';
@@ -112,9 +112,11 @@ function CelulaSituacao({ tabela }: { tabela: TabelaDTO }) {
     <span className={juntarClasses(estilos.celulaEmLinhas, estilos.alinhadaAoInicio)}>
       <SeloSituacaoTabela situacao={principal} />
       {outras.length > 0 ? (
-        <span className={estilos.textoSecundario} title={outras.map((situacao) => rotuloSituacaoTabela[situacao]).join(', ')}>
-          e mais {formatarNumero(outras.length)} {pluralizar(outras.length, 'ponto', 'pontos')}
-        </span>
+        <Dica conteudo={outras.map((situacao) => rotuloSituacaoTabela[situacao]).join(', ')}>
+          <span className={estilos.textoSecundario}>
+            e mais {formatarNumero(outras.length)} {pluralizar(outras.length, 'ponto', 'pontos')}
+          </span>
+        </Dica>
       ) : null}
     </span>
   );
@@ -125,9 +127,11 @@ function CelulaManutencao({ tabela, geradoEm }: { tabela: TabelaDTO; geradoEm: s
   if (!manutencao) return <span className={estilos.secundario}>Sem registro</span>;
   return (
     <span className={juntarClasses(estilos.celulaEmLinhas, estilos.alinhadaAoFim)}>
-      <span className="numeros" title={formatarDataHoraCompleta(new Date(manutencao.instante))}>
-        {iniciarComMaiuscula(formatarTempoRelativo(manutencao.instante, new Date(geradoEm)))}
-      </span>
+      <Dica conteudo={formatarDataHoraCompleta(new Date(manutencao.instante))}>
+        <span className="numeros">
+          {iniciarComMaiuscula(formatarTempoRelativo(manutencao.instante, new Date(geradoEm)))}
+        </span>
+      </Dica>
       <span className={estilos.textoSecundario}>{manutencao.automatica ? 'Autovacuum' : 'VACUUM manual'}</span>
     </span>
   );
@@ -243,12 +247,13 @@ export function TabelaDeTabelas({
                   <span className={`${estilos.nome} codigo`}>
                     <NomeObjeto esquema={tabela.esquema} nome={tabela.nome} classeEsquema={estilos.esquema} />
                   </span>
-                  <span
-                    className={juntarClasses(estilos.descricao, !tabela.descricao && estilos.semDescricao)}
-                    title={tabela.descricao ?? undefined}
-                  >
-                    {tabela.descricao ?? 'Sem descrição no banco'}
-                  </span>
+                  <Dica conteudo={tabela.descricao ?? undefined} soSeCortado>
+                    <span
+                      className={juntarClasses(estilos.descricao, !tabela.descricao && estilos.semDescricao)}
+                    >
+                      {tabela.descricao ?? 'Sem descrição no banco'}
+                    </span>
+                  </Dica>
                   <span className="visualmente-oculto">. Ver os detalhes desta tabela</span>
                 </button>
               </td>

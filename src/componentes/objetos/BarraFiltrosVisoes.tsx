@@ -39,10 +39,10 @@ export function BarraFiltrosVisoes({
 
   return (
     <div className={estilos.conteiner}>
-      <form className={estilos.barra} role="search" aria-label="Filtros das visões" onSubmit={enviar}>
+      <form className={estilos.barra} role="search" aria-label="Filtros das views" onSubmit={enviar}>
         <CampoBusca
           id="busca-visoes"
-          rotulo="Buscar pelo nome ou pela descrição da visão"
+          rotulo="Buscar pelo nome ou pela descrição da view"
           placeholder="Nome ou descrição"
           valor={busca}
           aoMudar={aoDigitarBusca}
@@ -52,7 +52,7 @@ export function BarraFiltrosVisoes({
         />
 
         <GrupoOpcoes
-          rotulo="Tipo de visão"
+          rotulo="Tipo de view"
           opcoes={opcoesTipo}
           valor={filtros.tipo ?? QUALQUER_TIPO}
           aoMudar={(valor) => aoMudar({ tipo: valor === QUALQUER_TIPO ? null : valor })}
@@ -61,7 +61,7 @@ export function BarraFiltrosVisoes({
 
         <CampoSelecao
           id="tipo-visoes"
-          rotulo="Tipo de visão"
+          rotulo="Tipo de view"
           rotuloOculto
           className={estilos.tipoCompacto}
           opcoes={tiposDeVisao}

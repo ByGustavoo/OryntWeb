@@ -348,7 +348,7 @@ function permanencias(operacoes: OperacaoDTO[], depois: ListaPermissoesDTO, indi
 function efeitosDosPadroes(operacoes: OperacaoDTO[]): LinhaDoEfeito[] {
   return operacoes.flatMap((operacao): LinhaDoEfeito[] => {
     if (operacao.tipo !== 'PRIVILEGIO_PADRAO') return [];
-    const objetos = { TABELAS: 'As tabelas e visões', SEQUENCIAS: 'As sequências', FUNCOES: 'As funções' }[operacao.tipoDeObjeto];
+    const objetos = { TABELAS: 'As tabelas e views', SEQUENCIAS: 'As sequências', FUNCOES: 'As funções' }[operacao.tipoDeObjeto];
     const onde = operacao.esquema === null ? 'em qualquer esquema' : `em ${operacao.esquema}`;
     const quem = operacao.beneficiario === PUBLICO ? 'todos os papéis (PUBLIC)' : operacao.beneficiario;
     return [

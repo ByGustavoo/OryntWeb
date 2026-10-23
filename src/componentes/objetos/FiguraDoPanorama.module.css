@@ -1,0 +1,229 @@
+.figura {
+  container: figura-panorama / inline-size;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+}
+
+.manchete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--espaco-3) var(--espaco-6);
+}
+
+.numeroPrincipal {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.valor {
+  color: var(--texto);
+  font-family: var(--fonte-numeros);
+  font-size: var(--tamanho-xl);
+  font-weight: var(--peso-medio);
+  letter-spacing: var(--letras-numeros);
+  line-height: var(--altura-linha-justa);
+}
+
+.legendaDoValor {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  line-height: 1.5;
+}
+
+.legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-1) var(--espaco-4);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-xs);
+  line-height: 1.5;
+}
+
+.itemLegenda {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.itemLegenda strong {
+  color: var(--texto);
+  font-family: var(--fonte-numeros);
+  font-weight: var(--peso-medio);
+}
+
+.situacaoNaDica {
+  color: var(--texto);
+  font-weight: var(--peso-medio);
+}
+
+.amostra {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background-color: var(--cor-amostra, var(--grafico-1));
+}
+
+.linhas {
+  display: flex;
+  flex-direction: column;
+  margin-inline: calc(-1 * var(--espaco-3));
+}
+
+.linha {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(8rem, 13rem) minmax(0, 1fr) 5.5rem;
+  align-items: center;
+  gap: var(--espaco-4);
+  width: 100%;
+  min-height: 40px;
+  padding: var(--espaco-2) var(--espaco-3);
+  border: none;
+  border-radius: var(--raio-md);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+button.linha {
+  cursor: pointer;
+  transition: background-color var(--duracao-rapida) var(--curva-saida);
+}
+
+button.linha:focus-visible {
+  outline: 2px solid var(--destaque);
+  outline-offset: -2px;
+}
+
+.nome {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+}
+
+.nome :global(.codigo),
+.nomeTexto {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.esquema {
+  color: var(--texto-terciario);
+}
+
+.marcaSituacao {
+  display: inline-grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+}
+
+.aviso {
+  background-color: var(--aviso-suave);
+  color: var(--aviso);
+}
+
+.erro {
+  background-color: var(--erro-suave);
+  color: var(--erro);
+}
+
+.barra {
+  position: relative;
+  min-width: 0;
+}
+
+.trilha {
+  display: flex;
+  gap: 2px;
+  height: 10px;
+  min-width: 0;
+}
+
+.segmento {
+  flex: 0 1 auto;
+  height: 100%;
+  min-width: 2px;
+  border-radius: 1px;
+  background-color: var(--cor-segmento, var(--grafico-1));
+  transform-origin: left center;
+  animation: crescer-segmento var(--duracao-expressiva) var(--curva-saida) backwards;
+  animation-delay: calc(var(--ordem, 0) * 40ms);
+}
+
+.segmento:last-child {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+.valorDaLinha {
+  color: var(--texto);
+  font-family: var(--fonte-numeros);
+  font-size: var(--tamanho-sm);
+  text-align: right;
+  white-space: nowrap;
+}
+
+@media (hover: hover) {
+  button.linha:hover {
+    background-color: var(--superficie-suave);
+  }
+}
+
+.rodape {
+  margin-top: auto;
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  line-height: 1.5;
+}
+
+.rodape strong {
+  color: var(--texto-secundario);
+  font-family: var(--fonte-numeros);
+  font-weight: var(--peso-medio);
+}
+
+@keyframes crescer-segmento {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@container figura-panorama (max-width: 520px) {
+  .linha {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--espaco-1) var(--espaco-3);
+  }
+
+  .barra {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .segmento {
+    animation: none;
+  }
+}
+
+@media print {
+  .segmento {
+    animation: none;
+  }
+}

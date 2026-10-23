@@ -1,5 +1,4 @@
 import { useId, useRef } from 'react';
-import type { ReactNode } from 'react';
 import {
   Area,
   AreaChart,
@@ -14,13 +13,13 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import type { TooltipProps } from 'recharts';
+import { LeituraDoGrafico } from '@/componentes/relatorios/LeituraDoGrafico';
 import estilos from '@/componentes/relatorios/GraficoEvolucao.module.css';
 import { useLarguraElemento } from '@/ganchos/useLarguraElemento';
+import { useLeituraDoGrafico } from '@/ganchos/useLeituraDoGrafico';
 import type { PontoHistoricoDTO } from '@/modelos/consultas';
 import type { PeriodoDashboard } from '@/modelos/dashboard';
 import { pontoComMaisExecucoes, pontoMaisLento, textosDoIntervalo } from '@/regras/historicoConsulta';
-import type { TextosDoIntervalo } from '@/regras/historicoConsulta';
 import { formatarDuracaoMs, formatarNumero, formatarNumeroCompacto, pluralizar } from '@/utilitarios/formatacao';
 import { marcasDoEixo, posicionarRotulo, prefereMovimentoReduzido } from '@/utilitarios/graficos';
 import trocas from './GraficoHistorico.module.css';
@@ -46,33 +45,9 @@ const RAIO_BARRA_PX = 4;
 const RAIO_MARCADOR_PX = 4;
 const RAIO_PONTO_ISOLADO_PX = 3;
 const RESPIRO_ROTULO_PX = 8;
+const INTERVALOS_ANTES_DO_ROTULO = 3;
 const SINCRONIA = 'historico-consulta';
 const margem = { top: 26, right: 8, bottom: 0, left: 0 };
-
-function DicaHistorico({
-  active,
-  payload,
-  textos,
-  comTroca,
-  children,
-}: TooltipProps<number, string> & {
-  textos: TextosDoIntervalo;
-  comTroca: string[];
-  children: (ponto: PontoHistoricoDTO) => ReactNode;
-}) {
-  const ponto = payload?.[0]?.payload as PontoHistoricoDTO | undefined;
-  if (!active || !ponto) return null;
-
-  return (
-    <div className={estilos.dica}>
-      <span className={estilos.dicaRotulo}>{textos.completo(ponto.instante)}</span>
-      {children(ponto)}
-      {comTroca.includes(ponto.instante) ? (
-        <span className={`${estilos.dicaLinha} ${trocas.dicaTroca}`}>O plano de execução mudou neste intervalo</span>
-      ) : null}
-    </div>
-  );
-}
 
 export function GraficoHistorico({ pontos, periodo, intervalosComTroca = [] }: GraficoHistoricoProps) {
   const idResumo = useId();
@@ -80,11 +55,25 @@ export function GraficoHistorico({ pontos, periodo, intervalosComTroca = [] }: G
   const areaTempoRef = useRef<HTMLDivElement>(null);
   const larguraTempo = useLarguraElemento(areaTempoRef);
   const textos = textosDoIntervalo[periodo];
+  const { lido, eventos } = useLeituraDoGrafico();
   const picoVolume = pontoComMaisExecucoes(pontos);
   const picoTempo = pontoMaisLento(pontos);
   if (!picoVolume || !picoTempo || picoTempo.tempoMedioMs === null) return null;
 
   const indicePicoVolume = pontos.indexOf(picoVolume);
+  const ladoDoRotuloDaTroca = (instante: string) => {
+    const indiceDaTroca = pontos.findIndex((ponto) => ponto.instante === instante);
+    return indicePicoVolume >= indiceDaTroca && indiceDaTroca >= INTERVALOS_ANTES_DO_ROTULO ? 'insideTopRight' : 'insideTopLeft';
+  };
+  const pontoLido = lido ? pontos[lido.indice] : undefined;
+  const xLido = pontoLido && lido ? lido.x : null;
+  const trocaNoLido = pontoLido ? intervalosComTroca.includes(pontoLido.instante) : false;
+  const rotuloDoLido = pontoLido ? (
+    <>
+      <span className={estilos.leituraRotulo}>{textos.completo(pontoLido.instante)}</span>
+      {trocaNoLido ? <span className={trocas.leituraTroca}>Novo plano</span> : null}
+    </>
+  ) : null;
   const temIntervaloVazio = pontos.some((ponto) => ponto.tempoMedioMs === null);
   const marcasVolume = marcasDoEixo(picoVolume.quantidadeExecucoes);
   const marcasTempo = marcasDoEixo(picoTempo.tempoMedioMs);
@@ -141,10 +130,20 @@ export function GraficoHistorico({ pontos, periodo, intervalosComTroca = [] }: G
       </figcaption>
 
       <div className={estilos.grafico}>
-        <p className={estilos.titulo}>Execuções</p>
+        <LeituraDoGrafico titulo="Execuções" x={xLido}>
+          {pontoLido ? (
+            <>
+              {rotuloDoLido}
+              <span>
+                <span className={estilos.dicaValor}>{formatarNumero(pontoLido.quantidadeExecucoes)}</span>{' '}
+                {pluralizar(pontoLido.quantidadeExecucoes, 'execução', 'execuções')}
+              </span>
+            </>
+          ) : null}
+        </LeituraDoGrafico>
         <div className={estilos.area} style={{ height: ALTURA_VOLUME_PX }} aria-hidden="true">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={pontos} margin={margem} syncId={SINCRONIA}>
+            <BarChart data={pontos} margin={margem} syncId={SINCRONIA} {...eventos}>
               <CartesianGrid vertical={false} />
               <XAxis dataKey="instante" hide />
               <YAxis
@@ -157,21 +156,7 @@ export function GraficoHistorico({ pontos, periodo, intervalosComTroca = [] }: G
                 width={LARGURA_EIXO_PX}
                 tickMargin={6}
               />
-              <Tooltip
-                cursor={{ className: estilos.faixaCursor }}
-                content={
-                  <DicaHistorico textos={textos} comTroca={intervalosComTroca}>
-                    {(ponto) => (
-                      <span className={estilos.dicaLinha}>
-                        <span className={estilos.dicaMarca} aria-hidden="true" />
-                        <span className={estilos.dicaValor}>{formatarNumero(ponto.quantidadeExecucoes)}</span>{' '}
-                        {pluralizar(ponto.quantidadeExecucoes, 'execução', 'execuções')}
-                      </span>
-                    )}
-                  </DicaHistorico>
-                }
-                isAnimationActive={false}
-              />
+              <Tooltip cursor={{ className: estilos.faixaCursor }} content={() => null} isAnimationActive={false} />
               <Bar
                 dataKey="quantidadeExecucoes"
                 name="Execuções"
@@ -189,7 +174,7 @@ export function GraficoHistorico({ pontos, periodo, intervalosComTroca = [] }: G
                   x={instante}
                   className={trocas.trocaDePlano}
                   ifOverflow="visible"
-                  label={{ value: 'Novo plano', position: 'insideTopLeft', offset: 6, className: trocas.rotuloTroca }}
+                  label={{ value: 'Novo plano', position: ladoDoRotuloDaTroca(instante), offset: 6, className: trocas.rotuloTroca }}
                 />
               ))}
             </BarChart>
@@ -198,10 +183,28 @@ export function GraficoHistorico({ pontos, periodo, intervalosComTroca = [] }: G
       </div>
 
       <div className={estilos.grafico}>
-        <p className={estilos.titulo}>Tempo médio de execução, em milissegundos</p>
+        <LeituraDoGrafico titulo="Tempo médio de execução, em milissegundos" x={xLido}>
+          {pontoLido ? (
+            <>
+              {rotuloDoLido}
+              {pontoLido.tempoMedioMs === null || pontoLido.tempoMaximoMs === null ? (
+                <span>Sem execuções</span>
+              ) : (
+                <>
+                  <span>
+                    <span className={estilos.dicaValor}>{formatarDuracaoMs(pontoLido.tempoMedioMs)}</span> de média
+                  </span>
+                  <span>
+                    <span className={estilos.dicaValor}>{formatarDuracaoMs(pontoLido.tempoMaximoMs)}</span> na mais lenta
+                  </span>
+                </>
+              )}
+            </>
+          ) : null}
+        </LeituraDoGrafico>
         <div ref={areaTempoRef} className={estilos.area} style={{ height: ALTURA_TEMPO_PX }} aria-hidden="true">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={pontos} margin={margem} syncId={SINCRONIA}>
+            <AreaChart data={pontos} margin={margem} syncId={SINCRONIA} {...eventos}>
               <defs>
                 <linearGradient id={idGradiente} x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" className={estilos.gradienteTopo} />
@@ -230,30 +233,7 @@ export function GraficoHistorico({ pontos, periodo, intervalosComTroca = [] }: G
                 width={LARGURA_EIXO_PX}
                 tickMargin={6}
               />
-              <Tooltip
-                cursor={{ className: estilos.linhaCursor }}
-                content={
-                  <DicaHistorico textos={textos} comTroca={intervalosComTroca}>
-                    {(ponto) =>
-                      ponto.tempoMedioMs === null || ponto.tempoMaximoMs === null ? (
-                        <span className={estilos.dicaLinha}>Sem execuções neste intervalo</span>
-                      ) : (
-                        <>
-                          <span className={estilos.dicaLinha}>
-                            <span className={estilos.dicaMarca} aria-hidden="true" />
-                            <span className={estilos.dicaValor}>{formatarDuracaoMs(ponto.tempoMedioMs)}</span> de tempo médio
-                          </span>
-                          <span className={estilos.dicaLinha}>
-                            <span className={estilos.dicaValor}>{formatarDuracaoMs(ponto.tempoMaximoMs)}</span> na execução mais
-                            lenta
-                          </span>
-                        </>
-                      )
-                    }
-                  </DicaHistorico>
-                }
-                isAnimationActive={false}
-              />
+              <Tooltip cursor={{ className: estilos.linhaCursor }} content={() => null} isAnimationActive={false} />
               <Area
                 type="monotone"
                 dataKey="tempoMedioMs"

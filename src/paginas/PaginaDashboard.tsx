@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ChartNoAxesColumn, FlaskConical, SearchX } from 'lucide-react';
+import { ArrowRight, ChartNoAxesColumn, SearchX } from 'lucide-react';
 import { ehErroApi } from '@/api/tratamentoErros';
 import { PainelSemConexao } from '@/componentes/conexao/PainelSemConexao';
 import { GraficoAtividade } from '@/componentes/dashboard/GraficoAtividade';
@@ -9,22 +9,13 @@ import { ResumoIndicadores } from '@/componentes/dashboard/ResumoIndicadores';
 import { EsqueletoTabelaConsultas, TabelaConsultas } from '@/componentes/dashboard/TabelaConsultas';
 import type { OrdenacaoDaTabela } from '@/componentes/dashboard/TabelaConsultas';
 import { CabecalhoPagina } from '@/componentes/layout/CabecalhoPagina';
-import {
-  CabecalhoPainel,
-  ConteudoAssincrono,
-  Esqueleto,
-  EstadoVazio,
-  GrupoOpcoes,
-  Nota,
-  Painel,
-} from '@/componentes/ui';
+import { CabecalhoPainel, ConteudoAssincrono, Esqueleto, EstadoVazio, GrupoOpcoes, Painel } from '@/componentes/ui';
 import { useDadosPorChave } from '@/ganchos/useDadosAssincronos';
 import type { ResultadoAssincrono } from '@/ganchos/useDadosAssincronos';
 import { esperaMaximaDaEtapa, useEntradaCoordenada } from '@/ganchos/useEntradaCoordenada';
 import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
 import { useVerHistorico } from '@/ganchos/useVerHistorico';
 import { useVerPlano } from '@/ganchos/useVerPlano';
-import type { ConexaoDTO } from '@/modelos/conexao';
 import type { PeriodoDashboard } from '@/modelos/dashboard';
 import { descricaoPeriodo, periodosDashboard, rotuloPeriodo } from '@/modelos/rotulos';
 import { useConexao } from '@/provedores/ProvedorConexao';
@@ -82,12 +73,12 @@ export default function PaginaDashboard() {
           conexao ? <GrupoOpcoes rotulo="Período" opcoes={opcoesPeriodo} valor={periodo} aoMudar={setPeriodo} /> : undefined
         }
       />
-      {conexao ? <DashboardConectado key={conexao.id} conexao={conexao} periodo={periodo} /> : <PainelSemConexao />}
+      {conexao ? <DashboardConectado key={conexao.id} periodo={periodo} /> : <PainelSemConexao />}
     </>
   );
 }
 
-function DashboardConectado({ conexao, periodo }: { conexao: ConexaoDTO; periodo: PeriodoDashboard }) {
+function DashboardConectado({ periodo }: { periodo: PeriodoDashboard }) {
   const { marcarDesconectada } = useConexao();
   const verHistorico = useVerHistorico();
   const verPlano = useVerPlano();
@@ -118,13 +109,6 @@ function DashboardConectado({ conexao, periodo }: { conexao: ConexaoDTO; periodo
 
   return (
     <div className={estilos.blocos} style={esperaDoEsqueleto(ETAPA_INDICADORES, trocouDePeriodo)}>
-      {conexao.simulada ? (
-        <Nota tom="aviso" icone={FlaskConical} titulo="Dados demonstrativos.">
-          Os números desta tela são fictícios e não vêm do seu banco. Eles dão lugar aos dados reais quando o Orynt
-          estiver ligado à API.
-        </Nota>
-      ) : null}
-
       <ResumoIndicadores resultado={indicadores} />
 
       <Painel aria-labelledby="titulo-atividade" aria-busy={atividade.carregando}>

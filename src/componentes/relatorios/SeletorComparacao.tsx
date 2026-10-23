@@ -1,6 +1,6 @@
 import { useId } from 'react';
 import { ArrowLeftRight, ChevronsRight } from 'lucide-react';
-import { Botao, BotaoIcone, GrupoOpcoes } from '@/componentes/ui';
+import { Botao, BotaoIcone, Dica, GrupoOpcoes } from '@/componentes/ui';
 import type { PeriodoRelatorio } from '@/modelos/relatorios';
 import { passoAnterior, passoSeguinte, rotuloGranularidade } from '@/modelos/rotulos';
 import {
@@ -162,19 +162,19 @@ export function SeletorComparacao({ par, hoje, aoMudar, acoes = [] }: SeletorCom
             {atalhosDeBase[granularidade].map((atalho) => {
               const destino = baseDoAtalho(periodo, atalho, hoje);
               return (
-                <button
-                  key={atalho.passos}
-                  type="button"
-                  className={estilos.atalho}
-                  aria-pressed={emUso?.passos === atalho.passos}
-                  aria-disabled={destino ? undefined : true}
-                  title={destino ? undefined : 'Fora dos 12 meses de histórico'}
-                  onClick={() => {
-                    if (destino) mudarBase(destino);
-                  }}
-                >
-                  {atalho.rotulo}
-                </button>
+                <Dica key={atalho.passos} conteudo={destino ? undefined : 'Fora dos 12 meses de histórico'}>
+                  <button
+                    type="button"
+                    className={estilos.atalho}
+                    aria-pressed={emUso?.passos === atalho.passos}
+                    aria-disabled={destino ? undefined : true}
+                    onClick={() => {
+                      if (destino) mudarBase(destino);
+                    }}
+                  >
+                    {atalho.rotulo}
+                  </button>
+                </Dica>
               );
             })}
           </div>

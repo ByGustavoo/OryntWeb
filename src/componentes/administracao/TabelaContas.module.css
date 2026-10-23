@@ -18,3 +18,41 @@
     width: auto;
   }
 }
+
+button.pessoa,
+.pessoa {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--espaco-3);
+  min-width: 0;
+}
+
+.identificacao {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.avatar {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--borda-forte);
+  border-radius: var(--raio-pilula);
+  background-color: var(--superficie-suave);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-forte);
+  line-height: 1;
+  user-select: none;
+}
+
+.avatarAtual {
+  border-color: color-mix(in srgb, var(--destaque) 34%, transparent);
+  background-color: var(--destaque-suave);
+  color: var(--destaque);
+}

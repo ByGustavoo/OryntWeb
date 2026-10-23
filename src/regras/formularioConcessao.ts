@@ -11,7 +11,7 @@ export type AlcanceDaConcessao = 'OBJETO' | 'ESQUEMA';
 export const tiposDeTodos: TipoTodosDoEsquema[] = ['TABELAS', 'SEQUENCIAS', 'FUNCOES'];
 
 export const rotuloTipoDeTodos: Record<TipoTodosDoEsquema, string> = {
-  TABELAS: 'Tabelas e visões',
+  TABELAS: 'Tabelas e views',
   SEQUENCIAS: 'Sequências',
   FUNCOES: 'Funções',
 };

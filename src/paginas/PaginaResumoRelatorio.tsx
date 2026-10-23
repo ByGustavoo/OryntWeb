@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChartNoAxesColumn, Download, FlaskConical, GitCompareArrows, Printer } from 'lucide-react';
+import { ChartNoAxesColumn, Download, GitCompareArrows, Printer } from 'lucide-react';
 import { ehErroApi } from '@/api/tratamentoErros';
 import { PainelSemConexao } from '@/componentes/conexao/PainelSemConexao';
 import { EsqueletoIndicadores } from '@/componentes/dashboard/GradeIndicadores';
@@ -18,7 +18,7 @@ import {
 } from '@/componentes/relatorios/EsqueletoRelatorio';
 import { GraficoEvolucao } from '@/componentes/relatorios/GraficoEvolucao';
 import { IndicadoresRelatorio } from '@/componentes/relatorios/IndicadoresRelatorio';
-import { CabecalhoPainel, ConteudoAssincrono, EstadoVazio, Nota, Painel } from '@/componentes/ui';
+import { CabecalhoPainel, ConteudoAssincrono, EstadoVazio, Painel } from '@/componentes/ui';
 import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
 import { useImpressao } from '@/ganchos/useImpressao';
 import { usePeriodoRelatorio } from '@/ganchos/usePeriodoRelatorio';
@@ -129,13 +129,6 @@ function ResumoConectado({ conexao }: { conexao: ConexaoDTO }) {
             { icone: Printer, rotulo: 'Imprimir', aoAcionar: imprimir, carregando: imprimindo },
           ]}
         />
-
-        {conexao.simulada ? (
-          <Nota tom="aviso" icone={FlaskConical} titulo="Dados demonstrativos.">
-            Os números deste relatório são fictícios e não vêm do seu banco. Eles dão lugar aos dados reais quando o Orynt
-            estiver ligado à API.
-          </Nota>
-        ) : null}
 
         <div className={estilos.conteudo} aria-busy={resumo.carregando}>
           <ConteudoAssincrono

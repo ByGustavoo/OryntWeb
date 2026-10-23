@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { AnimationEvent, CSSProperties, MouseEvent, ReactNode } from 'react';
 import { ChevronRight } from 'lucide-react';
-import { CampoSelecao, Esqueleto } from '@/componentes/ui';
+import { CampoSelecao, Dica, Esqueleto } from '@/componentes/ui';
 import type { DirecaoOrdenacao } from '@/modelos/consultas';
 import type { FuncaoDTO, OrdenacaoFuncoes } from '@/modelos/objetos';
 import {
@@ -114,9 +114,11 @@ function CelulaSituacao({ funcao, contexto }: { funcao: FuncaoDTO; contexto: Con
     <span className={juntarClasses(estilos.celulaEmLinhas, estilos.alinhadaAoInicio)}>
       <SeloSituacaoFuncao situacao={principal} />
       {outras.length > 0 ? (
-        <span className={estilos.textoSecundario} title={outras.map((situacao) => rotuloSituacaoFuncao[situacao]).join(', ')}>
-          e mais {formatarNumero(outras.length)} {pluralizar(outras.length, 'ponto', 'pontos')}
-        </span>
+        <Dica conteudo={outras.map((situacao) => rotuloSituacaoFuncao[situacao]).join(', ')}>
+          <span className={estilos.textoSecundario}>
+            e mais {formatarNumero(outras.length)} {pluralizar(outras.length, 'ponto', 'pontos')}
+          </span>
+        </Dica>
       ) : null}
     </span>
   );
@@ -126,9 +128,11 @@ function CelulaChamadas({ funcao, contexto }: { funcao: FuncaoDTO; contexto: Con
   const estado = estadoDoUso(funcao, contexto);
   if (estado === 'NAO_MEDIDA' || !funcao.uso) {
     return (
-      <span className={estilos.secundario} title="O servidor não mede as chamadas desta função">
-        Não medida
-      </span>
+      <Dica conteudo={"O servidor não mede as chamadas desta função"}>
+        <span className={estilos.secundario}>
+          Não medida
+        </span>
+      </Dica>
     );
   }
   return (
@@ -151,9 +155,11 @@ function DescricaoDaFuncao({ funcao, busca }: { funcao: FuncaoDTO; busca: string
     return <span className={juntarClasses(estilos.descricao, estilos.semDescricao)}>Encontrada no código</span>;
   }
   return (
-    <span className={juntarClasses(estilos.descricao, !funcao.descricao && estilos.semDescricao)} title={funcao.descricao ?? undefined}>
-      {funcao.descricao ?? 'Sem descrição no banco'}
-    </span>
+    <Dica conteudo={funcao.descricao ?? undefined} soSeCortado>
+      <span className={juntarClasses(estilos.descricao, !funcao.descricao && estilos.semDescricao)}>
+        {funcao.descricao ?? 'Sem descrição no banco'}
+      </span>
+    </Dica>
   );
 }
 
@@ -259,10 +265,12 @@ export function TabelaFuncoes({
           >
             <td className={estilos.celulaVisao}>
               <button type="button" className={estilos.abrir} aria-haspopup="dialog">
-                <span className={`${estilos.nome} codigo`} title={funcao.id}>
-                  <NomeObjeto esquema={funcao.esquema} nome={funcao.nome} classeEsquema={estilos.esquema} />
-                  <span className={estilos.esquema}>({funcao.argumentos})</span>
-                </span>
+                <Dica conteudo={funcao.id} soSeCortado>
+                  <span className={`${estilos.nome} codigo`}>
+                    <NomeObjeto esquema={funcao.esquema} nome={funcao.nome} classeEsquema={estilos.esquema} />
+                    <span className={estilos.esquema}>({funcao.argumentos})</span>
+                  </span>
+                </Dica>
                 <DescricaoDaFuncao funcao={funcao} busca={busca} />
                 <span className="visualmente-oculto">. Ver os detalhes desta função</span>
               </button>

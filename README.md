@@ -48,7 +48,7 @@ consulta que explica.
 
 * **Consultas SQL:** as telas Todas, Histórico e Planos de execução estão prontas, com dados demonstrativos.
 
-* **Objetos do banco (concluído):** as telas Visões, Índices, Tabelas e Funções estão prontas, com dados demonstrativos.
+* **Objetos do banco (concluído):** as telas Views, Índices, Tabelas e Funções estão prontas, com dados demonstrativos.
 
 * **Usuários e permissões (concluído):** as telas Papéis, Sessões, Alterações e Permissões estão prontas, com dados demonstrativos. Papéis e Permissões criam, alteram e excluem papéis e concedem e revogam acesso, sempre depois de uma revisão.
 
@@ -184,7 +184,7 @@ consulta que explica.
 
 * O plano registrado mais recente de uma consulta, abrindo na que mais pesa nos últimos 30 dias, com o mesmo seletor e as mesmas setas do Histórico
 
-* Árvore do plano, uma linha por etapa, com o tempo gasto na própria etapa, as linhas devolvidas e as que o planejador esperava, navegável pelo teclado
+* Os números da execução numa faixa, e logo abaixo a árvore do plano, uma linha por etapa, com o tempo gasto na própria etapa, as linhas devolvidas e as que o planejador esperava, navegável pelo teclado
 
 * Detalhe de cada etapa: condições, linhas lidas e descartadas, blocos do cache e do disco, memória e custo estimado
 
@@ -202,7 +202,7 @@ consulta que explica.
 
 * Atalho "Ver plano" no modal de detalhes da lista Todas, no Histórico e nas tabelas de consultas do Dashboard, do Resumo e da Comparação
 
-🔹 **Objetos do banco › Visões**
+🔹 **Objetos do banco › Views**
 
 * Inventário das visões comuns e materializadas de cada esquema, com busca pelo nome ou pela descrição e filtros de tipo, esquema e situação
 
@@ -210,7 +210,9 @@ consulta que explica.
 
 * Materializadas desatualizadas (mais de 24 horas sem atualizar) e sem dados marcadas na lista, e visões que nenhuma consulta leu em 30 dias em destaque, com atalhos que filtram cada caso
 
-* Pontos de atenção no topo, do mais urgente ao menos urgente, cada um com o atalho para a visão ou para a lista filtrada
+* Panorama "Frescor e leitura": há quanto tempo cada materializada foi atualizada, contra o limite de 24 horas, e as leituras de cada visão em 30 dias
+
+* Pontos de atenção ao lado do panorama, do mais urgente ao menos urgente, cada um com o atalho para a visão ou para a lista filtrada
 
 * Detalhe de cada visão: definição com cópia, colunas, do que ela depende e quem depende dela, e as consultas que a leem, com atalhos para o Histórico e o plano de execução
 
@@ -224,7 +226,9 @@ consulta que explica.
 
 * Índices inválidos, duplicados, redundantes e sem uso em 30 dias em destaque, com atalhos que filtram cada caso; chaves primárias e índices únicos nunca entram como sem uso
 
-* Pontos de atenção no topo, do mais urgente ao menos urgente, com o espaço ocupado e as gravações que cada índice recebe
+* Panorama "Para que serve o espaço dos índices": quanto do espaço está em índices lidos, sem leitura, duplicados, inválidos ou em observação, e as tabelas com mais espaço em índices, cada parte filtrando a lista
+
+* Pontos de atenção ao lado do panorama, do mais urgente ao menos urgente, com o espaço ocupado e as gravações que cada índice recebe
 
 * Detalhe de cada índice: o comando que o refaz ou o remove, pronto para copiar, a definição, as colunas, as funções que ele usa, com atalho para Funções, os outros índices da mesma tabela e as consultas cujo plano o lê, com atalhos para o plano, para a comparação de planos e para o Histórico
 
@@ -242,13 +246,15 @@ consulta que explica.
 
 * Tabelas com idade de transação perto do limite, linhas mortas demais, estatísticas desatualizadas, lidas inteiras na maior parte das vezes ou sem chave primária em destaque, com atalhos que filtram cada caso
 
-* Pontos de atenção no topo, do mais urgente ao menos urgente, cada um com o atalho para a tabela ou para a lista filtrada
+* Panorama "Onde está o espaço": o espaço total e as maiores tabelas, cada uma dividida em dados, índices e TOAST
+
+* Pontos de atenção ao lado do panorama, do mais urgente ao menos urgente, cada um com o atalho para a tabela ou para a lista filtrada
 
 * Detalhe de cada tabela: o comando de manutenção e os índices sugeridos pelos planos, prontos para copiar; o crescimento em 30 dias com um gráfico diário; o espaço em dados, índices e TOAST; as linhas vivas e mortas, a idade das transações e as datas de VACUUM e ANALYZE; os ajustes de autovacuum da tabela, com o valor do servidor; as partições, as colunas, os índices, as visões que dependem dela e as consultas cujo plano a lê
 
 * Com um filtro de situação, os comandos de todas as tabelas da lista copiados de uma vez, um por linha
 
-* Caminhos entre as telas: os índices da tabela abrem Índices, as visões abrem Visões, os gatilhos abrem a função deles em Funções, e a tabela de um índice ou de uma visão abre o detalhe dela em Tabelas
+* Caminhos entre as telas: os índices da tabela abrem Índices, as visões abrem Views, os gatilhos abrem a função deles em Funções, e a tabela de um índice ou de uma visão abre o detalhe dela em Tabelas
 
 🔹 **Objetos do banco › Funções**
 
@@ -258,7 +264,9 @@ consulta que explica.
 
 * Funções que rodam com os privilégios do dono sem fixar o search_path, funções pesadas (100 ms ou mais por chamada) e funções sem chamadas em 30 dias em destaque, com atalhos que filtram cada caso; uma função de que dependem um gatilho ativo, um índice ou uma visão nunca entra como sem chamadas
 
-* Pontos de atenção no topo, do mais urgente ao menos urgente, cada um com o atalho para a função ou para a lista filtrada
+* Panorama "Onde vai o tempo das funções": as funções que mais gastaram tempo em 30 dias, separando o tempo delas do tempo nas funções que chamam
+
+* Pontos de atenção ao lado do panorama, do mais urgente ao menos urgente, cada um com o atalho para a função ou para a lista filtrada
 
 * Detalhe de cada função: o comando que fixa o caminho de busca ou remove a função, pronto para copiar; o uso, com a parte do tempo gasta dentro da própria função; os parâmetros, o retorno e a volatilidade explicados; o código com cópia; os gatilhos que a chamam, com atalho para a tabela; as consultas que a citam, com atalhos para o plano e o Histórico; e os índices e as visões que dependem dela
 
@@ -274,9 +282,11 @@ consulta que explica.
 
 * Superusuários com login além do criado na instalação, senhas vencidas ou que vencem em até 7 dias, senhas em MD5, usuários com 80% ou mais do limite de conexões, usuários sem nenhuma sessão em 30 dias e grupos vazios em destaque, com atalhos que filtram cada caso
 
-* Pontos de atenção no topo, do mais urgente ao menos urgente, cada um com o atalho para o papel ou para a lista filtrada
+* Mapa "Quem pertence a quem": cada grupo com os membros, os usuários fora de grupo, os superusuários e as sessões abertas agora
 
-* Detalhe de cada papel: o comando que resolve cada ponto, pronto para copiar e sem nenhuma senha no texto; o acesso; os atributos explicados, incluindo os que ele só ganha com SET ROLE num grupo; de quem ele é membro e quem é membro dele; as configurações próprias, com aviso quando um usuário comum não tem `statement_timeout`; e os objetos de que é dono, com atalho para Tabelas, Visões e Funções
+* Pontos de atenção ao lado do mapa, do mais urgente ao menos urgente, cada um com o atalho para o papel ou para a lista filtrada
+
+* Detalhe de cada papel: o comando que resolve cada ponto, pronto para copiar e sem nenhuma senha no texto; o acesso; os atributos explicados, incluindo os que ele só ganha com SET ROLE num grupo; de quem ele é membro e quem é membro dele; as configurações próprias, com aviso quando um usuário comum não tem `statement_timeout`; e os objetos de que é dono, com atalho para Tabelas, Views e Funções
 
 * Aviso quando o papel é dono de uma função `SECURITY DEFINER` que não fixa o `search_path`
 
@@ -294,7 +304,7 @@ consulta que explica.
 
 * Cadeias de bloqueio em árvore, da sessão que segura o bloqueio até as que esperam por ela
 
-* Sessões bloqueando outras, esperando bloqueio há 30 s ou mais, com transação parada há 5 min ou mais, com consulta rodando há 5 min ou mais e com transação aberta há 30 min ou mais em destaque, com atalhos que filtram cada caso e pontos de atenção no topo
+* Sessões bloqueando outras, esperando bloqueio há 30 s ou mais, com transação parada há 5 min ou mais, com consulta rodando há 5 min ou mais e com transação aberta há 30 min ou mais em destaque, com atalhos que filtram cada caso e pontos de atenção ao lado das cadeias de bloqueio
 
 * Lista com busca pelo PID, papel, aplicação, endereço ou SQL e filtros de banco, estado, situação e papel; os processos do servidor ficam atrás de uma chave
 
@@ -312,7 +322,7 @@ consulta que explica.
 
 * Três modos: tudo o que um papel alcança, todos que alcançam um objeto e dois papéis lado a lado, só com as diferenças, começando no papel mais parecido
 
-* Funções `SECURITY DEFINER` que qualquer papel executa, esquemas em que qualquer papel cria objetos, escrita num grupo de leitura, `WITH GRANT OPTION` dado a um usuário, privilégio sem `USAGE` no esquema, `USAGE` sem nenhum objeto e esquema sem privilégio padrão para o grupo que o lê, com atalhos que filtram cada caso e pontos de atenção no topo
+* Funções `SECURITY DEFINER` que qualquer papel executa, esquemas em que qualquer papel cria objetos, escrita num grupo de leitura, `WITH GRANT OPTION` dado a um usuário, privilégio sem `USAGE` no esquema, `USAGE` sem nenhum objeto e esquema sem privilégio padrão para o grupo que o lê, com atalhos que filtram cada caso e pontos de atenção ao lado das cadeias de bloqueio
 
 * Detalhe de cada acesso: o comando que resolve cada ponto, cada privilégio com o efeito e todas as origens, como tirar o acesso ou, sem acesso, o `GRANT` mínimo, e atalhos para o objeto, o papel e a comparação
 
@@ -342,11 +352,13 @@ consulta que explica.
 
 🔹 **Usuários e permissões › Alterações**
 
-* Tudo o que o Orynt mudou nos papéis e nas permissões do servidor, aplicado ou recusado, com a conta, o papel da conexão, quando, os comandos e a resposta do banco, com busca, filtros e desfazer
+* Linha do tempo, agrupada por dia, de tudo o que o Orynt mudou nos papéis e nas permissões do servidor, aplicado, desfeito ou recusado, com a conta, o papel da conexão, quando, os comandos e a resposta do banco, com busca, filtros e desfazer
 
 🔹 **Administração › Usuários**
 
 * As contas que entram no Orynt (não os papéis do banco): nome, e-mail, perfil, situação, último acesso e criação, com busca, filtros, paginação e atalhos para as contas bloqueadas, os convites expirados e as contas sem acesso há 30 dias
+
+* Painel "Perfis" ao lado da lista: o que cada perfil pode fazer, quantas contas tem e quantas permissões dá, filtrando a lista com um clique
 
 * "Novo usuário" com perfil (Leitor, Analista ou Administrador), permissões iniciais e convite: a pessoa define a própria senha, que ninguém mais conhece
 
@@ -363,6 +375,8 @@ consulta que explica.
 🔹 **Administração › Auditoria**
 
 * O que cada conta acessou e fez: logins e logouts, tentativas recusadas, telas abertas, contas, permissões, conexões e alterações no banco, além das tentativas sem permissão
+
+* Linha do tempo agrupada por dia, com a hora, o ícone da ação e o resultado em destaque só quando algo não deu certo
 
 * Filtros por usuário, tipo de ação, módulo, resultado e período, busca, paginação e o detalhe de cada evento, com o antes e o depois
 

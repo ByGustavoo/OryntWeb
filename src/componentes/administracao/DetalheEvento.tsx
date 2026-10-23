@@ -1,8 +1,8 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import { ArrowRight, ChevronDown, ChevronUp, FlaskConical, ShieldCheck } from 'lucide-react';
+import { ArrowRight, ChevronDown, ChevronUp, ShieldCheck } from 'lucide-react';
 import { Medida } from '@/componentes/objetos/DetalheObjeto';
 import estilos from '@/componentes/objetos/DetalheObjeto.module.css';
-import { BotaoIcone, Modal, Selo } from '@/componentes/ui';
+import { BotaoIcone, Modal } from '@/componentes/ui';
 import type { EventoAuditoriaDTO, TipoAlvoAuditoria } from '@/modelos/administracao';
 import {
   descreverEvento,
@@ -26,7 +26,6 @@ const rotuloDoAlvo: Record<TipoAlvoAuditoria, string> = {
 
 interface DetalheEventoProps {
   evento: EventoAuditoriaDTO | null;
-  simulada: boolean;
   posicao: number | null;
   total: number;
   temAnterior: boolean;
@@ -40,7 +39,6 @@ interface DetalheEventoProps {
 
 export function DetalheEvento({
   evento,
-  simulada,
   posicao,
   total,
   temAnterior,
@@ -95,7 +93,6 @@ export function DetalheEvento({
         <CorpoDoEvento
           key={exibido.id}
           evento={exibido}
-          simulada={simulada}
           aoVerDaConta={aoVerDaConta}
           aoAbrirAlteracoes={aoAbrirAlteracoes}
         />
@@ -106,12 +103,11 @@ export function DetalheEvento({
 
 interface CorpoDoEventoProps {
   evento: EventoAuditoriaDTO;
-  simulada: boolean;
   aoVerDaConta: (contaId: string) => void;
   aoAbrirAlteracoes?: () => void;
 }
 
-function CorpoDoEvento({ evento, simulada, aoVerDaConta, aoAbrirAlteracoes }: CorpoDoEventoProps) {
+function CorpoDoEvento({ evento, aoVerDaConta, aoAbrirAlteracoes }: CorpoDoEventoProps) {
   const raiz = useRef<HTMLDivElement>(null);
   const motivo = descreverMotivo(evento);
   const permissoes = descreverPermissoesDoEvento(evento);
@@ -127,11 +123,6 @@ function CorpoDoEvento({ evento, simulada, aoVerDaConta, aoAbrirAlteracoes }: Co
         <p className={estilos.nome}>{descreverEvento(evento)}</p>
         <div className={estilos.selos}>
           <SeloResultadoAuditoria resultado={evento.resultado} />
-          {simulada ? (
-            <Selo tom="aviso" icone={FlaskConical}>
-              Dados demonstrativos
-            </Selo>
-          ) : null}
         </div>
       </header>
 
@@ -265,7 +256,7 @@ function CorpoDoEvento({ evento, simulada, aoVerDaConta, aoAbrirAlteracoes }: Co
           ) : null}
           <div>
             <dt>Endereço IP</dt>
-            <dd>{evento.origem.ip ?? (simulada ? 'Não disponível na simulação' : 'Não registrado')}</dd>
+            <dd>{evento.origem.ip ?? 'Não registrado'}</dd>
           </div>
           <div>
             <dt>Navegador</dt>

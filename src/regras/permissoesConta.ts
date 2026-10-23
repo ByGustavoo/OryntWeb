@@ -59,7 +59,7 @@ export const gruposDePermissoes: GrupoDePermissoes[] = [
       {
         codigo: 'OBJETOS_VER',
         rotulo: 'Ver os objetos',
-        descricao: 'Visões, Índices, Tabelas e Funções, com as definições.',
+        descricao: 'Views, Índices, Tabelas e Funções, com as definições.',
         requer: [],
       },
     ],
@@ -241,7 +241,7 @@ export const telasDoOrynt: TelaDoOrynt[] = [
   { caminho: caminhos.consultasTodas, rotulo: 'Consultas SQL › Todas', modulo: 'CONSULTAS', permissao: 'CONSULTAS_VER' },
   { caminho: caminhos.consultasHistorico, rotulo: 'Consultas SQL › Histórico', modulo: 'CONSULTAS', permissao: 'CONSULTAS_VER' },
   { caminho: caminhos.consultasPlanos, rotulo: 'Consultas SQL › Planos de execução', modulo: 'CONSULTAS', permissao: 'CONSULTAS_VER' },
-  { caminho: caminhos.objetosVisoes, rotulo: 'Objetos do banco › Visões', modulo: 'OBJETOS', permissao: 'OBJETOS_VER' },
+  { caminho: caminhos.objetosVisoes, rotulo: 'Objetos do banco › Views', modulo: 'OBJETOS', permissao: 'OBJETOS_VER' },
   { caminho: caminhos.objetosIndices, rotulo: 'Objetos do banco › Índices', modulo: 'OBJETOS', permissao: 'OBJETOS_VER' },
   { caminho: caminhos.objetosTabelas, rotulo: 'Objetos do banco › Tabelas', modulo: 'OBJETOS', permissao: 'OBJETOS_VER' },
   { caminho: caminhos.objetosFuncoes, rotulo: 'Objetos do banco › Funções', modulo: 'OBJETOS', permissao: 'OBJETOS_VER' },

@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 import type { MouseEvent } from 'react';
-import { Botao, BotaoIcone } from '@/componentes/ui';
+import { Botao, BotaoIcone, Dica } from '@/componentes/ui';
 import type { BotaoProps } from '@/componentes/ui';
 import type { BotaoIconeProps } from '@/componentes/ui/BotaoIcone';
 import type { CodigoPermissao } from '@/modelos/administracao';
@@ -55,14 +55,20 @@ interface BotaoDeAlteracaoProps extends BotaoProps {
 
 export function BotaoDeAlteracao({ capacidade, onClick, className, ...resto }: BotaoDeAlteracaoProps) {
   const { bloqueado, motivo, aoClicar } = useBloqueio(capacidade, onClick);
-  return (
+  const botao = (
     <Botao
       {...resto}
       className={juntarClasses(bloqueado && estilos.bloqueado, className)}
       aria-disabled={bloqueado || undefined}
-      title={motivo}
       onClick={aoClicar}
     />
+  );
+  return motivo ? (
+    <Dica conteudo={motivo} descrever>
+      {botao}
+    </Dica>
+  ) : (
+    botao
   );
 }
 
@@ -77,7 +83,7 @@ export function BotaoIconeDeAlteracao({ capacidade, onClick, rotulo, ...resto }:
       {...resto}
       rotulo={rotulo}
       aria-disabled={bloqueado || undefined}
-      title={motivo ?? rotulo}
+      dica={motivo ?? undefined}
       onClick={aoClicar}
     />
   );

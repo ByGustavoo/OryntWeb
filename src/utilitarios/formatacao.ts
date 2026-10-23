@@ -154,3 +154,7 @@ export function pluralizar(quantidade: number, singular: string, plural: string)
 export function iniciarComMaiuscula(texto: string): string {
   return texto.charAt(0).toUpperCase() + texto.slice(1);
 }
+
+export function iniciarComMinuscula(texto: string): string {
+  return texto.charAt(0).toLowerCase() + texto.slice(1);
+}

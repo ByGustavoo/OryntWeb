@@ -1,0 +1,22 @@
+.titulo {
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+  line-height: var(--altura-linha-compacta);
+  overflow-wrap: anywhere;
+}
+
+.comandos {
+  overflow: hidden;
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-xs);
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meta {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  line-height: 1.5;
+}

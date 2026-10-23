@@ -364,7 +364,7 @@ END;`,
     retorno: 'TABLE(categoria_id bigint, faturamento numeric)',
     volatilidade: 'ESTAVEL',
     dono: 'loja_analise',
-    descricao: 'O faturamento de cada categoria entre duas datas, lido da visão de vendas diárias.',
+    descricao: 'O faturamento de cada categoria entre duas datas, lido da view de vendas diárias.',
     corpo: `SELECT v.categoria_id, sum(v.faturamento)
   FROM relatorios.vendas_diarias v
  WHERE v.dia >= inicio AND v.dia < fim + 1

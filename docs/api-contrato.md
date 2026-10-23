@@ -1928,7 +1928,7 @@ volta `400`. É um evento por tela aberta: trocar filtros ou páginas não gera 
 * Quanto tempo de histórico por consulta a API guarda e com que frequência ela coleta os intervalos (`pg_stat_statements` só dá o acumulado).
 * Formato definitivo do `id` da consulta (o `queryid` do PostgreSQL é um inteiro de 64 bits).
 * `sslmode` em `CredenciaisConexaoDTO`, quando o modo SSL entrar no formulário.
-* Visões: como a API liga uma consulta à visão que ela lê (análise do texto ou do plano), se guarda a última
+* Views: como a API liga uma consulta à visão que ela lê (análise do texto ou do plano), se guarda a última
   atualização das materializadas além dos 30 dias e se as visões de extensões entram na lista.
 * Índices: com que frequência a API amostra `pg_stat_user_indexes` e `pg_stat_user_tables`, o que faz depois de um
   `pg_stat_reset` e se os índices das tabelas de extensões entram na lista.

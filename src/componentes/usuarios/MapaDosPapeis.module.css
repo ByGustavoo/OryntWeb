@@ -1,0 +1,445 @@
+.painel {
+  container: mapa-papeis / inline-size;
+}
+
+.barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-3) var(--espaco-6);
+  margin-top: calc(-1 * var(--espaco-1));
+}
+
+.busca {
+  flex: 0 1 18rem;
+  min-width: min(100%, 14rem);
+}
+
+.semResultado {
+  align-self: stretch;
+  margin-top: var(--espaco-4);
+  padding: var(--espaco-6) var(--espaco-4);
+  border: 1px dashed var(--borda-forte);
+  border-radius: var(--raio-lg);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  text-align: center;
+}
+
+.linhaDoAlternador {
+  display: flex;
+  padding: var(--espaco-2) var(--espaco-4);
+}
+
+.fichaDeGrupo {
+  padding-left: var(--espaco-3);
+  color: var(--texto-secundario);
+}
+
+.fichaDeGrupo svg {
+  flex-shrink: 0;
+  color: var(--texto-terciario);
+}
+
+.resumo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-1) var(--espaco-5);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  line-height: 1.5;
+}
+
+.resumo li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.resumo strong {
+  color: var(--texto);
+  font-weight: var(--peso-forte);
+}
+
+.pontoResumo {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--sucesso-grafico);
+}
+
+.coroa {
+  flex-shrink: 0;
+  color: var(--erro);
+}
+
+.mapa {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--espaco-4);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-lg);
+}
+
+.linha {
+  display: grid;
+  grid-template-columns: minmax(12rem, 15rem) minmax(0, 1fr);
+  align-items: start;
+  gap: var(--espaco-3) var(--espaco-5);
+  padding: var(--espaco-3) var(--espaco-4);
+  animation: var(--animacao-revelar) var(--duracao-lenta) var(--curva-saida) backwards;
+  animation-delay: calc(var(--indice, 0) * 40ms);
+}
+
+.mapa > li + li {
+  border-top: 1px solid var(--borda);
+}
+
+.linhaFora {
+  border-bottom-right-radius: inherit;
+  border-bottom-left-radius: inherit;
+  background-color: var(--superficie-suave);
+}
+
+.mapa > li + .linhaFora {
+  border-top-style: dashed;
+  border-top-color: var(--borda-forte);
+}
+
+.grupo {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  min-width: 0;
+  min-height: 44px;
+  margin: calc(-1 * var(--espaco-1)) calc(-1 * var(--espaco-2));
+  padding: var(--espaco-1) var(--espaco-2);
+  border: none;
+  border-radius: var(--raio-md);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+button.grupo {
+  cursor: pointer;
+  transition: background-color var(--duracao-rapida) var(--curva-saida);
+}
+
+.iconeDoGrupo {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--raio-md);
+  background-color: var(--destaque-suave);
+  color: var(--destaque);
+}
+
+.linhaVazia .iconeDoGrupo,
+.iconeFora {
+  background-color: var(--neutro-suave);
+  color: var(--texto-terciario);
+}
+
+.textoDoGrupo {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.nomeDoGrupo {
+  overflow: hidden;
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-forte);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nomeFora {
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-forte);
+}
+
+.contagem {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  line-height: 1.45;
+}
+
+.colunaFora {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+  min-width: 0;
+}
+
+.explicacaoFora {
+  padding-top: 2px;
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  line-height: 1.5;
+}
+
+.fichas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-2);
+  min-width: 0;
+  padding-top: 6px;
+}
+
+.fichas > li {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.umaLinha {
+  flex-wrap: nowrap;
+}
+
+.umaLinha > li:last-child {
+  flex-shrink: 0;
+}
+
+.medindo {
+  max-height: 78px;
+  overflow: hidden;
+}
+
+.ficha {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  max-width: 100%;
+  min-height: 32px;
+  padding: 3px var(--espaco-3) 3px 3px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-pilula);
+  background-color: var(--superficie);
+  color: var(--texto-secundario);
+  font: inherit;
+  font-size: var(--tamanho-sm);
+  line-height: 1.3;
+  cursor: pointer;
+  transition:
+    background-color var(--duracao-rapida) var(--curva-saida),
+    border-color var(--duracao-rapida) var(--curva-saida);
+}
+
+.fichaConectada {
+  color: var(--texto);
+}
+
+.fichaSemHeranca {
+  border-style: dashed;
+  border-color: var(--borda-forte);
+}
+
+.fichaDaConexao {
+  border-color: color-mix(in srgb, var(--destaque) 55%, transparent);
+}
+
+.avatar {
+  position: relative;
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: var(--neutro-suave);
+  color: var(--texto-secundario);
+  font-size: 10px;
+  font-weight: var(--peso-forte);
+  letter-spacing: 0.02em;
+  line-height: 1;
+  user-select: none;
+}
+
+.avatarSuper {
+  background-color: var(--erro-suave);
+  color: var(--erro);
+}
+
+.pontoConectado {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--superficie);
+  border-radius: 50%;
+  background-color: var(--sucesso-grafico);
+}
+
+.nome {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.marca {
+  flex-shrink: 4;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 6px;
+  border-radius: var(--raio-pilula);
+  background-color: var(--neutro-suave);
+  color: var(--texto-secundario);
+  font-size: 11px;
+  font-weight: var(--peso-medio);
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.marcaDaConexao {
+  background-color: var(--destaque-suave);
+  color: var(--destaque);
+}
+
+.sessoes {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 3px;
+  color: var(--sucesso);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+  white-space: nowrap;
+}
+
+.vazio {
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+  margin-top: 6px;
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-sm);
+}
+
+.alternar {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 32px;
+  padding: 0 var(--espaco-2);
+  border: none;
+  border-radius: var(--raio-pilula);
+  background: none;
+  color: var(--destaque);
+  font: inherit;
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+  cursor: pointer;
+}
+
+.alternar svg {
+  transition: transform var(--duracao-base) var(--curva-saida);
+}
+
+.expandida svg {
+  transform: rotate(180deg);
+}
+
+.legenda {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-1) var(--espaco-2);
+  margin-top: var(--espaco-3);
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  line-height: 1.5;
+}
+
+.amostraSemHeranca {
+  padding: 0 var(--espaco-2);
+  border: 1px dashed var(--borda-forte);
+  border-radius: var(--raio-pilula);
+  color: var(--texto-secundario);
+  font-size: 11px;
+  font-weight: var(--peso-medio);
+}
+
+.grupo:focus-visible,
+.ficha:focus-visible,
+.alternar:focus-visible {
+  outline: 2px solid var(--destaque);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  button.grupo:hover {
+    background-color: var(--superficie-suave);
+  }
+
+  .linhaFora button.grupo:hover {
+    background-color: var(--superficie);
+  }
+
+  .ficha:hover {
+    border-color: var(--borda-forte);
+    background-color: var(--superficie-suave);
+  }
+
+  .linhaFora .ficha:hover {
+    background-color: var(--superficie-elevada);
+  }
+
+  .alternar:hover {
+    background-color: var(--destaque-suave);
+  }
+}
+
+.colunaFora .fichas {
+  padding-top: 0;
+}
+
+@container mapa-papeis (max-width: 640px) {
+  .linha {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--espaco-2);
+    padding: var(--espaco-3);
+  }
+
+  .fichas,
+  .vazio {
+    padding-top: 0;
+    margin-top: 0;
+  }
+
+  .linhaDoAlternador {
+    padding-inline: var(--espaco-3);
+  }
+
+  .busca {
+    flex-basis: 100%;
+  }
+}
+
+@container mapa-papeis (max-width: 420px) {
+  .marcaSemHeranca {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .linha {
+    animation: none;
+  }
+
+  .alternar svg {
+    transition: none;
+  }
+}

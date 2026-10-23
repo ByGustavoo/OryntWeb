@@ -109,8 +109,8 @@ export const rotuloMetodoSenha: Record<MetodoSenha, string> = {
 
 export const rotuloTipoObjetoDoPapel: Record<TipoObjetoDoPapel, string> = {
   TABELA: 'Tabela',
-  VISAO: 'Visão',
-  VISAO_MATERIALIZADA: 'Visão materializada',
+  VISAO: 'View',
+  VISAO_MATERIALIZADA: 'View materializada',
   FUNCAO: 'Função',
   PROCEDIMENTO: 'Procedimento',
 };
@@ -166,6 +166,18 @@ function lerDaLista<T extends string>(lista: readonly T[], valor: unknown): T | 
 
 export function lerNomeDoPapel(valor: unknown): string | null {
   return typeof valor === 'string' && NOME_DE_PAPEL.test(valor) ? valor : null;
+}
+
+export function iniciaisDoPapel(nome: string): string {
+  const partes = nome.split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+  const [primeira, segunda] = partes;
+  if (!primeira) return '?';
+  const ultima = partes[partes.length - 1] ?? '';
+  if (partes.length > 1 && /^\d+$/.test(ultima)) {
+    return `${primeira.charAt(0)}${String(Number(ultima)).slice(-2)}`.toLocaleUpperCase('pt-BR');
+  }
+  const iniciais = segunda ? `${primeira.charAt(0)}${segunda.charAt(0)}` : primeira.slice(0, 2);
+  return iniciais.toLocaleUpperCase('pt-BR');
 }
 
 export function identificadorSql(nome: string): string {

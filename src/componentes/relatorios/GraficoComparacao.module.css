@@ -44,16 +44,13 @@
   stroke: var(--superficie);
 }
 
-.dicaData {
-  min-width: 3.25rem;
-  color: var(--texto-terciario);
-  font-family: var(--fonte-numeros);
-  font-size: var(--tamanho-xs);
-  font-variant-numeric: tabular-nums;
+.ladoDaLeitura {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
 }
 
-.dicaVariacao {
-  margin-top: 2px;
-  color: var(--texto-terciario);
-  font-size: var(--tamanho-xs);
+.ladoDaLeitura .traco {
+  width: 14px;
+  align-self: center;
 }

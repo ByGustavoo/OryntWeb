@@ -38,9 +38,6 @@ export default function AcessoDemonstracao({ desabilitado, aoPreencher }: Acesso
         Preencher
       </Botao>
 
-      <p className={estilos.nota}>
-        Login fictício, conferido no próprio navegador. Não há backend nem proteção real nesta versão.
-      </p>
     </aside>
   );
 }

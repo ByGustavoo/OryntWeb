@@ -1,0 +1,223 @@
+.linhaDoTempo {
+  container: linha-do-tempo / inline-size;
+  display: flex;
+  flex-direction: column;
+}
+
+.dia + .dia {
+  border-top: 1px solid var(--borda);
+}
+
+.cabecaDoDia {
+  position: sticky;
+  z-index: 1;
+  top: calc(var(--altura-cabecalho) + env(safe-area-inset-top, 0px));
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--espaco-3);
+  padding: var(--espaco-3) var(--espaco-5) var(--espaco-2) var(--espaco-6);
+  background-color: color-mix(in srgb, var(--superficie) 92%, transparent);
+  backdrop-filter: blur(6px);
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-forte);
+  line-height: 1.5;
+}
+
+.marcos {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: var(--espaco-3);
+}
+
+.marco {
+  --cor-marco: var(--texto-terciario);
+  --fundo-marco: var(--neutro-suave);
+
+  position: relative;
+  display: grid;
+  grid-template-columns: 3rem 24px minmax(0, 1fr);
+  align-items: stretch;
+  column-gap: var(--espaco-3);
+  padding-left: var(--espaco-6);
+  padding-right: var(--espaco-3);
+  scroll-margin-block: calc(var(--altura-cabecalho) + 48px) var(--espaco-4);
+}
+
+.sucesso {
+  --cor-marco: var(--sucesso);
+  --fundo-marco: var(--sucesso-suave);
+}
+
+.aviso {
+  --cor-marco: var(--aviso);
+  --fundo-marco: var(--aviso-suave);
+}
+
+.erro {
+  --cor-marco: var(--erro);
+  --fundo-marco: var(--erro-suave);
+}
+
+.info {
+  --cor-marco: var(--destaque);
+  --fundo-marco: var(--destaque-suave);
+}
+
+.hora {
+  padding-top: 13px;
+  color: var(--texto-terciario);
+  font-family: var(--fonte-numeros);
+  font-size: var(--tamanho-xs);
+  line-height: 1.5;
+  text-align: right;
+}
+
+.trilho {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.trilho::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  background-color: var(--guia-arvore);
+  content: '';
+}
+
+.marco:first-child .trilho::before {
+  top: 16px;
+}
+
+.marco:last-child .trilho::before {
+  bottom: calc(100% - 16px);
+}
+
+.marco:only-child .trilho::before {
+  display: none;
+}
+
+.ponto {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-top: 9px;
+  border-radius: 50%;
+  background-color: var(--fundo-marco);
+  box-shadow: 0 0 0 3px var(--superficie);
+  color: var(--cor-marco);
+}
+
+.abrir {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  min-width: 0;
+  margin-block: 2px;
+  padding: var(--espaco-2) var(--espaco-3);
+  border: none;
+  border-radius: var(--raio-md);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+button.abrir {
+  cursor: pointer;
+  transition: background-color var(--duracao-rapida) var(--curva-saida);
+}
+
+button.abrir:focus-visible {
+  outline: 2px solid var(--destaque);
+  outline-offset: -2px;
+}
+
+.conteudo {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.complemento {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--espaco-2);
+}
+
+.seta {
+  flex-shrink: 0;
+  color: var(--texto-terciario);
+  transition: transform var(--duracao-base) var(--curva-saida);
+}
+
+.marco[aria-current='true'] .abrir {
+  background-color: var(--destaque-suave);
+}
+
+@media (hover: hover) {
+  button.abrir:hover {
+    background-color: var(--superficie-suave);
+  }
+
+  button.abrir:hover .seta {
+    color: var(--texto);
+    transform: translateX(2px);
+  }
+}
+
+@container linha-do-tempo (max-width: 560px) {
+  .cabecaDoDia {
+    padding-inline: var(--espaco-4);
+  }
+
+  .marco {
+    grid-template-columns: 24px minmax(0, 1fr);
+    padding-left: var(--espaco-3);
+  }
+
+  .hora {
+    position: absolute;
+    top: 0;
+    right: calc(var(--espaco-3) + 34px);
+    padding-top: 12px;
+  }
+
+  .abrir {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    row-gap: var(--espaco-2);
+  }
+
+  .conteudo {
+    padding-right: 2.75rem;
+  }
+
+  .complemento {
+    grid-row: 2;
+    grid-column: 1;
+  }
+
+  .seta {
+    grid-row: 1;
+    grid-column: 2;
+    align-self: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .seta {
+    transition: none;
+  }
+}

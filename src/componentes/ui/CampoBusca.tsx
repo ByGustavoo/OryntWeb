@@ -3,6 +3,7 @@ import type { InputHTMLAttributes } from 'react';
 import { Search, X } from 'lucide-react';
 import { aceitaDigitacao, haCamadaAberta } from '@/utilitarios/foco';
 import { classesControle } from './classesControle';
+import { Dica } from './Dica';
 import { EstruturaCampo } from './EstruturaCampo';
 import estilosCampo from './Campo.module.css';
 import estilos from './CampoBusca.module.css';
@@ -63,13 +64,17 @@ export const CampoBusca = forwardRef<HTMLInputElement, CampoBuscaProps>(function
             {...resto}
           />
           {valor !== '' ? (
-            <button type="button" className={estilos.limpar} onClick={limpar} aria-label={rotuloLimpar} title={rotuloLimpar}>
-              <X size={16} strokeWidth={2} aria-hidden="true" />
-            </button>
+            <Dica conteudo={rotuloLimpar}>
+              <button type="button" className={estilos.limpar} onClick={limpar} aria-label={rotuloLimpar}>
+                <X size={16} strokeWidth={2} aria-hidden="true" />
+              </button>
+            </Dica>
           ) : atalho ? (
-            <kbd className={estilos.atalho} aria-hidden="true" title={`Pressione ${atalho} para buscar`}>
-              {atalho}
-            </kbd>
+            <Dica conteudo={`Pressione ${atalho} para buscar`}>
+              <kbd className={estilos.atalho} aria-hidden="true">
+                {atalho}
+              </kbd>
+            </Dica>
           ) : null}
         </div>
       )}

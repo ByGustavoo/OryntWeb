@@ -1,6 +1,6 @@
 import { useId } from 'react';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import type { TooltipProps } from 'recharts';
+import { useLeituraDoGrafico } from '@/ganchos/useLeituraDoGrafico';
 import type { GranularidadeRelatorio } from '@/modelos/relatorios';
 import { variacaoEntre } from '@/regras/comparacaoRelatorio';
 import type { PontoComparado, RotulosDaComparacao } from '@/regras/comparacaoRelatorio';
@@ -17,6 +17,7 @@ import {
 } from '@/utilitarios/formatacao';
 import { marcasDoEixo, prefereMovimentoReduzido } from '@/utilitarios/graficos';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
+import { LeituraDoGrafico } from './LeituraDoGrafico';
 import estilosEvolucao from './GraficoEvolucao.module.css';
 import estilos from './GraficoComparacao.module.css';
 
@@ -103,7 +104,7 @@ function maiorValor(pontos: PontoComparado[], medida: Medida): number {
   return pontos.reduce((maior, ponto) => Math.max(maior, ponto[medida.principal] ?? 0, ponto[medida.base] ?? 0), 0);
 }
 
-function LinhaDaDica({
+function LeituraDoLado({
   instante,
   valor,
   medida,
@@ -116,42 +117,35 @@ function LinhaDaDica({
   formato: FormatoGranularidade;
   base?: boolean;
 }) {
-  if (instante === null || valor === null) return null;
+  if (instante === null) return null;
   return (
-    <span className={estilosEvolucao.dicaLinha}>
+    <span className={estilos.ladoDaLeitura}>
       <span className={juntarClasses(estilos.traco, base && estilos.tracoBase)} aria-hidden="true" />
-      <span className={estilos.dicaData}>{formato.data(instante)}</span>
-      <span>
-        <span className={estilosEvolucao.dicaValor}>{medida.formatarValor(valor)}</span>
-        {medida.complemento ? ` ${medida.complemento}` : null}
-      </span>
+      <span className={estilosEvolucao.leituraRotulo}>{formato.data(instante)}</span>
+      {valor === null ? (
+        <span>sem dados</span>
+      ) : (
+        <span>
+          <span className={estilosEvolucao.dicaValor}>{medida.formatarValor(valor)}</span>
+          {medida.complemento ? ` ${medida.complemento}` : null}
+        </span>
+      )}
     </span>
   );
 }
 
-function DicaComparacao({
-  active,
-  payload,
-  formato,
-  medida,
-}: TooltipProps<number, string> & { formato: FormatoGranularidade; medida: Medida }) {
-  const ponto = payload?.[0]?.payload as PontoComparado | undefined;
-  if (!active || !ponto) return null;
+function LeituraDoPonto({ ponto, medida, formato }: { ponto: PontoComparado; medida: Medida; formato: FormatoGranularidade }) {
   const principal = ponto[medida.principal];
   const base = ponto[medida.base];
   const variacao = principal !== null && base !== null ? variacaoEntre(principal, base) : null;
 
   return (
-    <div className={estilosEvolucao.dica}>
-      <span className={estilosEvolucao.dicaRotulo}>{formato.completo(ponto)}</span>
-      <LinhaDaDica instante={ponto.instantePrincipal} valor={principal} medida={medida} formato={formato} />
-      <LinhaDaDica instante={ponto.instanteBase} valor={base} medida={medida} formato={formato} base />
-      {variacao === null ? null : (
-        <span className={estilos.dicaVariacao}>
-          Diferença de <span className="numeros">{formatarVariacao(variacao)}</span>
-        </span>
-      )}
-    </div>
+    <>
+      <span className={estilosEvolucao.leituraRotulo}>{formato.completo(ponto)}</span>
+      <LeituraDoLado instante={ponto.instantePrincipal} valor={principal} medida={medida} formato={formato} />
+      <LeituraDoLado instante={ponto.instanteBase} valor={base} medida={medida} formato={formato} base />
+      {variacao === null ? null : <span className={juntarClasses(estilosEvolucao.leituraRotulo, 'numeros')}>{formatarVariacao(variacao)}</span>}
+    </>
   );
 }
 
@@ -160,7 +154,10 @@ export function GraficoComparacao({ pontos, granularidade, rotulos, titulos }: G
   const formato = formatos[granularidade];
   const animar = !prefereMovimentoReduzido();
   const ultimaMedida = medidas[medidas.length - 1];
+  const { lido, eventos } = useLeituraDoGrafico();
   if (pontos.length === 0) return null;
+  const pontoLido = lido ? pontos[lido.indice] : undefined;
+  const xLido = pontoLido && lido ? lido.x : null;
 
   return (
     <figure className={estilosEvolucao.figura} aria-describedby={idResumo}>
@@ -186,10 +183,12 @@ export function GraficoComparacao({ pontos, granularidade, rotulos, titulos }: G
 
         return (
           <div className={estilosEvolucao.grafico} key={medida.principal}>
-            <p className={estilosEvolucao.titulo}>{medida.titulo}</p>
+            <LeituraDoGrafico titulo={medida.titulo} x={xLido}>
+              {pontoLido ? <LeituraDoPonto ponto={pontoLido} medida={medida} formato={formato} /> : null}
+            </LeituraDoGrafico>
             <div className={estilosEvolucao.area} style={{ height: medida.alturaPx }} aria-hidden="true">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={pontos} margin={margem} syncId={SINCRONIA}>
+                <LineChart data={pontos} margin={margem} syncId={SINCRONIA} {...eventos}>
                   <CartesianGrid vertical={false} />
                   <XAxis
                     dataKey="posicao"
@@ -217,11 +216,7 @@ export function GraficoComparacao({ pontos, granularidade, rotulos, titulos }: G
                     tickMargin={6}
                     unit={medida.unidadeDoEixo}
                   />
-                  <Tooltip
-                    cursor={{ className: estilosEvolucao.linhaCursor }}
-                    content={<DicaComparacao formato={formato} medida={medida} />}
-                    isAnimationActive={false}
-                  />
+                  <Tooltip cursor={{ className: estilosEvolucao.linhaCursor }} content={() => null} isAnimationActive={false} />
                   <Line
                     type="monotone"
                     dataKey={medida.base}

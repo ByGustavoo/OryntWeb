@@ -36,10 +36,7 @@ export function ProvedorNovaConexao({ children }: { children: ReactNode }) {
       renovarFormulario.current = true;
       registrarConexao(conexao);
       setAberto(false);
-      notificacoes.sucesso(
-        `Conectado a ${conexao.nome}.`,
-        conexao.simulada ? 'Conexão simulada: nenhum banco real foi acessado.' : undefined,
-      );
+      notificacoes.sucesso(`Conectado a ${conexao.nome}.`);
     },
     [registrarConexao, notificacoes],
   );

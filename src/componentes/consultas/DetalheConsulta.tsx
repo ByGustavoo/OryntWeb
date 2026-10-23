@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Check, ChevronDown, ChevronUp, Copy, FlaskConical, History, ListTree } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, Copy, History, ListTree } from 'lucide-react';
 import { TrechoSql } from '@/componentes/comum/TrechoSql';
 import { SeloDesempenho } from '@/componentes/dashboard/SeloDesempenho';
-import { Botao, BotaoIcone, Modal, Selo } from '@/componentes/ui';
+import { Botao, BotaoIcone, Dica, Modal, Selo } from '@/componentes/ui';
 import type { ConsultaDetalhadaDTO } from '@/modelos/consultas';
 import type { PeriodoDashboard } from '@/modelos/dashboard';
 import { descricaoPeriodo, rotuloTipoComando } from '@/modelos/rotulos';
@@ -26,7 +26,6 @@ interface DetalheConsultaProps {
   consulta: ConsultaDetalhadaDTO | null;
   periodo: PeriodoDashboard;
   termos: string[];
-  simulada: boolean;
   posicao: number | null;
   total: number;
   trocandoDePagina: boolean;
@@ -41,7 +40,6 @@ export function DetalheConsulta({
   consulta,
   periodo,
   termos,
-  simulada,
   posicao,
   total,
   trocandoDePagina,
@@ -96,32 +94,34 @@ export function DetalheConsulta({
             ) : null}
           </p>
           <div className={estilos.atalhos}>
-            <Botao
-              variante="secundario"
-              icone={ListTree}
-              title="Ver o plano de execução"
-              onClick={() => exibida && aoVerPlano(exibida)}
-            >
-              <span className={estilos.rotuloAtalho}>Ver plano</span>
-            </Botao>
-            <Botao
-              variante="secundario"
-              icone={History}
-              title="Ver o histórico"
-              onClick={() => exibida && aoVerHistorico(exibida)}
-            >
-              <span className={estilos.rotuloAtalho}>Ver histórico</span>
-            </Botao>
+            <Dica conteudo={"Ver o plano de execução"}>
+              <Botao
+                variante="secundario"
+                icone={ListTree}
+                onClick={() => exibida && aoVerPlano(exibida)}
+              >
+                <span className={estilos.rotuloAtalho}>Ver plano</span>
+              </Botao>
+            </Dica>
+            <Dica conteudo={"Ver o histórico"}>
+              <Botao
+                variante="secundario"
+                icone={History}
+                onClick={() => exibida && aoVerHistorico(exibida)}
+              >
+                <span className={estilos.rotuloAtalho}>Ver histórico</span>
+              </Botao>
+            </Dica>
           </div>
         </div>
       }
     >
-      {exibida ? <CorpoDetalhe key={exibida.id} consulta={exibida} termos={termos} simulada={simulada} /> : null}
+      {exibida ? <CorpoDetalhe key={exibida.id} consulta={exibida} termos={termos} /> : null}
     </Modal>
   );
 }
 
-function CorpoDetalhe({ consulta, termos, simulada }: { consulta: ConsultaDetalhadaDTO; termos: string[]; simulada: boolean }) {
+function CorpoDetalhe({ consulta, termos }: { consulta: ConsultaDetalhadaDTO; termos: string[] }) {
   const notificacoes = useNotificacoes();
   const [copiada, setCopiada] = useState(false);
   const distanciaDoMaximo = consulta.tempoMedioMs > 0 ? consulta.tempoMaximoMs / consulta.tempoMedioMs : 0;
@@ -148,11 +148,6 @@ function CorpoDetalhe({ consulta, termos, simulada }: { consulta: ConsultaDetalh
       <div className={estilos.selos}>
         <Selo>{consulta.tipo === 'OUTRO' ? 'Outro comando' : rotuloTipoComando[consulta.tipo]}</Selo>
         <SeloDesempenho desempenho={consulta.desempenho} />
-        {simulada ? (
-          <Selo tom="aviso" icone={FlaskConical}>
-            Dados demonstrativos
-          </Selo>
-        ) : null}
       </div>
 
       <section className={estilos.secao} aria-labelledby="titulo-sql-detalhe">

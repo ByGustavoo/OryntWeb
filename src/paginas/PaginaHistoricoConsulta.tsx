@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ChartNoAxesColumn, FlaskConical, GitCompareArrows, ListTree, SearchX } from 'lucide-react';
+import { ChartNoAxesColumn, GitCompareArrows, ListTree, SearchX } from 'lucide-react';
 import { ehErroApi } from '@/api/tratamentoErros';
 import { PainelSemConexao } from '@/componentes/conexao/PainelSemConexao';
 import { ConsultaEmAnalise } from '@/componentes/consultas/ConsultaEmAnalise';
@@ -12,7 +12,7 @@ import { EsqueletoIndicadores } from '@/componentes/dashboard/GradeIndicadores';
 import { CabecalhoPagina } from '@/componentes/layout/CabecalhoPagina';
 import { DestaquesRelatorio, EsqueletoDestaques } from '@/componentes/relatorios/DestaquesRelatorio';
 import { GraficosEmEspera, PainelEmEspera, RelatorioEmEspera } from '@/componentes/relatorios/EsqueletoRelatorio';
-import { Botao, CabecalhoPainel, ConteudoAssincrono, Esqueleto, EstadoVazio, GrupoOpcoes, Nota, Painel } from '@/componentes/ui';
+import { Botao, CabecalhoPainel, ConteudoAssincrono, Esqueleto, EstadoVazio, GrupoOpcoes, Painel } from '@/componentes/ui';
 import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
 import { useSelecaoHistorico } from '@/ganchos/useSelecaoHistorico';
 import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
@@ -180,13 +180,6 @@ function HistoricoConectado({ conexao, selecao, mudarSelecao }: HistoricoConecta
       />
 
       <div className={estilos.blocos}>
-        {conexao.simulada ? (
-          <Nota tom="aviso" icone={FlaskConical} titulo="Dados demonstrativos.">
-            As consultas e os números desta tela são fictícios e não vêm do seu banco. Eles dão lugar aos dados reais quando o
-            Orynt estiver ligado à API.
-          </Nota>
-        ) : null}
-
         <ConsultaEmAnalise
           periodo={selecao.periodo}
           consulta={exibida}

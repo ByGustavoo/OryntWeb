@@ -1,0 +1,16 @@
+.conteiner {
+  container: diretorio-contas / inline-size;
+}
+
+.diretorio {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: var(--espaco-5);
+}
+
+@container diretorio-contas (min-width: 1040px) {
+  .diretorio {
+    grid-template-columns: minmax(0, 1fr) 20rem;
+  }
+}

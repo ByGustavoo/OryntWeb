@@ -5,7 +5,6 @@ import {
   ChevronRight,
   ChevronUp,
   Eye,
-  FlaskConical,
   History,
   KeyRound,
   Layers,
@@ -60,7 +59,6 @@ interface AcoesDoDetalhe {
 interface DetalheFuncaoProps extends AcoesDoDetalhe {
   funcao: FuncaoDTO | null;
   contexto: ContextoDasFuncoes;
-  simulada: boolean;
   posicao: number | null;
   total: number;
   aoPercorrer: (sentido: SentidoDoPasso) => void;
@@ -71,7 +69,6 @@ interface DetalheFuncaoProps extends AcoesDoDetalhe {
 export function DetalheFuncao({
   funcao,
   contexto,
-  simulada,
   posicao,
   total,
   aoPercorrer,
@@ -124,7 +121,7 @@ export function DetalheFuncao({
         </div>
       }
     >
-      {exibida ? <CorpoDetalhe key={exibida.id} funcao={exibida} contexto={contexto} simulada={simulada} {...acoes} /> : null}
+      {exibida ? <CorpoDetalhe key={exibida.id} funcao={exibida} contexto={contexto} {...acoes} /> : null}
     </Modal>
   );
 }
@@ -137,10 +134,9 @@ function descreverFuncao(funcao: FuncaoDTO): string {
 interface CorpoDetalheProps extends AcoesDoDetalhe {
   funcao: FuncaoDTO;
   contexto: ContextoDasFuncoes;
-  simulada: boolean;
 }
 
-function CorpoDetalhe({ funcao, contexto, simulada, ...acoes }: CorpoDetalheProps) {
+function CorpoDetalhe({ funcao, contexto, ...acoes }: CorpoDetalheProps) {
   const raiz = useRef<HTMLDivElement>(null);
   const avisos = avisosDaFuncao(funcao, contexto);
   const comandos = comandosDaFuncao(funcao, contexto);
@@ -179,11 +175,6 @@ function CorpoDetalhe({ funcao, contexto, simulada, ...acoes }: CorpoDetalheProp
           {situacoesDaFuncao(funcao, contexto).map((situacao) => (
             <SeloSituacaoFuncao key={situacao} situacao={situacao} />
           ))}
-          {simulada ? (
-            <Selo tom="aviso" icone={FlaskConical}>
-              Dados demonstrativos
-            </Selo>
-          ) : null}
         </div>
       </header>
 
@@ -492,7 +483,7 @@ function SecaoDependentes({
                       <span className={estilos.tipoObjeto}>{rotuloTipoObjeto[visao.tipo]}</span>
                     </span>
                     <ChevronRight className={estilos.setaObjeto} size={16} strokeWidth={2} aria-hidden="true" />
-                    <span className="visualmente-oculto">. Abrir esta visão em Visões</span>
+                    <span className="visualmente-oculto">. Abrir esta view em Views</span>
                   </button>
                 </li>
               );
@@ -505,7 +496,7 @@ function SecaoDependentes({
         </>
       ) : (
         <p className={estilos.leitura}>
-          Nenhum índice ou visão depende {funcao.tipo === 'PROCEDIMENTO' ? 'deste procedimento' : 'desta função'}.
+          Nenhum índice ou view depende {funcao.tipo === 'PROCEDIMENTO' ? 'deste procedimento' : 'desta função'}.
         </p>
       )}
     </section>

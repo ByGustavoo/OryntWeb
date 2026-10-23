@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation } from 'react-router-dom';
 import { ChevronDown, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
 import { MarcaOrynt } from '@/componentes/comum/MarcaOrynt';
 import { NomeOrynt } from '@/componentes/comum/NomeOrynt';
+import { Dica } from '@/componentes/ui';
 import { NOME_APLICACAO } from '@/configuracoes/aplicacao';
 import {
   contemCaminho,
@@ -125,21 +126,22 @@ export function MenuLateral({ recolhido, emGaveta, abertoEmGaveta, aoAlternarRec
         <div className={estilos.rodape}>
           <ItemMenu item={navegacaoRodape} recolhido={recolhidoVisivel} />
           {!emGaveta ? (
-            <button
-              type="button"
-              className={estilos.recolher}
-              onClick={aoAlternarRecolhido}
-              aria-label={recolhido ? 'Expandir menu' : 'Recolher menu'}
-              aria-expanded={!recolhido}
-              aria-controls="menu-lateral"
-              title={recolhido ? 'Expandir menu' : 'Recolher menu'}
-            >
-              {recolhido ? (
-                <PanelLeftOpen size={18} strokeWidth={2} aria-hidden="true" />
-              ) : (
-                <PanelLeftClose size={18} strokeWidth={2} aria-hidden="true" />
-              )}
-            </button>
+            <Dica conteudo={recolhido ? 'Expandir menu' : 'Recolher menu'} lado="direita">
+              <button
+                type="button"
+                className={estilos.recolher}
+                onClick={aoAlternarRecolhido}
+                aria-label={recolhido ? 'Expandir menu' : 'Recolher menu'}
+                aria-expanded={!recolhido}
+                aria-controls="menu-lateral"
+              >
+                {recolhido ? (
+                  <PanelLeftOpen size={18} strokeWidth={2} aria-hidden="true" />
+                ) : (
+                  <PanelLeftClose size={18} strokeWidth={2} aria-hidden="true" />
+                )}
+              </button>
+            </Dica>
           ) : null}
         </div>
       </aside>
@@ -169,11 +171,10 @@ function ItemMenu({ item, recolhido, marcarPlanejados = false }: ItemMenuProps) 
   }, [ativo]);
 
   if (filhos.length === 0) {
-    return (
+    const link = (
       <NavLink
         to={item.destino}
         end
-        title={recolhido ? rotuloCompleto : undefined}
         aria-label={rotuloCompleto}
         className={({ isActive }) => juntarClasses(estilos.item, isActive && estilos.itemAtivo)}
       >
@@ -181,21 +182,29 @@ function ItemMenu({ item, recolhido, marcarPlanejados = false }: ItemMenuProps) 
         <span className={estilos.rotuloItem}>{item.rotulo}</span>
       </NavLink>
     );
+    return recolhido ? (
+      <Dica conteudo={rotuloCompleto} lado="direita">
+        {link}
+      </Dica>
+    ) : (
+      link
+    );
   }
 
   return (
     <>
       {recolhido ? (
-        <Link
-          to={destinoInicial(item)}
-          title={rotuloCompleto}
-          aria-label={rotuloCompleto}
-          aria-current={ativo ? 'page' : undefined}
-          className={juntarClasses(estilos.item, ativo && estilos.itemAtivo)}
-        >
-          <Icone className={estilos.iconeItem} size={18} strokeWidth={2} aria-hidden="true" />
-          <span className={estilos.rotuloItem}>{item.rotulo}</span>
-        </Link>
+        <Dica conteudo={rotuloCompleto} lado="direita">
+          <Link
+            to={destinoInicial(item)}
+            aria-label={rotuloCompleto}
+            aria-current={ativo ? 'page' : undefined}
+            className={juntarClasses(estilos.item, ativo && estilos.itemAtivo)}
+          >
+            <Icone className={estilos.iconeItem} size={18} strokeWidth={2} aria-hidden="true" />
+            <span className={estilos.rotuloItem}>{item.rotulo}</span>
+          </Link>
+        </Dica>
       ) : (
         <button
           type="button"

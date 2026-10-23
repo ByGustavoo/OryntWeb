@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { CabecalhoPainel, Painel } from '@/componentes/ui';
 import type { DesempenhoConsulta } from '@/modelos/dashboard';
 import type { FaixaDesempenhoDTO } from '@/modelos/relatorios';
@@ -17,9 +18,10 @@ interface DistribuicaoDesempenhoProps {
 
 interface BarraProps {
   titulo: string;
-  complemento: string;
   faixas: FaixaDesempenhoDTO[];
   ler: (faixa: FaixaDesempenhoDTO) => number;
+  foco: DesempenhoConsulta | null;
+  aoFocar: (faixa: DesempenhoConsulta | null) => void;
 }
 
 const corDaFaixa: Record<DesempenhoConsulta, string | undefined> = {
@@ -28,7 +30,23 @@ const corDaFaixa: Record<DesempenhoConsulta, string | undefined> = {
   LENTA: estilos.lenta,
 };
 
-function Barra({ titulo, complemento, faixas, ler }: BarraProps) {
+export function eventosDoFoco(
+  faixa: DesempenhoConsulta,
+  foco: DesempenhoConsulta | null,
+  aoFocar: (faixa: DesempenhoConsulta | null) => void,
+) {
+  return {
+    onPointerEnter: (evento: { pointerType: string }) => {
+      if (evento.pointerType !== 'touch') aoFocar(faixa);
+    },
+    onPointerLeave: (evento: { pointerType: string }) => {
+      if (evento.pointerType !== 'touch') aoFocar(null);
+    },
+    onClick: () => aoFocar(foco === faixa ? null : faixa),
+  };
+}
+
+function Barra({ titulo, faixas, ler, foco, aoFocar }: BarraProps) {
   return (
     <div className={estilos.linha}>
       <span className={estilos.tituloBarra}>{titulo}</span>
@@ -38,9 +56,13 @@ function Barra({ titulo, complemento, faixas, ler }: BarraProps) {
           .map((faixa) => (
             <span
               key={faixa.desempenho}
-              className={juntarClasses(estilos.segmento, corDaFaixa[faixa.desempenho])}
+              className={juntarClasses(
+                estilos.segmento,
+                corDaFaixa[faixa.desempenho],
+                foco !== null && foco !== faixa.desempenho && estilos.apagado,
+              )}
               style={{ flexGrow: ler(faixa) }}
-              title={`${rotuloFaixaDesempenho[faixa.desempenho]}: ${formatarPercentual(ler(faixa))} ${complemento}`}
+              {...eventosDoFoco(faixa.desempenho, foco, aoFocar)}
             />
           ))}
       </div>
@@ -50,6 +72,7 @@ function Barra({ titulo, complemento, faixas, ler }: BarraProps) {
 
 export function DistribuicaoDesempenho({ faixas }: DistribuicaoDesempenhoProps) {
   const leitura = resumirDesempenho(faixas);
+  const [foco, setFoco] = useState<DesempenhoConsulta | null>(null);
 
   return (
     <Painel aria-labelledby="titulo-desempenho">
@@ -63,12 +86,19 @@ export function DistribuicaoDesempenho({ faixas }: DistribuicaoDesempenhoProps) 
           <div className={estilos.grafico}>
             {leitura ? <p className={estilos.leitura}>{leitura}</p> : null}
             <div className={estilos.barras} aria-hidden="true">
-              <Barra titulo="Execuções" complemento="das execuções" faixas={faixas} ler={(faixa) => faixa.percentualExecucoes} />
+              <Barra
+                titulo="Execuções"
+                faixas={faixas}
+                ler={(faixa) => faixa.percentualExecucoes}
+                foco={foco}
+                aoFocar={setFoco}
+              />
               <Barra
                 titulo="Tempo do banco"
-                complemento="do tempo do banco"
                 faixas={faixas}
                 ler={(faixa) => faixa.percentualTempoTotal}
+                foco={foco}
+                aoFocar={setFoco}
               />
             </div>
           </div>
@@ -93,7 +123,11 @@ export function DistribuicaoDesempenho({ faixas }: DistribuicaoDesempenhoProps) 
             </thead>
             <tbody>
               {faixas.map((faixa) => (
-                <tr key={faixa.desempenho}>
+                <tr
+                  key={faixa.desempenho}
+                  className={juntarClasses(foco !== null && foco !== faixa.desempenho && estilos.linhaApagada)}
+                  {...eventosDoFoco(faixa.desempenho, foco, setFoco)}
+                >
                   <th scope="row">
                     <span className={estilos.faixa}>
                       <span className={juntarClasses(estilos.amostra, corDaFaixa[faixa.desempenho])} aria-hidden="true" />
