@@ -27,12 +27,14 @@ interface FormularioConexaoProps {
   aoPreencherPelaUrl: (campos: CamposDaUrl) => void;
   aoConectar: () => void;
   aoTestar: () => void;
+  senhaOpcional?: boolean;
   children?: ReactNode;
 }
 
 function descreverAndamento(operacao: OperacaoConexao | null, campos: CamposConexao): string {
   if (!operacao) return '';
   const alvo = `${campos.host.trim()}:${campos.porta.trim()}`;
+  if (operacao === 'SALVAR') return `Salvando a conexão com ${alvo}…`;
   return operacao === 'TESTAR' ? `Testando a conexão com ${alvo}…` : `Conectando a ${alvo}…`;
 }
 
@@ -50,6 +52,7 @@ export function FormularioConexao({
   aoPreencherPelaUrl,
   aoConectar,
   aoTestar,
+  senhaOpcional = false,
   children,
 }: FormularioConexaoProps) {
   const enviando = operacaoEmAndamento !== null;
@@ -149,9 +152,9 @@ export function FormularioConexao({
           />
           <CampoSenha
             {...propriedadesDoCampo('senha')}
-            rotulo="Senha"
-            dica={erros.senha ? undefined : 'Não fica salva no navegador.'}
-            aria-required="true"
+            rotulo={senhaOpcional ? 'Senha (opcional)' : 'Senha'}
+            dica={erros.senha ? undefined : senhaOpcional ? 'Em branco, a senha guardada continua valendo.' : 'Não fica salva no navegador.'}
+            aria-required={senhaOpcional ? undefined : 'true'}
           />
         </div>
       </div>

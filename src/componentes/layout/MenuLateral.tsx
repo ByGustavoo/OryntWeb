@@ -4,7 +4,7 @@ import { ChevronDown, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
 import { MarcaOrynt } from '@/componentes/comum/MarcaOrynt';
 import { NomeOrynt } from '@/componentes/comum/NomeOrynt';
 import { Dica } from '@/componentes/ui';
-import { NOME_APLICACAO } from '@/configuracoes/aplicacao';
+import { DESCRICAO_DA_MARCA, NOME_APLICACAO } from '@/configuracoes/aplicacao';
 import {
   contemCaminho,
   destinoInicial,
@@ -82,10 +82,11 @@ export function MenuLateral({ recolhido, emGaveta, abertoEmGaveta, aoAlternarRec
         <div className={estilos.marca}>
           <Link to={caminhos.dashboard} className={estilos.linkMarca} aria-label={`${NOME_APLICACAO}, ir para o Dashboard`}>
             <span className={estilos.simbolo}>
-              <MarcaOrynt tamanho={32} />
+              <MarcaOrynt tamanho={26} />
             </span>
             <span className={estilos.textosMarca}>
               <NomeOrynt className={estilos.nome} />
+              <span className={estilos.descricaoMarca}>{DESCRICAO_DA_MARCA}</span>
             </span>
           </Link>
           <button

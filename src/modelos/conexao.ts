@@ -37,7 +37,16 @@ export interface ConexaoSalvaDTO {
   porta: number;
   banco: string;
   usuario: string;
-  ultimoUsoEm: string;
+  ultimoUsoEm: string | null;
+}
+
+export interface EdicaoConexaoDTO {
+  nome: string | null;
+  host: string;
+  porta: number;
+  banco: string;
+  usuario: string;
+  senha: string | null;
 }
 
 export interface RenomeacaoConexaoDTO {

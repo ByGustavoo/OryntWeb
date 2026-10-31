@@ -4,6 +4,7 @@ import type {
   ConexaoDTO,
   ConexaoSalvaDTO,
   CredenciaisConexaoDTO,
+  EdicaoConexaoDTO,
   RenomeacaoConexaoDTO,
   TesteConexaoDTO,
 } from '@/modelos/conexao';
@@ -15,6 +16,18 @@ export const servicoConexao = {
 
   conectar(credenciais: CredenciaisConexaoDTO, signal?: AbortSignal): Promise<ConexaoDTO> {
     return clienteHttp.post<ConexaoDTO>(rotasApi.conexoes.lista, credenciais, { signal });
+  },
+
+  salvarConexao(credenciais: CredenciaisConexaoDTO, signal?: AbortSignal): Promise<ConexaoSalvaDTO> {
+    return clienteHttp.post<ConexaoSalvaDTO>(rotasApi.conexoes.salvas, credenciais, { signal });
+  },
+
+  editarConexao(id: string, edicao: EdicaoConexaoDTO, signal?: AbortSignal): Promise<ConexaoSalvaDTO> {
+    return clienteHttp.put<ConexaoSalvaDTO>(rotasApi.conexoes.salva(id), edicao, { signal });
+  },
+
+  testarConexaoSalva(id: string, edicao?: EdicaoConexaoDTO, signal?: AbortSignal): Promise<TesteConexaoDTO> {
+    return clienteHttp.post<TesteConexaoDTO>(rotasApi.conexoes.testeDaSalva(id), edicao, { signal });
   },
 
   listarConexoes(signal?: AbortSignal): Promise<ConexaoSalvaDTO[]> {

@@ -5,3 +5,13 @@
 a.link {
   align-self: center;
 }
+
+.linhaDoConvite {
+  --sobra-da-linha: calc((var(--tamanho-base) * var(--altura-linha-normal) - 12px) / 2);
+
+  margin: var(--sobra-da-linha) auto;
+}
+
+.linhaDoConvite + .linhaDoConvite {
+  margin-top: calc(var(--sobra-da-linha) * 2);
+}

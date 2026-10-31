@@ -1,5 +1,6 @@
 export { servicoAdministracao } from './servicoAdministracao';
 export { servicoAutenticacao } from './servicoAutenticacao';
+export { servicoBackup } from './servicoBackup';
 export { servicoConexao } from './servicoConexao';
 export { servicoConsultas } from './servicoConsultas';
 export { servicoDashboard } from './servicoDashboard';

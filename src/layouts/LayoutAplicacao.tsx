@@ -1,12 +1,13 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
+import { AcompanhamentoBackup } from '@/componentes/backup/AcompanhamentoBackup';
 import { LimiteDeErro } from '@/componentes/comum/LimiteDeErro';
 import { Cabecalho } from '@/componentes/layout/Cabecalho';
+import { EsqueletoPagina } from '@/componentes/layout/EsqueletoPagina';
 import { FalhaNaTela } from '@/componentes/layout/FalhaNaTela';
 import { GuardaDaTela, deveDesviarDaTela, telaNegada } from '@/componentes/layout/GuardaDaTela';
 import { MenuLateral } from '@/componentes/layout/MenuLateral';
 import { SemAcessoNaTela } from '@/componentes/layout/SemAcessoNaTela';
-import { EsqueletoLista } from '@/componentes/ui';
 import { CHAVE_MENU_RECOLHIDO, ID_CONTEUDO_PRINCIPAL } from '@/configuracoes/aplicacao';
 import { useArmazenamentoLocal } from '@/ganchos/useArmazenamentoLocal';
 import { useMenuEmGaveta } from '@/ganchos/useConsultaMidia';
@@ -14,11 +15,20 @@ import { useRegistroDaTela } from '@/ganchos/useRegistroDaTela';
 import { useTravarRolagem } from '@/ganchos/useTravarRolagem';
 import { ProvedorAlteracoes } from '@/provedores/ProvedorAlteracoes';
 import { useAutenticacao } from '@/provedores/ProvedorAutenticacao';
+import { ProvedorBackupLocal } from '@/provedores/ProvedorBackupLocal';
 import { ProvedorNovaConexao } from '@/provedores/ProvedorNovaConexao';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
 import estilos from './LayoutAplicacao.module.css';
 
 export function LayoutAplicacao() {
+  return (
+    <ProvedorBackupLocal>
+      <CascaDaAplicacao />
+    </ProvedorBackupLocal>
+  );
+}
+
+function CascaDaAplicacao() {
   const [recolhido, setRecolhido] = useArmazenamentoLocal(CHAVE_MENU_RECOLHIDO, false);
   const [gavetaAberta, setGavetaAberta] = useState(false);
   const emGaveta = useMenuEmGaveta();
@@ -75,7 +85,7 @@ export function LayoutAplicacao() {
             <main className={estilos.conteudo} id={ID_CONTEUDO_PRINCIPAL} tabIndex={-1}>
               <div className={estilos.limite} key={localizacao.pathname}>
                 <LimiteDeErro alternativa={(erro) => <FalhaNaTela erro={erro} />}>
-                  <Suspense fallback={<EsqueletoLista linhas={5} rotulo="Carregando a página…" />}>
+                  <Suspense fallback={<EsqueletoPagina rotulo="Carregando a página…" />}>
                     <GuardaDaTela>
                       <Outlet />
                     </GuardaDaTela>
@@ -83,6 +93,7 @@ export function LayoutAplicacao() {
                 </LimiteDeErro>
               </div>
             </main>
+            <AcompanhamentoBackup />
           </div>
         </div>
       </ProvedorAlteracoes>

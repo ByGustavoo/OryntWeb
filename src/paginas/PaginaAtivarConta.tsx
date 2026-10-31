@@ -3,9 +3,10 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, CircleCheck, MailX } from 'lucide-react';
 import { CabecalhoAcesso } from '@/componentes/login/CabecalhoAcesso';
 import estilosLink from '@/componentes/login/LinkAcesso.module.css';
+import { EsqueletoNovaSenha } from '@/componentes/recuperacao/EsqueletoNovaSenha';
 import { EtapaNovaSenha } from '@/componentes/recuperacao/EtapaNovaSenha';
 import { focarCampoRecuperacao } from '@/componentes/recuperacao/identificadores';
-import { Nota } from '@/componentes/ui';
+import { Esqueleto, Nota } from '@/componentes/ui';
 import { NOME_APLICACAO } from '@/configuracoes/aplicacao';
 import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
 import { useContextoAcesso } from '@/layouts/contextoAcesso';
@@ -106,9 +107,14 @@ export default function PaginaAtivarConta() {
 
   if (etapa.tipo === 'VERIFICANDO') {
     return (
-      <CabecalhoAcesso titulo="Conferindo o convite">
-        Um instante enquanto o {NOME_APLICACAO} confere o link.
-      </CabecalhoAcesso>
+      <>
+        <CabecalhoAcesso titulo="Conferindo o convite">
+          Um instante enquanto o {NOME_APLICACAO} confere o link.
+          <Esqueleto className={estilos.linhaDoConvite} largura="90%" altura={12} />
+          <Esqueleto className={estilos.linhaDoConvite} largura="60%" altura={12} />
+        </CabecalhoAcesso>
+        <EsqueletoNovaSenha rotulo="Conferindo o convite…" />
+      </>
     );
   }
 

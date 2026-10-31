@@ -59,7 +59,10 @@ function estaCortado(elemento: HTMLElement): boolean {
 }
 
 function dentroDeInterativo(elemento: HTMLElement): boolean {
-  return elemento.closest('a[href], button, input, select, textarea, label, [role="button"], [tabindex]:not([tabindex="-1"])') !== null;
+  return (
+    elemento.closest('a[href], button, input, select, textarea, label, [role="button"]') !== null ||
+    elemento.parentElement?.closest('[tabindex]:not([tabindex="-1"])') != null
+  );
 }
 
 interface Faixa {

@@ -1,5 +1,6 @@
 export const NOME_APLICACAO = 'Orynt';
 export const SLOGAN_APLICACAO = 'Toda lentidão tem uma origem.';
+export const DESCRICAO_DA_MARCA = 'Monitoramento de PostgreSQL';
 export const DESCRICAO_APLICACAO =
   'Acompanhe o seu PostgreSQL e siga o caminho de um número fora do normal até a consulta que o causou.';
 

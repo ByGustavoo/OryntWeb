@@ -1910,8 +1910,58 @@ volta `400`. É um evento por tela aberta: trocar filtros ou páginas não gera 
 
 ---
 
-## 15. Pendências do contrato
+## 15. Backup
 
+Todas as rotas `/backup` pedem `BACKUP_GERENCIAR`; sem ela a resposta é `403` e o servidor registra `ACESSO_NEGADO`. Elas não dependem da conexão ativa: valem para todas as conexões salvas da conta, e não respondem `401` por falta de banco conectado. **A API não guarda arquivos de backup.** Ela roda o `pg_dump`, com a senha que guarda, e repassa a saída ao navegador sem gravar em disco, nem em arquivo temporário; o destino é sempre o computador de quem fez o pedido. Os dados passam pela API, e o banco precisa estar acessível a partir dela. Os DTOs estão em `src/modelos/backup.ts`.
+
+### 15.1 Conexões salvas sem conectar
+
+Estas pedem `CONEXOES_USAR`:
+
+* `POST /conexoes/salvas`: recebe `CredenciaisConexaoDTO`, valida como `POST /conexoes` e responde `201` com `ConexaoSalvaDTO`, sem abrir sessão. O mesmo servidor, porta, banco e usuário atualizam a conexão existente. `ultimoUsoEm` vem `null` enquanto a conexão não for usada.
+* `PUT /conexoes/{id}`: recebe `EdicaoConexaoDTO`. `senha: null` mantém a guardada. Responde `200` com `ConexaoSalvaDTO`, e os agendamentos passam a usar os dados novos. `400` com erro no campo `banco` quando outra conexão já tem esse servidor, banco e usuário.
+* `POST /conexoes/{id}/teste`: sem corpo, testa os dados guardados; com `EdicaoConexaoDTO`, testa os dados enviados, usando a senha guardada se `senha` vier `null`. Responde `200` com `TesteConexaoDTO` ou as falhas de `POST /conexoes/teste`.
+* `DELETE /conexoes/{id}` passa a desativar os agendamentos da conexão, com `conexaoId: null`. O histórico é mantido.
+
+### 15.2 Resumo
+
+* `GET /backup/resumo`: `ResumoBackupDTO`, com os totais, a última execução, os próximos agendamentos, as últimas execuções e os alertas.
+* `GET /backup/alertas`: `ListaAlertasBackupDTO`. `ULTIMO_BACKUP_FALHOU` para o agendamento ativo cuja última execução falhou e para a última execução manual de cada conexão, quando falhou; `AGENDAMENTO_ATRASADO` para o agendamento ativo cuja ocorrência prevista passou da folga de uma hora sem um backup. Falhas vêm antes dos atrasos.
+* `GET /backup/conexoes`: `ImpactoNaConexaoDTO[]`, com os agendamentos e a última execução de cada conexão salva.
+* `GET /backup/conexoes/{id}/objetos`: `ObjetosDoBancoDTO`, os objetos do banco da conexão, fora dos esquemas do sistema e das extensões. `404` se a conexão não existe.
+
+### 15.3 Execuções
+
+* `GET /backup/execucoes`: parâmetros `periodo` (`ULTIMAS_24_HORAS`, `ULTIMOS_7_DIAS`, `ULTIMOS_30_DIAS`), `banco`, `situacao` (`CONCLUIDO`, `FALHOU`, `CANCELADO`, `EM_ANDAMENTO`) e `pagina`. Responde `PaginaExecucoesDTO`, da mais recente à mais antiga, com 15 itens por página. A API filtra e pagina.
+* `POST /backup/execucoes`: recebe `NovaExecucaoDTO` e responde `201` com a execução em `EM_ANDAMENTO`, sem destino: a API não decide onde o arquivo fica. `400` para objetos que o tipo não aceita.
+* `GET /backup/execucoes/{id}`: `ExecucaoBackupDTO`. O front consulta a cada meio segundo enquanto acompanha. `etapa`, `objetosProcessados`, `objetoAtual` e `bytesTransferidos` vêm do que o `pg_dump` já fez (a saída de `--verbose`). `progresso` vai de 0 a 100, ou `null` quando a API não consegue medir, e nunca é estimado pelo tempo. `arquivo` já vem com o nome enquanto roda e é `null` se terminar sem arquivo.
+* `GET /backup/execucoes/{id}/arquivo`: a saída do `pg_dump` em fluxo, para a aba que iniciou o backup. É esta conexão que mantém o backup vivo: se ela cair (aba fechada ou recarregada, rede, repouso), a API encerra o `pg_dump` e marca `FALHOU` com `interrompida: true`, sem arquivo. `410` (`/problems/backup-file-gone`) para qualquer outro pedido, porque nada fica guardado.
+* `POST /backup/execucoes/{id}/cancelamento`: encerra o `pg_dump` e responde `200` com a execução em `CANCELADO`, sem arquivo. Se já terminou, responde `200` com a execução como está.
+* `DELETE /backup/execucoes/{id}`: apaga só o registro e responde `204`. `409` (`/problems/backup-running`) enquanto a execução roda.
+
+### 15.4 Agendamentos
+
+São lembretes: a API nunca inicia um backup sozinha, porque o arquivo só tem para onde ir com o site aberto.
+
+* `GET /backup/agendamentos`: `ListaAgendamentosDTO`. A API calcula `situacao`, `proximaExecucaoEm`, `ultimaExecucao` e `lembreteEm` (a ocorrência que chegou e ainda não teve backup, até uma hora depois dela). O front consulta a cada 30 segundos enquanto o site está aberto.
+* `POST /backup/agendamentos` (`201`) e `PUT /backup/agendamentos/{id}` (`200`): recebem `DadosAgendamentoDTO`.
+* `PATCH /backup/agendamentos/{id}`: recebe `{ "ativo": boolean }`. `409` (`/problems/backup-connection-unavailable`) ao ativar sem conexão.
+* `DELETE /backup/agendamentos/{id}`: `204`. As execuções continuam no histórico.
+* `POST /backup/agendamentos/{id}/execucoes`: sem corpo, faz agora o backup do agendamento e responde `201` com a execução, com `origem: AGENDADA`. `409` (`/problems/backup-connection-unavailable`) sem conexão.
+
+### 15.5 No navegador
+
+Não há rota de armazenamento: o destino é escolhido e usado só no navegador.
+
+* **Pasta escolhida (File System Access API, Chrome e Edge para computador):** o front grava o fluxo direto na pasta, com `FileSystemWritableFileStream`.
+* **Baixar pelo navegador:** o front junta o fluxo no navegador e oferece "Baixar backup" ao terminar, com um clique da pessoa, porque um download sem clique pode ser bloqueado. Backups grandes pedem o armazenamento privado do navegador (OPFS), não a memória.
+* O simulador entrega hoje um `ArquivoDoBackupDTO` (`nome`, `tipo`, `conteudo`) de uma vez. Ligar a API real pede trocar `servicoBackup.buscarArquivo` por um `fetch` em fluxo, aberto logo depois do `POST`, fora do `clienteHttp` e do limite de 15 segundos dele.
+
+---
+
+## 16. Pendências do contrato
+
+* Backup: as raízes de pasta permitidas, o formato do arquivo (o simulador usa `.dump`), o limite de execuções simultâneas, como `pg_dump` é chamado, o fuso do horário dos agendamentos e o que fazer com uma ocorrência perdida quando a API estava fora do ar.
 * Contas: o algoritmo de hash da senha (Argon2id ou bcrypt), o serviço de e-mail dos convites, a duração e a
   ociosidade máxima da sessão, e se o bloqueio por tentativas também conta por origem.
 * Auditoria: retenção, guarda do IP, exportação para um SIEM e proteção contra alteração no banco da API.

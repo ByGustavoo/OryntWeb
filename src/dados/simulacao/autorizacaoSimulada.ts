@@ -25,6 +25,7 @@ const MODULOS_POR_PREFIXO: [string, ModuloAuditoria][] = [
   ['/objetos', 'OBJETOS'],
   ['/usuarios', 'BANCO'],
   ['/conexoes', 'CONEXOES'],
+  ['/backup', 'BACKUP'],
   ['/administracao', 'ADMINISTRACAO'],
   ['/auditoria', 'ADMINISTRACAO'],
   ['/sistema', 'CONFIGURACOES'],

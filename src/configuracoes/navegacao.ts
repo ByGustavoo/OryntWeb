@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import { FileChartColumn, LayoutDashboard, ScrollText, Settings, SquareTerminal, Table2, UserCog, Users } from 'lucide-react';
+import { DatabaseBackup, FileChartColumn, LayoutDashboard, ScrollText, Settings, SquareTerminal, Table2, UserCog, Users } from 'lucide-react';
 import type { CodigoPermissao } from '@/modelos/administracao';
 import { podeAbrirTela } from '@/regras/permissoesConta';
 import { caminhos } from '@/rotas/caminhos';
@@ -129,11 +129,24 @@ const usuariosPermissoes: Funcionalidade = {
   ],
 };
 
+const backup: Funcionalidade = {
+  rotulo: 'Backup',
+  icone: DatabaseBackup,
+  destino: caminhos.backup,
+  descricao: 'Backups dos seus bancos PostgreSQL, salvos direto no seu computador.',
+  filhos: [
+    { rotulo: 'Resumo', destino: caminhos.backupResumo, descricao: 'Os indicadores, os próximos lembretes e as últimas execuções.' },
+    { rotulo: 'Histórico', destino: caminhos.backupHistorico, descricao: 'Tudo o que já rodou, com filtros por período, banco e status.' },
+    { rotulo: 'Agendamentos', destino: caminhos.backupAgendamentos, descricao: 'Os lembretes de backup: o que fazer e com que frequência.' },
+  ],
+};
+
 export const funcionalidades: Funcionalidade[] = [
   relatorios,
   consultasSql,
   objetosBanco,
   usuariosPermissoes,
+  backup,
 ];
 
 export const navegacaoPrincipal: SecaoNavegacao[] = [
@@ -146,7 +159,7 @@ export const navegacaoPrincipal: SecaoNavegacao[] = [
   },
   {
     titulo: 'Gerenciamento',
-    itens: [objetosBanco, usuariosPermissoes],
+    itens: [backup, objetosBanco, usuariosPermissoes],
   },
   {
     titulo: 'Administração',

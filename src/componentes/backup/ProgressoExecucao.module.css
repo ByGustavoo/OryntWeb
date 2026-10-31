@@ -1,0 +1,44 @@
+.trilho {
+  overflow: hidden;
+  height: 6px;
+  border-radius: var(--raio-pilula);
+  background-color: var(--superficie-suave);
+  box-shadow: inset 0 0 0 1px var(--borda);
+}
+
+.preenchimento {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background-color: var(--destaque);
+  transform-origin: left;
+  transition: transform var(--duracao-lenta) var(--curva-saida);
+}
+
+.indeterminado .preenchimento {
+  width: 35%;
+  animation: deslizar 1.6s ease-in-out infinite;
+}
+
+@keyframes deslizar {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(290%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .preenchimento {
+    transition: none;
+  }
+
+  .indeterminado .preenchimento {
+    width: 100%;
+    opacity: 0.45;
+    animation: none;
+  }
+}

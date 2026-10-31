@@ -1,0 +1,13 @@
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+}
+
+.rotulo {
+  margin-block: calc((var(--tamanho-sm) * var(--altura-linha-normal) - 14px) / 2);
+}
+
+.dica {
+  margin-block: 2px;
+}

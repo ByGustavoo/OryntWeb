@@ -20,7 +20,7 @@
 .conteudo {
   flex: 1;
   padding: var(--respiro-topo-conteudo) var(--respiro-conteudo) var(--espaco-16);
-  padding-bottom: calc(var(--espaco-16) + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(var(--espaco-16) + env(safe-area-inset-bottom, 0px) + var(--altura-acompanhamento-backup, 0px));
 }
 
 .conteudo:focus {

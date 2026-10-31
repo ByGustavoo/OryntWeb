@@ -55,6 +55,12 @@ export function formatarDuracaoMs(milissegundos: number): string {
   return `${formatarDecimal(milissegundos, 1)} ms`;
 }
 
+export function formatarCronometro(milissegundos: number): string {
+  const segundos = Math.max(0, Math.floor(milissegundos / 1000));
+  const dois = (valor: number) => String(valor).padStart(2, '0');
+  return `${dois(Math.floor(segundos / 3600))}:${dois(Math.floor(segundos / 60) % 60)}:${dois(segundos % 60)}`;
+}
+
 export function formatarDuracaoExtensa(milissegundos: number): string {
   const segundos = Math.round(milissegundos / MS_POR_SEGUNDO);
   if (segundos < SEGUNDOS_POR_MINUTO) return formatarDuracaoMs(milissegundos);
@@ -128,6 +134,10 @@ export function formatarDataHoraCompleta(instante: Date): string {
   return formatadorDataHoraCompleta.format(instante);
 }
 
+export function formatarDataNumerica(instante: string): string {
+  return new Date(instante).toLocaleDateString('pt-BR');
+}
+
 export function formatarDataOpcional(instante: string | null): string | null {
   if (!instante || Number.isNaN(new Date(instante).getTime())) return null;
   return formatadorData.format(new Date(instante));
@@ -145,6 +155,16 @@ export function formatarTempoRelativo(instante: string, agora: Date = new Date()
   if (horas < HORAS_POR_DIA) return `há ${horas} h`;
   const dias = Math.floor(horas / HORAS_POR_DIA);
   return `há ${dias} ${pluralizar(dias, 'dia', 'dias')}`;
+}
+
+export function formatarTempoAte(instante: string, agora: Date = new Date()): string {
+  const minutos = Math.ceil((new Date(instante).getTime() - agora.getTime()) / MS_POR_MINUTO);
+  if (minutos < 1) return 'agora';
+  if (minutos < MINUTOS_POR_HORA) return `em ${minutos} min`;
+  const horas = Math.floor(minutos / MINUTOS_POR_HORA);
+  if (horas < HORAS_POR_DIA) return `em ${horas} h`;
+  const dias = Math.floor(horas / HORAS_POR_DIA);
+  return `em ${dias} ${pluralizar(dias, 'dia', 'dias')}`;
 }
 
 export function pluralizar(quantidade: number, singular: string, plural: string): string {

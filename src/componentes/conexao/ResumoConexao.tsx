@@ -1,4 +1,5 @@
 import { Fragment } from 'react';
+import { Esqueleto } from '@/componentes/ui';
 import type { ConexaoDTO } from '@/modelos/conexao';
 import { rotuloTipoBanco } from '@/modelos/rotulos';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
@@ -16,6 +17,29 @@ function comQuebrasNosSeparadores(texto: string) {
       {trecho}
     </Fragment>
   ));
+}
+
+const LINHAS_DO_ESQUELETO = [
+  { termo: 'Nome', largura: 72 },
+  { termo: 'Usuário', largura: 64 },
+  { termo: 'Servidor', largura: 104 },
+  { termo: 'Tipo de banco', largura: 80 },
+  { termo: 'Banco de dados', largura: 48 },
+];
+
+export function EsqueletoResumoConexao() {
+  return (
+    <dl className={estilos.resumo} aria-hidden="true">
+      {LINHAS_DO_ESQUELETO.map((linha) => (
+        <div className={estilos.item} key={linha.termo}>
+          <dt className={estilos.termo}>{linha.termo}</dt>
+          <dd className={estilos.valor}>
+            <Esqueleto largura={linha.largura} altura={12} />
+          </dd>
+        </div>
+      ))}
+    </dl>
+  );
 }
 
 export function ResumoConexao({ conexao, className }: ResumoConexaoProps) {

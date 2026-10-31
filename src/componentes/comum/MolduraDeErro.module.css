@@ -186,6 +186,7 @@
 
 .slogan {
   color: var(--texto-terciario);
+  font-family: var(--fonte-slogan);
   font-size: var(--tamanho-xs);
   line-height: var(--altura-linha-compacta);
 }

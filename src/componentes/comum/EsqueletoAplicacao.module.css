@@ -1,0 +1,44 @@
+.aplicacao {
+  --espera-esqueleto: 0ms;
+  --surgimento-esqueleto: 0ms;
+  --lado-botao: var(--alvo-toque);
+  --largura-nova-conexao: 136px;
+  --altura-nova-conexao: var(--altura-controle-sm);
+
+  pointer-events: none;
+}
+
+.surgindo {
+  animation: surgirAplicacao var(--duracao-lenta) var(--curva-saida) var(--espera-abertura) backwards;
+}
+
+.novaConexao {
+  margin-right: var(--espaco-2);
+}
+
+.conta {
+  margin-left: var(--espaco-1);
+}
+
+.limite {
+  width: 100%;
+  max-width: var(--largura-conteudo);
+  margin-inline: auto;
+}
+
+@keyframes surgirAplicacao {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .aplicacao {
+    --largura-nova-conexao: var(--alvo-toque);
+    --altura-nova-conexao: var(--alvo-toque);
+  }
+
+  .novaConexao {
+    margin-right: 0;
+  }
+}

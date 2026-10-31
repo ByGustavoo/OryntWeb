@@ -1,0 +1,34 @@
+.tabela {
+  table-layout: auto;
+}
+
+.colunaAcoes {
+  width: calc(var(--altura-controle-sm) + 16px + var(--espaco-5));
+}
+
+.celulaAcoes {
+  padding-block: 0;
+  white-space: nowrap;
+}
+
+.acoes {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+  width: 100%;
+}
+
+.seta {
+  flex-shrink: 0;
+  color: var(--texto-terciario);
+}
+
+@container lista-objetos (max-width: 860px) {
+  .tabela tbody td.celulaAcoes {
+    position: absolute;
+    top: var(--espaco-3);
+    right: var(--espaco-3);
+    width: auto;
+  }
+}

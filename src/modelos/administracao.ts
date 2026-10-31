@@ -9,6 +9,7 @@ export type CodigoPermissao =
   | 'BANCO_PAPEIS_ALTERAR'
   | 'BANCO_PERMISSOES_ALTERAR'
   | 'CONEXOES_USAR'
+  | 'BACKUP_GERENCIAR'
   | 'ADMIN_USUARIOS'
   | 'ADMIN_AUDITORIA';
 
@@ -85,6 +86,7 @@ export type ModuloAuditoria =
   | 'OBJETOS'
   | 'BANCO'
   | 'CONEXOES'
+  | 'BACKUP'
   | 'ADMINISTRACAO'
   | 'CONFIGURACOES';
 
@@ -116,9 +118,20 @@ export type TipoEventoAuditoria =
   | 'CONEXAO_ENCERRADA'
   | 'CONEXAO_RENOMEADA'
   | 'CONEXAO_EXCLUIDA'
-  | 'BANCO_ALTERADO';
+  | 'CONEXAO_SALVA'
+  | 'CONEXAO_EDITADA'
+  | 'BANCO_ALTERADO'
+  | 'BACKUP_INICIADO'
+  | 'BACKUP_CANCELADO'
+  | 'BACKUP_EXCLUIDO'
+  | 'AGENDAMENTO_CRIADO'
+  | 'AGENDAMENTO_EDITADO'
+  | 'AGENDAMENTO_ATIVADO'
+  | 'AGENDAMENTO_DESATIVADO'
+  | 'AGENDAMENTO_EXCLUIDO'
+  | 'ARMAZENAMENTO_ALTERADO';
 
-export type TipoAlvoAuditoria = 'CONTA' | 'CONEXAO' | 'TELA' | 'ROTA' | 'ALTERACAO';
+export type TipoAlvoAuditoria = 'CONTA' | 'CONEXAO' | 'TELA' | 'ROTA' | 'ALTERACAO' | 'BACKUP' | 'AGENDAMENTO' | 'ARMAZENAMENTO';
 
 export interface AlvoAuditoriaDTO {
   tipo: TipoAlvoAuditoria;

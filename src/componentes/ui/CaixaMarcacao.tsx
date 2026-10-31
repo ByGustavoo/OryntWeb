@@ -1,10 +1,11 @@
-import { useId } from 'react';
+import { useEffect, useId, useRef } from 'react';
 import type { InputHTMLAttributes, ReactNode } from 'react';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
 import estilos from './CaixaMarcacao.module.css';
 
 interface CaixaMarcacaoProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | 'onChange' | 'children'> {
   marcada: boolean;
+  parcial?: boolean;
   aoMudar: (marcada: boolean) => void;
   descricao?: ReactNode;
   motivoDesabilitada?: string | null;
@@ -14,6 +15,7 @@ interface CaixaMarcacaoProps extends Omit<InputHTMLAttributes<HTMLInputElement>,
 
 export function CaixaMarcacao({
   marcada,
+  parcial = false,
   aoMudar,
   descricao,
   motivoDesabilitada,
@@ -24,12 +26,19 @@ export function CaixaMarcacao({
   ...resto
 }: CaixaMarcacaoProps) {
   const id = useId();
+  const entrada = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (entrada.current) entrada.current.indeterminate = parcial;
+  }, [parcial, marcada]);
+
   const desabilitada = disabled || Boolean(motivoDesabilitada);
   const textoAuxiliar = motivoDesabilitada ?? descricao;
 
   return (
     <label className={juntarClasses(estilos.caixa, desabilitada && estilos.desabilitada, className)}>
       <input
+        ref={entrada}
         type="checkbox"
         className={estilos.entrada}
         checked={marcada}

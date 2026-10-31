@@ -1,6 +1,8 @@
 :root {
   --fonte-interface: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --fonte-numeros: 'Geist Mono Variable', ui-monospace, 'SF Mono', 'Cascadia Mono', Consolas, monospace;
+  --fonte-marca: 'Archivo Variable', ui-sans-serif, system-ui, sans-serif;
+  --fonte-slogan: 'Instrument Sans Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
 
   --tamanho-xs: 0.75rem;
   --tamanho-sm: 0.8125rem;

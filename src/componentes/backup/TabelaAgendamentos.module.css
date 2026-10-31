@@ -1,0 +1,21 @@
+.colunaAcoes {
+  width: calc(var(--altura-controle-sm) * 3 + var(--espaco-5));
+}
+
+.celulaAcoes {
+  white-space: nowrap;
+}
+
+.acoes {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+  width: 100%;
+}
+
+@container lista-objetos (max-width: 860px) {
+  .acoes {
+    justify-content: flex-start;
+  }
+}

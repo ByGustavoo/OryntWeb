@@ -39,7 +39,7 @@ silenciosa no resto.
 * **Navegação:** menu lateral recolhível no desktop e gaveta abaixo de 1100px.
 * **Tipo de banco:** aparece como campo já resolvido (PostgreSQL), não como lista de uma opção.
 * **Rótulos:** capitalização de frase ("Usuários e permissões", "Objetos do banco"), como nos outros projetos.
-* **Navegação em grupos e subgrupos:** pedido do usuário em 11 de outubro de 2026, no modelo do PrismaWeb. O menu tem o Dashboard, o grupo "Análise" (Relatórios e Consultas SQL), o grupo "Gerenciamento" (Objetos do banco e Usuários e permissões) e, desde 20 de outubro de 2026, o grupo "Administração" (Usuários e Auditoria), que só aparece para quem tem as permissões; Configurações segue no rodapé. O menu mostra só as telas que a conta pode abrir. Cada item de grupo abre as suas telas: Relatórios (Resumo, Exportação, Comparação), Consultas SQL (Todas, Histórico, Planos de execução), Objetos do banco (Views, Índices, Tabelas, Funções) e Usuários e permissões (Papéis, Sessões, Alterações, Permissões; Alterações entrou em 20 de outubro de 2026). Os nomes dos grupos e das telas foram escolhidos por boa prática, a partir do que já estava previsto para cada funcionalidade.
+* **Navegação em grupos e subgrupos:** pedido do usuário em 11 de outubro de 2026, no modelo do PrismaWeb. O menu tem o Dashboard, o grupo "Análise" (Relatórios e Consultas SQL), o grupo "Gerenciamento" (Backup, desde 30 de outubro de 2026, Objetos do banco e Usuários e permissões) e, desde 20 de outubro de 2026, o grupo "Administração" (Usuários e Auditoria), que só aparece para quem tem as permissões; Configurações segue no rodapé. O menu mostra só as telas que a conta pode abrir. Cada item de grupo abre as suas telas: Relatórios (Resumo, Exportação, Comparação), Consultas SQL (Todas, Histórico, Planos de execução), Objetos do banco (Views, Índices, Tabelas, Funções) e Usuários e permissões (Papéis, Sessões, Alterações, Permissões; Alterações entrou em 20 de outubro de 2026). Os nomes dos grupos e das telas foram escolhidos por boa prática, a partir do que já estava previsto para cada funcionalidade.
 * **Telas planejadas:** o grupo em que nada está pronto leva o selo "Em breve" ao lado do título (antes havia um único grupo chamado "Em breve"). Num grupo que já tem tela pronta, a marca "Em breve" desce para cada tela planejada. Não sobrou nenhuma: Papéis, Sessões e Permissões ficaram prontas em 19 de outubro de 2026. Objetos do banco não tem mais tela planejada: Views e Índices ficaram prontas em 18 de outubro de 2026, e Tabelas e Funções, em 19 de outubro. O item em que nada está pronto não leva a marca ao lado do nome desde então: "Usuários e permissões" com a marca não cabia no menu e aparecia cortado; as telas dele, ao abrir o item, mostram a marca uma a uma. Cada tela planejada tem a própria rota, mostra o que está previsto para a funcionalidade, com a tela aberta em evidência, e não simula nada.
 * **Demonstração:** selo "Demonstração" no menu da conta enquanto há uma conexão simulada ativa e aviso "Dados demonstrativos" no dashboard. Sem conexão, o selo não aparece. O selo saiu do cabeçalho a pedido do usuário em 11 de outubro de 2026.
 * **Dashboard:** períodos de 1 h, 24 h, 7 dias e 30 dias; a tabela vira cartões em telas estreitas.
@@ -128,7 +128,7 @@ que o modal deixasse de abrir sozinho: sem conexão salva, o dashboard espera o 
 | Q5 | Conteúdo do modal | Tudo o que a página tinha: colar URL, os seis campos, "Testar conexão" e o alerta de falha. |
 | S1 | Botão "Sair" | No menu da conta: um círculo com a primeira letra do usuário, no canto superior direito do cabeçalho, ao lado do botão de tema. O menu mostra a conta, a conexão em uso (nome, tipo, servidor, banco, usuário e o selo de estado), as outras conexões salvas para trocar, "Gerenciar conexões" e "Sair". Saiu do rodapé do menu lateral a pedido do usuário em 11 de outubro de 2026. O círculo aparece com ou sem banco conectado, para que "Sair" continue ao alcance; sem conexão, o menu diz "Nenhum banco conectado". Encerra o login e a conexão ativa; as conexões salvas continuam na conta. Aprovada. |
 | S2 | Falha ao verificar | Um erro em `GET /conexoes/atual` ou `GET /conexoes` que não seja "sem conexão" mostra "Não foi possível verificar a conexão" com "Tentar novamente", e não abre o modal. Aprovada. |
-| S3 | Gerenciar conexões | Seção "Conexões salvas" em Configurações: conectar, renomear e excluir. Aprovada. |
+| S3 | Gerenciar conexões | Seção "Conexões salvas" em Configurações: conectar, editar e excluir. Aprovada. Desde 30 de outubro de 2026, editar cobre todos os dados e substitui o renomear, e salvar sem conectar fica no Backup (ver "Backup"). |
 
 Regras:
 
@@ -139,7 +139,7 @@ Regras:
 * **Mesmo banco:** conectar de novo ao mesmo host, porta, banco e usuário atualiza a conexão salva, em vez de criar outra.
 * **Desconectar:** encerra a conexão da sessão e leva ao dashboard sem conexão. A conexão continua salva; ao recarregar a página ou entrar de novo, a usada por último volta a ser ativada.
 * **Excluir:** pede confirmação. Excluir a conexão em uso deixa a aplicação sem conexão.
-* **Renomear:** nome obrigatório, até 60 caracteres.
+* **Editar:** os mesmos campos do cadastro, com a senha opcional: em branco, a guardada continua valendo.
 * **Fechar o modal:** os campos digitados ficam para a próxima abertura, menos a senha, que é descartada. Durante uma tentativa, só "Cancelar" interrompe.
 * **Simulação:** a lista fica no `localStorage` em `orynt:simulacao:conexoes-salvas`, sem senha, e a tela de Configurações diz isso.
 
@@ -1024,6 +1024,42 @@ pontos), e a escolhida, entre quatro propostas, foi o terminal psql.
   `ERRO` e a explicação da versão nova ou da rede quando uma parte do Orynt não chegou; a ação é "Recarregar a
   página". A falha de uma tela só continua dentro do shell, com o menu funcionando.
 
+## Backup
+
+Pedido pelo usuário em 30 de outubro de 2026: um módulo para fazer e acompanhar backups de bancos PostgreSQL, salvos no computador de quem os faz, nesta etapa só no front. Nenhum `pg_dump` roda e nenhum agendador existe de verdade: o simulador faz o papel da API, e o arquivo salvo é de demonstração. Revisto no mesmo dia (backup local): revogou Q5 e S1 e ajustou Q2, Q3, Q7, Q9, S4 e S5, a pedido do usuário.
+
+| # | Tema | Decisão |
+|---|---|---|
+| Q1 | Conexões | **Revista em 30 de outubro de 2026, a pedido do usuário:** a tela Backup › Conexões saiu, por ser uma tela para muito poucos registros. As conexões são as mesmas salvas na conta: Configurações conecta, edita e exclui, e o Backup cadastra uma conexão sem conectar quando não há nenhuma, ou pelo formulário do backup. |
+| Q2 | Navegação | Item "Backup" em Gerenciamento, com telas e rotas próprias: Resumo, Histórico e Agendamentos. "Visão geral" virou "Resumo" pela regra de ordem do menu, porque a primeira tela é a que abre. A tela Destino saiu em 30 de outubro de 2026, a pedido do usuário: o destino é escolhido na etapa Destino do formulário. |
+| Q3 | Configuração e agendamento | Um único formulário em quatro etapas (Origem, Objetos, Destino e Quando). A última decide entre executar agora e uma frequência. |
+| Q4 | Conexão em uso | O módulo mostra todas as conexões e funciona sem banco conectado. |
+| Q5 | Onde roda e grava | **Revista.** O destino é sempre o computador de quem faz o backup, e o servidor não guarda nenhum arquivo. Como o navegador não fala com o PostgreSQL nem roda `pg_dump`, a API roda o `pg_dump` e repassa o arquivo ao navegador sem gravar em disco (escolha do usuário entre repasse, auxiliar local obrigatório e os dois). Os dados passam pela API, o banco precisa estar acessível a partir dela, e a interface diz isso. Um auxiliar local pode vir depois, para bancos em rede privada. |
+| Q6 | Tipos | Completo, Só estrutura e Só dados, o que o `pg_dump` faz e permite escolher objetos. |
+| Q7 | Executar agora | Simula o progresso, termina em sucesso, falha ou cancelamento e entra no Histórico e nos indicadores. **Revista em 30 de outubro de 2026, a pedido do usuário, que achou o segundo plano esquisito:** nenhum modal abre sozinho ao iniciar. Um cartão flutuante no canto inferior direito acompanha cada execução em todas as telas e pode ser recolhido, e os detalhes abrem só quando a pessoa pede. |
+| Q8 | Banco de dados | Vem da conexão, sem escolha: para outro banco, usa-se outra conexão. |
+| Q9 | Excluir do histórico | Apaga só o registro, com confirmação: o arquivo está no computador da pessoa e não é afetado. A exclusão fica na auditoria. |
+| Q10 | Excluir uma conexão com agendamentos | A confirmação lista os agendamentos, que ficam desativados e marcados "Sem conexão". O histórico é mantido. Vale também para a exclusão em Configurações. |
+| Q11 | Permissão | Uma só, `BACKUP_GERENCIAR`, do perfil Administrador. Exige `CONEXOES_USAR`. |
+| S1 | Retenção | **Revogada** com o backup local: o site não apaga arquivos do computador de ninguém. |
+| Q12 | Agendamentos | Viram lembretes (escolha do usuário): na hora prevista, com o Orynt aberto, o cartão avisa e a pessoa confirma o início. Com o site fechado, nada roda, e o agendamento aparece como atrasado, com "Fazer agora". |
+| Q13 | Conta | Login e `BACKUP_GERENCIAR` continuam (escolha do usuário). Nenhum arquivo fica ligado à conta: ela guarda só as conexões salvas e o registro do histórico. |
+| S4 | Próximos lembretes | Aprovada. O formulário e o detalhe do agendamento mostram as 3 próximas datas. |
+| S5 | Alerta de proteção | Aprovada. Quando o último backup falha ou um agendamento atrasa, um ponto de atenção aparece no Resumo e, recolhido, no Dashboard, só para quem tem a permissão. O atraso oferece "Fazer agora". |
+| S2 e S3 | Comandos `pg_restore` e `pg_dump` para copiar | Recusadas nesta etapa. |
+
+Regras:
+
+* **Objetos:** esquema, tipo e objeto, com Tabelas, Views, Views materializadas, Funções, Procedimentos e Sequências. Índices, gatilhos e restrições acompanham a tabela. "Banco inteiro" inclui o que for criado depois. Em Só dados, só tabelas e sequências podem ser marcadas.
+* **Frequência:** diária, semanal, mensal ou a cada N horas (até 168) ou N dias (até 90). O horário é o do computador da pessoa. O dia 29, 30 ou 31 cai no último dia dos meses mais curtos.
+* **Situação do agendamento:** é calculada, não escolhida. Sem conexão, Inativo, Atrasado (a hora passou e o backup não foi feito, com uma hora de folga) ou Ativo.
+* **Destino:** baixar pelo navegador (o padrão, para a pasta de downloads) ou escolher uma pasta, quando o navegador permite (File System Access API). A escolha vale para esta aba e nunca mostra caminho de servidor. O arquivo fica disponível para baixar enquanto a aba estiver aberta.
+* **Progresso:** nunca inventado. Etapa, objetos processados e bytes recebidos vêm da API; sem como medir, a barra fica indeterminada, sem percentual.
+* **Segundo plano:** continua ao trocar de tela e, mais lento, em outra aba. Recarregar ou fechar a aba interrompe o backup, com confirmação antes. Com o site fechado, nada roda. O texto com sublinhado azul "Como funciona o segundo plano?", na última etapa do formulário, no cartão e nos detalhes, explica esses limites numa dica.
+* **Resultado:** o cartão mostra concluído, falhou ou cancelado. Falha e arquivo por baixar ficam até serem dispensados; arquivo já salvo sai depois de um tempo. Um resultado não remove o acompanhamento dos outros backups.
+* **Senha:** as regras de sempre. Ao editar uma conexão, deixar a senha em branco mantém a guardada pela API; ela nunca volta para o navegador.
+* **Auditoria:** salvar e editar conexão, iniciar, cancelar e excluir backup e criar, editar, ativar, desativar e excluir agendamento geram eventos no módulo Backup.
+
 ## Fora desta fase
 
-Backend, coleta de métricas reais, modo SSL, Docker, CI e vídeo de apresentação.
+Backend, coleta de métricas reais, execução real de backups, modo SSL, Docker, CI e vídeo de apresentação.

@@ -25,6 +25,8 @@ export const rotasApi = {
     atual: '/conexoes/atual',
     salva: (id: string) => `/conexoes/${id}`,
     ativacao: (id: string) => `/conexoes/${id}/ativacao`,
+    salvas: '/conexoes/salvas',
+    testeDaSalva: (id: string) => `/conexoes/${id}/teste`,
   },
   dashboard: {
     indicadores: '/dashboard/indicadores',
@@ -50,6 +52,19 @@ export const rotasApi = {
   },
   relatorios: {
     resumo: '/relatorios/resumo',
+  },
+  backup: {
+    resumo: '/backup/resumo',
+    alertas: '/backup/alertas',
+    conexoes: '/backup/conexoes',
+    objetos: (id: string) => `/backup/conexoes/${id}/objetos`,
+    execucoes: '/backup/execucoes',
+    execucao: (id: string) => `/backup/execucoes/${id}`,
+    cancelamentoDaExecucao: (id: string) => `/backup/execucoes/${id}/cancelamento`,
+    arquivoDaExecucao: (id: string) => `/backup/execucoes/${id}/arquivo`,
+    agendamentos: '/backup/agendamentos',
+    agendamento: (id: string) => `/backup/agendamentos/${id}`,
+    execucaoDoAgendamento: (id: string) => `/backup/agendamentos/${id}/execucoes`,
   },
   sistema: {
     versao: '/sistema/versao',

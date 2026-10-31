@@ -2,16 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Unplug } from 'lucide-react';
 import { descreverFalha } from '@/api/tratamentoErros';
-import { ResumoConexao } from '@/componentes/conexao/ResumoConexao';
-import {
-  Botao,
-  CabecalhoPainel,
-  DialogoConfirmacao,
-  EstadoErro,
-  EstadoVazio,
-  IndicadorGiratorio,
-  Painel,
-} from '@/componentes/ui';
+import { EsqueletoResumoConexao, ResumoConexao } from '@/componentes/conexao/ResumoConexao';
+import { Botao, CabecalhoPainel, DialogoConfirmacao, Esqueleto, EstadoErro, EstadoVazio, Painel } from '@/componentes/ui';
 import { useConexao } from '@/provedores/ProvedorConexao';
 import { useNotificacoes } from '@/provedores/ProvedorNotificacoes';
 import { caminhos } from '@/rotas/caminhos';
@@ -45,7 +37,9 @@ export function SecaoConexao() {
         descricao={
           conexao
             ? `${conexao.versaoServidor} · conectada em ${formatarInstante(conexao.conectadaEm)}`
-            : 'O banco que o Orynt mostra no dashboard.'
+            : alvo
+              ? `Conectando a ${alvo.nome}…`
+              : 'O banco que o Orynt mostra no dashboard.'
         }
       />
 
@@ -78,10 +72,12 @@ export function SecaoConexao() {
           tentando={verificandoDeNovo}
         />
       ) : alvo ? (
-        <p className={estilos.conectando} role="status">
-          <IndicadorGiratorio tamanho={16} />
-          Conectando a {alvo.nome}…
-        </p>
+        <div className={estilos.conectando} role="status" aria-label={`Conectando a ${alvo.nome}…`}>
+          <EsqueletoResumoConexao />
+          <div className={estilos.acoes}>
+            <Esqueleto largura={136} altura="var(--altura-controle)" raio="var(--raio-md)" />
+          </div>
+        </div>
       ) : (
         <EstadoVazio
           compacto
