@@ -3,6 +3,7 @@ import type { CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, ChartNoAxesColumn, SearchX } from 'lucide-react';
 import { ehErroApi } from '@/api/tratamentoErros';
+import { AlertasDeBackup } from '@/componentes/backup/AlertasDeBackup';
 import { PainelSemConexao } from '@/componentes/conexao/PainelSemConexao';
 import { GraficoAtividade } from '@/componentes/dashboard/GraficoAtividade';
 import { ResumoIndicadores } from '@/componentes/dashboard/ResumoIndicadores';
@@ -10,9 +11,10 @@ import { EsqueletoTabelaConsultas, TabelaConsultas } from '@/componentes/dashboa
 import type { OrdenacaoDaTabela } from '@/componentes/dashboard/TabelaConsultas';
 import { CabecalhoPagina } from '@/componentes/layout/CabecalhoPagina';
 import { CabecalhoPainel, ConteudoAssincrono, Esqueleto, EstadoVazio, GrupoOpcoes, Painel } from '@/componentes/ui';
-import { useDadosPorChave } from '@/ganchos/useDadosAssincronos';
+import { useDadosAssincronos, useDadosPorChave } from '@/ganchos/useDadosAssincronos';
 import type { ResultadoAssincrono } from '@/ganchos/useDadosAssincronos';
 import { esperaMaximaDaEtapa, useEntradaCoordenada } from '@/ganchos/useEntradaCoordenada';
+import { usePermissao } from '@/ganchos/usePermissao';
 import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
 import { useVerHistorico } from '@/ganchos/useVerHistorico';
 import { useVerPlano } from '@/ganchos/useVerPlano';
@@ -22,7 +24,7 @@ import { useConexao } from '@/provedores/ProvedorConexao';
 import type { SituacaoConexao } from '@/provedores/ProvedorConexao';
 import { granularidadeDoDashboard, ultimoPeriodoFechado, ultimoPeriodoNaFrase } from '@/regras/periodoRelatorio';
 import { caminhos } from '@/rotas/caminhos';
-import { servicoDashboard } from '@/servicos';
+import { servicoBackup, servicoDashboard } from '@/servicos';
 import estilos from './PaginaDashboard.module.css';
 
 const PERIODO_INICIAL: PeriodoDashboard = 'ULTIMAS_24_HORAS';
@@ -92,9 +94,11 @@ function DashboardConectado({ periodo }: { periodo: PeriodoDashboard }) {
   const respostaIndicadores = useDadosPorChave(periodo, servicoDashboard.buscarIndicadores);
   const respostaAtividade = useDadosPorChave(periodo, servicoDashboard.buscarAtividade);
   const respostaConsultas = useDadosPorChave(periodo, servicoDashboard.buscarConsultas);
+  const veBackup = usePermissao('BACKUP_GERENCIAR');
+  const respostaAlertas = useDadosAssincronos((signal) => (veBackup ? servicoBackup.listarAlertas(signal) : Promise.resolve(null)), [veBackup]);
 
   const respostas = [respostaIndicadores, respostaAtividade, respostaConsultas];
-  const etapas = useEntradaCoordenada(respostas.every(respondeu), ETAPA_CONSULTAS, periodo);
+  const etapas = useEntradaCoordenada(respostas.every(respondeu) && respondeu(respostaAlertas), ETAPA_CONSULTAS, periodo);
   const indicadores = aguardarEtapa(respostaIndicadores, etapas >= ETAPA_INDICADORES);
   const atividade = aguardarEtapa(respostaAtividade, etapas >= ETAPA_ATIVIDADE);
   const consultas = aguardarEtapa(respostaConsultas, etapas >= ETAPA_CONSULTAS);
@@ -109,6 +113,7 @@ function DashboardConectado({ periodo }: { periodo: PeriodoDashboard }) {
 
   return (
     <div className={estilos.blocos} style={esperaDoEsqueleto(ETAPA_INDICADORES, trocouDePeriodo)}>
+      {etapas >= ETAPA_INDICADORES && respostaAlertas.dados ? <AlertasDeBackup alertas={respostaAlertas.dados.alertas} variante="recolhida" /> : null}
       <ResumoIndicadores resultado={indicadores} />
 
       <Painel aria-labelledby="titulo-atividade" aria-busy={atividade.carregando}>

@@ -1,0 +1,7 @@
+.titulo {
+  margin-block: calc((var(--altura-titulo-pagina) - 26px) / 2);
+}
+
+.descricao {
+  margin-block: calc((var(--tamanho-base) * var(--altura-linha-normal) - 16px) / 2);
+}

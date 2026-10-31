@@ -1,0 +1,15 @@
+.conteiner {
+  container: filtros-historico-backup / inline-size;
+}
+
+.barra {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--espaco-3);
+}
+
+@container filtros-historico-backup (max-width: 480px) {
+  .barra {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

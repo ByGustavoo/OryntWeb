@@ -16,6 +16,7 @@ import { encerrarAcessoSimulado } from './acessoSimulado';
 import { restaurarAuditoriaSimulada } from './auditoriaSimulada';
 import type { ContextoSimulado, ExigenciaDaRota } from './autorizacaoSimulada';
 import { autorizar } from './autorizacaoSimulada';
+import { definirFalhaDosBackups, restaurarBackupSimulado } from './backup';
 import { restaurarContasSimuladas } from './contasSimuladas';
 import { reiniciarConvitesSimulados } from './convitesSimulados';
 import {
@@ -29,17 +30,38 @@ import {
   reenviarConvite,
 } from './manipuladores/administracao';
 import { listarAuditoria } from './manipuladores/auditoria';
+import {
+  alternarAgendamentoBackup,
+  buscarArquivoBackup,
+  buscarExecucaoBackup,
+  buscarResumoBackup,
+  cancelarExecucaoBackup,
+  criarAgendamentoBackup,
+  editarAgendamentoBackup,
+  excluirAgendamentoBackup,
+  excluirExecucaoBackup,
+  iniciarExecucaoBackup,
+  iniciarExecucaoDoAgendamento,
+  listarAgendamentosBackup,
+  listarAlertasBackup,
+  listarExecucoesBackup,
+  listarImpactosBackup,
+  listarObjetosBackup,
+} from './manipuladores/backup';
 import { buscarUsuarioAtual, entrar, esperaDoAcesso, registrarAcessoATela, sair, sairDoAcessoSimulado } from './manipuladores/autenticacao';
 import {
   ativarConexao,
   buscarConexaoAtual,
   criarConexao,
+  editarConexao,
   encerrarConexao,
   esperaDaTentativa,
   excluirConexao,
   listarConexoes,
   renomearConexao,
+  salvarConexao,
   testarConexao,
+  testarConexaoSalva,
 } from './manipuladores/conexoes';
 import { buscarHistoricoDaConsulta, buscarPlanoDaConsulta, listarConsultas } from './manipuladores/consultas';
 import { aceitarConvite, verificarConvite } from './manipuladores/convite';
@@ -166,6 +188,46 @@ const rotas: Rota[] = [
     acesso: ['CONEXOES_USAR'],
     descricao: 'excluir uma conexão salva',
   },
+  {
+    metodo: 'POST',
+    caminho: rotasApi.conexoes.salvas,
+    manipulador: salvarConexao,
+    acesso: ['CONEXOES_USAR'],
+    descricao: 'salvar uma conexão sem conectar',
+    espera: esperaDaTentativa,
+  },
+  {
+    metodo: 'PUT',
+    caminho: rotasApi.conexoes.salva(ID),
+    manipulador: editarConexao,
+    acesso: ['CONEXOES_USAR'],
+    descricao: 'editar uma conexão salva',
+    espera: esperaDaTentativa,
+  },
+  {
+    metodo: 'POST',
+    caminho: rotasApi.conexoes.testeDaSalva(ID),
+    manipulador: testarConexaoSalva,
+    acesso: ['CONEXOES_USAR'],
+    descricao: 'testar uma conexão salva',
+    espera: esperaDaTentativa,
+  },
+  { metodo: 'GET', caminho: rotasApi.backup.resumo, manipulador: buscarResumoBackup, acesso: ['BACKUP_GERENCIAR'], descricao: 'ler o resumo dos backups' },
+  { metodo: 'GET', caminho: rotasApi.backup.alertas, manipulador: listarAlertasBackup, acesso: ['BACKUP_GERENCIAR'], descricao: 'ler os alertas dos backups' },
+  { metodo: 'GET', caminho: rotasApi.backup.conexoes, manipulador: listarImpactosBackup, acesso: ['BACKUP_GERENCIAR'], descricao: 'ler os backups de cada conexão' },
+  { metodo: 'GET', caminho: rotasApi.backup.objetos(ID), manipulador: listarObjetosBackup, acesso: ['BACKUP_GERENCIAR'], descricao: 'listar os objetos de um banco para o backup' },
+  { metodo: 'GET', caminho: rotasApi.backup.execucoes, manipulador: listarExecucoesBackup, acesso: ['BACKUP_GERENCIAR'], descricao: 'consultar o histórico de backups' },
+  { metodo: 'POST', caminho: rotasApi.backup.execucoes, manipulador: iniciarExecucaoBackup, acesso: ['BACKUP_GERENCIAR'], descricao: 'iniciar um backup', espera: esperaDaAlteracao },
+  { metodo: 'GET', caminho: rotasApi.backup.execucao(ID), manipulador: buscarExecucaoBackup, acesso: ['BACKUP_GERENCIAR'], descricao: 'ler um backup', espera: () => 80 },
+  { metodo: 'POST', caminho: rotasApi.backup.cancelamentoDaExecucao(ID), manipulador: cancelarExecucaoBackup, acesso: ['BACKUP_GERENCIAR'], descricao: 'cancelar um backup', espera: esperaDaAlteracao },
+  { metodo: 'GET', caminho: rotasApi.backup.arquivoDaExecucao(ID), manipulador: buscarArquivoBackup, acesso: ['BACKUP_GERENCIAR'], descricao: 'receber o arquivo de um backup', espera: () => 80 },
+  { metodo: 'DELETE', caminho: rotasApi.backup.execucao(ID), manipulador: excluirExecucaoBackup, acesso: ['BACKUP_GERENCIAR'], descricao: 'excluir um backup', espera: esperaDaAdministracao },
+  { metodo: 'GET', caminho: rotasApi.backup.agendamentos, manipulador: listarAgendamentosBackup, acesso: ['BACKUP_GERENCIAR'], descricao: 'listar os agendamentos de backup' },
+  { metodo: 'POST', caminho: rotasApi.backup.agendamentos, manipulador: criarAgendamentoBackup, acesso: ['BACKUP_GERENCIAR'], descricao: 'criar um agendamento de backup', espera: esperaDaAdministracao },
+  { metodo: 'PUT', caminho: rotasApi.backup.agendamento(ID), manipulador: editarAgendamentoBackup, acesso: ['BACKUP_GERENCIAR'], descricao: 'editar um agendamento de backup', espera: esperaDaAdministracao },
+  { metodo: 'PATCH', caminho: rotasApi.backup.agendamento(ID), manipulador: alternarAgendamentoBackup, acesso: ['BACKUP_GERENCIAR'], descricao: 'ativar ou desativar um agendamento de backup' },
+  { metodo: 'DELETE', caminho: rotasApi.backup.agendamento(ID), manipulador: excluirAgendamentoBackup, acesso: ['BACKUP_GERENCIAR'], descricao: 'excluir um agendamento de backup', espera: esperaDaAdministracao },
+  { metodo: 'POST', caminho: rotasApi.backup.execucaoDoAgendamento(ID), manipulador: iniciarExecucaoDoAgendamento, acesso: ['BACKUP_GERENCIAR'], descricao: 'fazer agora o backup de um agendamento', espera: esperaDaAlteracao },
   {
     metodo: 'GET',
     caminho: rotasApi.dashboard.indicadores,
@@ -423,6 +485,11 @@ if (ambiente.desenvolvimento) {
       rastrearFuncoes: definirRastreamentoDasFuncoes,
       recusarAlteracoes: (recusar = true) => definirRecusaDeAlteracoes(recusar),
       restaurarPapeis: restaurarPapeisSimulados,
+      falharBackups: (falhar = true) => definirFalhaDosBackups(falhar),
+      restaurarBackup: () => {
+        restaurarBackupSimulado();
+        window.location.reload();
+      },
       restaurarAdministracao,
       encerrarSessao: encerrarSessaoSimulada,
       expirarCodigo: expirarCodigoSimulado,

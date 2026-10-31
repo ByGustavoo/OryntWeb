@@ -8,7 +8,6 @@ import {
   ordenarPorUso,
   registrarConexaoSalva,
   removerConexaoSalva,
-  renomearConexaoSalva,
   salvaDaConexao,
 } from '@/regras/conexoesSalvas';
 import { interpretarFalhaConexao } from '@/regras/falhaConexao';
@@ -36,8 +35,8 @@ interface EstadoConexao {
 
 interface ValorContextoConexao extends EstadoConexao {
   registrarConexao: (conexao: ConexaoDTO) => void;
+  guardarSalva: (salva: ConexaoSalvaDTO) => void;
   ativarConexao: (salva: ConexaoSalvaDTO) => Promise<void>;
-  renomearConexao: (id: string, nome: string) => Promise<void>;
   excluirConexao: (id: string) => Promise<void>;
   encerrarConexao: () => Promise<void>;
   marcarDesconectada: () => void;
@@ -144,6 +143,17 @@ export function ProvedorConexao({ children }: { children: ReactNode }) {
     setEstado((anterior) => conectada(conexao, registrarConexaoSalva(anterior.salvas, salvaDaConexao(conexao))));
   }, []);
 
+  const guardarSalva = useCallback((salva: ConexaoSalvaDTO) => {
+    setEstado((anterior) => ({
+      ...anterior,
+      conexao:
+        anterior.conexao?.id === salva.id
+          ? { ...anterior.conexao, nome: salva.nome, host: salva.host, porta: salva.porta, banco: salva.banco, usuario: salva.usuario }
+          : anterior.conexao,
+      salvas: ordenarPorUso([...anterior.salvas.filter((item) => item.id !== salva.id), salva]),
+    }));
+  }, []);
+
   const ativarConexao = useCallback(
     async (salva: ConexaoSalvaDTO) => {
       const falha = await ativar(salva);
@@ -155,15 +165,6 @@ export function ProvedorConexao({ children }: { children: ReactNode }) {
     },
     [ativar, notificacoes],
   );
-
-  const renomearConexao = useCallback(async (id: string, nome: string) => {
-    const renomeada = await servicoConexao.renomearConexao(id, { nome });
-    setEstado((anterior) => ({
-      ...anterior,
-      conexao: anterior.conexao?.id === id ? { ...anterior.conexao, nome: renomeada.nome } : anterior.conexao,
-      salvas: renomearConexaoSalva(anterior.salvas, id, renomeada.nome),
-    }));
-  }, []);
 
   const excluirConexao = useCallback(async (id: string) => {
     await servicoConexao.excluirConexao(id);
@@ -188,8 +189,8 @@ export function ProvedorConexao({ children }: { children: ReactNode }) {
     () => ({
       ...estado,
       registrarConexao,
+      guardarSalva,
       ativarConexao,
-      renomearConexao,
       excluirConexao,
       encerrarConexao,
       marcarDesconectada,
@@ -198,8 +199,8 @@ export function ProvedorConexao({ children }: { children: ReactNode }) {
     [
       estado,
       registrarConexao,
+      guardarSalva,
       ativarConexao,
-      renomearConexao,
       excluirConexao,
       encerrarConexao,
       marcarDesconectada,

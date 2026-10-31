@@ -1,0 +1,26 @@
+.gatilho {
+  align-self: flex-start;
+  border-radius: var(--raio-sm);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-xs);
+  text-decoration: underline;
+  text-decoration-color: var(--destaque);
+  text-underline-offset: 3px;
+  cursor: help;
+  transition: color var(--duracao-rapida) var(--curva-saida);
+}
+
+.gatilho:focus-visible {
+  outline: none;
+  box-shadow: var(--anel-foco);
+}
+
+.situacao {
+  font-weight: var(--peso-medio);
+}
+
+@media (hover: hover) {
+  .gatilho:hover {
+    color: var(--texto);
+  }
+}

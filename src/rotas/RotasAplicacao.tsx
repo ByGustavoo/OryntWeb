@@ -26,6 +26,9 @@ const PaginaPapeis = lazy(() => import('@/paginas/PaginaPapeis'));
 const PaginaSessoes = lazy(() => import('@/paginas/PaginaSessoes'));
 const PaginaPermissoes = lazy(() => import('@/paginas/PaginaPermissoes'));
 const PaginaAlteracoes = lazy(() => import('@/paginas/PaginaAlteracoes'));
+const PaginaBackupResumo = lazy(() => import('@/paginas/PaginaBackupResumo'));
+const PaginaBackupHistorico = lazy(() => import('@/paginas/PaginaBackupHistorico'));
+const PaginaBackupAgendamentos = lazy(() => import('@/paginas/PaginaBackupAgendamentos'));
 const PaginaAdministracaoUsuarios = lazy(() => import('@/paginas/PaginaAdministracaoUsuarios'));
 const PaginaAdministracaoAuditoria = lazy(() => import('@/paginas/PaginaAdministracaoAuditoria'));
 const PaginaFuncionalidadePlanejada = lazy(() => import('@/paginas/PaginaFuncionalidadePlanejada'));
@@ -77,6 +80,9 @@ export function RotasAplicacao() {
             <Route path={caminhos.usuariosSessoes} element={<PaginaSessoes />} />
             <Route path={caminhos.usuariosPermissoes} element={<PaginaPermissoes />} />
             <Route path={caminhos.usuariosAlteracoes} element={<PaginaAlteracoes />} />
+            <Route path={caminhos.backupResumo} element={<PaginaBackupResumo />} />
+            <Route path={caminhos.backupHistorico} element={<PaginaBackupHistorico />} />
+            <Route path={caminhos.backupAgendamentos} element={<PaginaBackupAgendamentos />} />
             <Route path={caminhos.administracaoUsuarios} element={<PaginaAdministracaoUsuarios />} />
             <Route path={caminhos.administracaoAuditoria} element={<PaginaAdministracaoAuditoria />} />
             <Route path={caminhos.administracao} element={<Navigate to={caminhos.administracaoUsuarios} replace />} />

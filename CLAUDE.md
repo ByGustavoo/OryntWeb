@@ -5,7 +5,7 @@ Frontend de uma aplicação para monitorar, analisar e administrar bancos Postgr
 origem."), toda sobre dados simulados: login, recuperação de senha, o modal de conexão com as conexões salvas, o
 shell e o Dashboard, Relatórios (Resumo, Exportação, Comparação), Consultas SQL (Todas, Histórico, Planos de
 execução), Objetos do banco (Views, Índices, Tabelas, Funções), Usuários e permissões (Papéis, Sessões,
-Permissões, Alterações) e Administração (Usuários e Auditoria: as contas do Orynt, suas permissões e a auditoria do
+Permissões, Alterações), Backup (Resumo, Histórico, Agendamentos; o arquivo vai para o computador da pessoa, com um cartão de progresso persistente; só simulado, sem execução real) e Administração (Usuários e Auditoria: as contas do Orynt, suas permissões e a auditoria do
 que cada uma fez). Papéis e Permissões também alteram o banco (papéis, participações, GRANT, REVOKE, privilégios
 padrão), sempre depois de uma revisão; Alterações é o histórico dessas mudanças. O backend (OryntAPI) ainda não
 existe. As decisões de produto ficam no `REQUISITOS.md` e são requisitos: não as altere sem a aprovação do
@@ -18,7 +18,7 @@ levam o id do commit, como `ORY-2`. Ainda não há CI nem workflow de entrega.
 ## Stack
 React 18, TypeScript 5 (`strict`, `noUncheckedIndexedAccess`), Vite 5, React Router 6 (flags futuras da v7
 ligadas), CSS Modules com propriedades customizadas, Recharts, lucide-react, Geist / Geist Mono via
-`@fontsource-variable`, Vitest. Mesma stack e mesmas convenções de pastas de `D:\Projetos\OrbitWeb`, de onde vieram
+`@fontsource-variable` (Archivo e Instrument Sans só na marca), Vitest. Mesma stack e mesmas convenções de pastas de `D:\Projetos\OrbitWeb`, de onde vieram
 o design system (`src/componentes/ui/`), a camada HTTP e o layout.
 
 ## Notas detalhadas
@@ -36,6 +36,7 @@ aqui:
 | `docs/notas/consultas.md` | Consultas SQL › Todas, Histórico e Planos de execução, `ConsultaSql`, a árvore do plano e as consultas, o histórico e os planos simulados |
 | `docs/notas/objetos.md` | Objetos do banco › Views, Índices, Tabelas e Funções, `useVerObjeto` |
 | `docs/notas/usuarios.md` | Papéis, Sessões, Permissões, as alterações no banco (`POST /usuarios/alteracoes`), `CadeiasDeBloqueio`, `MapaDosPapeis` |
+| `docs/notas/backup.md` | Resumo, Histórico e Agendamentos, o backup local e os limites do navegador, o cartão persistente (`ProvedorBackupLocal`), o formulário em etapas, os lembretes, os alertas no Dashboard e como o simulador faz o papel do servidor |
 | `docs/notas/relatorios.md` | Resumo, Exportação e Comparação, períodos, impressão, arquivos CSV/JSON/Markdown |
 | `docs/notas/desenvolvimento.md` | Dados simulados × API, controles de console `window.oryntSimulacao`, armadilhas do hot reload do Vite, verificação no Chrome |
 
@@ -49,7 +50,7 @@ aqui:
 | `src/regras/` | Regras puras com testes: validação, falhas em palavras, filtros e ordenação lidos do estado do histórico, frases dos pontos de atenção e dos destaques, comandos SQL, exportações, sugestão de tela da 404 |
 | `src/provedores/` | Tema, notificações, autenticação, conexão, modal de nova conexão, modal de alterações (`ProvedorAlteracoes`) |
 | `src/ganchos/` | Hooks: filtros de cada tela guardados no estado do histórico, navegação entre telas (`useVerHistorico`, `useVerPlano`, `useVerObjeto`), permissões, dados assíncronos, consultas de mídia e de tamanho |
-| `src/componentes/` | `ui/` (design system), `layout/`, `comum/` e uma pasta por área (`login/`, `recuperacao/`, `conexao/`, `dashboard/`, `relatorios/`, `consultas/`, `objetos/`, `usuarios/`, `administracao/`, `configuracoes/`); `usuarios/` e `administracao/` reaproveitam o CSS de `objetos/` |
+| `src/componentes/` | `ui/` (design system), `layout/`, `comum/` e uma pasta por área (`login/`, `recuperacao/`, `conexao/`, `dashboard/`, `relatorios/`, `consultas/`, `objetos/`, `usuarios/`, `backup/`, `administracao/`, `configuracoes/`); `usuarios/`, `backup/` e `administracao/` reaproveitam o CSS de `objetos/` |
 | `src/layouts/` | `LayoutAplicacao` (o shell) e `LayoutAcesso` (em volta de `/login`, `/recuperar-senha` e `/ativar-conta`) |
 | `src/paginas/` | Uma página por rota; as telas planejadas compartilham `PaginaFuncionalidadePlanejada` |
 | `src/rotas/` | `caminhos` (todos os caminhos das telas), `RotasAplicacao` (a tabela de rotas) e as guardas `RotaVisitante`, `RotaAutenticada` e `RotaProtegida` |
@@ -90,6 +91,7 @@ Não há linter nem formatador configurados. Antes de dar uma tarefa por conclu�
 ## Regras de segurança (do REQUISITOS.md)
 Texto completo em `docs/notas/seguranca.md`.
 * A senha do banco nunca é gravada no `localStorage`, no `sessionStorage`, em cookie, na URL ou no console; `useFluxoConexao` a tira do estado assim que a conexão é aceita. A senha do login segue a mesma regra.
+* Os arquivos de backup nunca ficam no servidor nem ligados à conta: vão para o computador da pessoa, e a API só os repassa. A pasta escolhida vive só na memória da aba.
 * O app guarda só `orynt:tema` e `orynt:menu-recolhido`. As conexões salvas pertencem à conta e vêm da API; o simulador as guarda em `orynt:simulacao:conexoes-salvas`, e `lerConexoesSalvas` descarta qualquer campo além de id, tipo, nome, servidor, porta, banco, usuário e último uso.
 * A senha de um papel (Papéis) vive só no estado do `FormularioPapel` e morre com o modal; só o verificador SCRAM-SHA-256 chega à API, e o histórico e o simulador nunca o guardam (`ocultarSenhas`).
 * A sessão real é um cookie `HttpOnly` que o app nunca lê; `acessoSimulado.ts` e `sessaoSimulada.ts` são o simulador fazendo o papel do servidor.
@@ -101,6 +103,7 @@ Texto completo em `docs/notas/seguranca.md`.
 * O login é fictício (`demo@orynt.local` / `orynt-demo`, `credenciaisDemonstracao.ts`): nunca o apresente como pronto para produção.
 
 ## Armadilhas que valem para todo o projeto
+* A conexão de um banco nem sempre é a conexão em uso: as telas de Backup valem para todas as conexões salvas e abrem sem banco conectado. `ultimoUsoEm` de uma conexão salva pode ser `null`.
 * Sem `.env`, o app roda com dados simulados (`VITE_FONTE_DADOS=simulada`). Com `VITE_FONTE_DADOS=api`, o simulador não entra no build. Os controles de console (`window.oryntSimulacao`: `cenario`, `falhar`, `latencia`, `esvaziar`, `restaurarPapeis`, `sair`…) estão listados em `docs/notas/desenvolvimento.md`.
 * O shell é desenhado enquanto a conexão está `CONECTANDO`, `CONECTADA`, `DESCONECTADA` ou `INDISPONIVEL` (só `VERIFICANDO` o bloqueia), então nada dentro dele pode supor uma conexão: leia `conexao` de `useConexao()` e trate o `null`.
 * As listas filtradas no navegador (Views, Índices, Tabelas, Funções, Papéis, Sessões, Permissões) guardam os filtros no estado do histórico por um hook `useFiltros…`, lido por uma função `lerFiltros…` que troca cada campo inválido pelo padrão. Consultas SQL › Todas e Auditoria são o contrário: a API busca, filtra, ordena e pagina, então nunca ordene nem filtre os `itens` delas no navegador.

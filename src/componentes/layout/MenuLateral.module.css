@@ -26,7 +26,7 @@
   gap: var(--espaco-2);
   flex-shrink: 0;
   height: var(--altura-cabecalho);
-  padding-inline: var(--espaco-2);
+  padding-left: calc((var(--largura-menu-recolhido) - var(--espaco-3) * 2 - 34px) / 2);
 }
 
 .linkMarca {
@@ -35,27 +35,37 @@
   gap: var(--espaco-3);
   min-width: 0;
   padding: var(--espaco-1);
-  margin-left: calc(var(--espaco-1) * -1);
+  margin-inline: calc(var(--espaco-1) * -1);
   border-radius: var(--raio-md);
 }
 
 .simbolo {
   display: grid;
+  place-items: center;
   flex-shrink: 0;
+  width: 34px;
+  height: 34px;
 }
 
 .textosMarca {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  white-space: nowrap;
   transition: opacity var(--duracao-rapida) var(--curva-saida);
 }
 
 .nome {
-  font-size: var(--tamanho-lg);
-  text-box: trim-both cap alphabetic;
+  align-self: flex-start;
+  font-size: 1rem;
   line-height: 1.2;
+}
+
+.descricaoMarca {
+  color: var(--texto-terciario);
+  font-family: var(--fonte-slogan);
+  font-size: 12.5px;
+  line-height: var(--altura-linha-normal);
+  white-space: nowrap;
 }
 
 .recolhido .textosMarca,
@@ -67,6 +77,7 @@
 .fecharGaveta {
   display: none;
   place-items: center;
+  flex-shrink: 0;
   width: var(--alvo-toque);
   height: var(--alvo-toque);
   margin-left: auto;
@@ -347,7 +358,7 @@
     view-transition-name: marca-orynt;
   }
 
-  :global([data-travessia]) .textosMarca {
+  :global([data-travessia]) .nome {
     view-transition-name: nome-orynt;
   }
 
@@ -443,6 +454,12 @@
 
   .fecharGaveta {
     display: grid;
+  }
+
+  .descricaoMarca {
+    line-height: var(--altura-linha-compacta);
+    white-space: normal;
+    text-wrap: balance;
   }
 
   .veu {

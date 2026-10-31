@@ -1,7 +1,9 @@
 import { useRef, useState } from 'react';
 import { Database, Pencil, Plus, Trash2 } from 'lucide-react';
 import { descreverFalha } from '@/api/tratamentoErros';
-import { Botao, BotaoIcone, CabecalhoPainel, DialogoConfirmacao, EstadoVazio, Painel, Selo } from '@/componentes/ui';
+import { ModalConexaoSalva } from '@/componentes/backup/ModalConexaoSalva';
+import { DialogoExcluirConexao } from '@/componentes/conexao/DialogoExcluirConexao';
+import { Botao, BotaoIcone, CabecalhoPainel, EstadoVazio, Painel, Selo } from '@/componentes/ui';
 import { ambiente } from '@/configuracoes/ambiente';
 import type { ConexaoSalvaDTO } from '@/modelos/conexao';
 import { useConexao } from '@/provedores/ProvedorConexao';
@@ -9,7 +11,6 @@ import { useNotificacoes } from '@/provedores/ProvedorNotificacoes';
 import { useNovaConexao } from '@/provedores/ProvedorNovaConexao';
 import { enderecoConexao } from '@/regras/conexoesSalvas';
 import { formatarTempoRelativo } from '@/utilitarios/formatacao';
-import { ModalRenomearConexao } from './ModalRenomearConexao';
 import estilosSecao from './SecaoConexao.module.css';
 import estilos from './SecaoConexoesSalvas.module.css';
 
@@ -24,10 +25,10 @@ const DESCRICAO = ambiente.dadosSimulados
   : 'Ficam guardadas na sua conta. A senha fica no servidor e nunca volta para o navegador.';
 
 export function SecaoConexoesSalvas() {
-  const { situacao, conexao: conexaoAtiva, salvas, alvo, ativarConexao, renomearConexao, excluirConexao } = useConexao();
+  const { situacao, conexao: conexaoAtiva, salvas, alvo, ativarConexao, guardarSalva, excluirConexao } = useConexao();
   const { abrir: abrirNovaConexao } = useNovaConexao();
   const notificacoes = useNotificacoes();
-  const [renomeacao, setRenomeacao] = useState<AcaoSobreConexao | null>(null);
+  const [edicao, setEdicao] = useState<AcaoSobreConexao | null>(null);
   const [exclusao, setExclusao] = useState<AcaoSobreConexao | null>(null);
   const [excluindo, setExcluindo] = useState(false);
   const vez = useRef(0);
@@ -37,13 +38,6 @@ export function SecaoConexoesSalvas() {
   const iniciar = (conexao: ConexaoSalvaDTO): AcaoSobreConexao => {
     vez.current += 1;
     return { conexao, aberta: true, vez: vez.current };
-  };
-
-  const renomear = async (nome: string) => {
-    if (!renomeacao) return;
-    await renomearConexao(renomeacao.conexao.id, nome);
-    setRenomeacao({ ...renomeacao, aberta: false });
-    notificacoes.sucesso('Conexão renomeada.');
   };
 
   const excluir = async () => {
@@ -59,8 +53,6 @@ export function SecaoConexoesSalvas() {
       setExclusao({ ...exclusao, aberta: false });
     }
   };
-
-  const exclusaoDaAtiva = exclusao?.conexao.id === conexaoAtiva?.id;
 
   return (
     <Painel aria-labelledby="titulo-secao-conexoes-salvas" className={estilosSecao.secao}>
@@ -99,7 +91,7 @@ export function SecaoConexoesSalvas() {
                     ) : null}
                   </p>
                   <p className={`${estilos.endereco} codigo`}>{enderecoConexao(salva)}</p>
-                  <p className={estilos.uso}>Usada {formatarTempoRelativo(salva.ultimoUsoEm)}</p>
+                  <p className={estilos.uso}>{salva.ultimoUsoEm ? `Usada ${formatarTempoRelativo(salva.ultimoUsoEm)}` : 'Nunca usada'}</p>
                 </div>
 
                 <div className={estilos.acoes}>
@@ -116,7 +108,7 @@ export function SecaoConexoesSalvas() {
                       {conectando ? 'Conectando…' : 'Conectar'}
                     </Botao>
                   )}
-                  <BotaoIcone icone={Pencil} rotulo={`Renomear ${salva.nome}`} onClick={() => setRenomeacao(iniciar(salva))} />
+                  <BotaoIcone icone={Pencil} rotulo={`Editar ${salva.nome}`} onClick={() => setEdicao(iniciar(salva))} />
                   <BotaoIcone
                     icone={Trash2}
                     rotulo={`Excluir ${salva.nome}`}
@@ -130,28 +122,26 @@ export function SecaoConexoesSalvas() {
         </ul>
       )}
 
-      {renomeacao ? (
-        <ModalRenomearConexao
-          key={renomeacao.vez}
-          conexao={renomeacao.conexao}
-          aberto={renomeacao.aberta}
-          aoFechar={() => setRenomeacao({ ...renomeacao, aberta: false })}
-          aoRenomear={renomear}
+      {edicao ? (
+        <ModalConexaoSalva
+          key={edicao.vez}
+          conexao={edicao.conexao}
+          aberto={edicao.aberta}
+          aoFechar={() => setEdicao({ ...edicao, aberta: false })}
+          aoSalvar={(salva) => {
+            guardarSalva(salva);
+            setEdicao({ ...edicao, aberta: false });
+            notificacoes.sucesso('Conexão salva.', salva.nome);
+          }}
         />
       ) : null}
 
       {exclusao ? (
-        <DialogoConfirmacao
+        <DialogoExcluirConexao
+          conexao={exclusao.conexao}
           aberto={exclusao.aberta}
-          titulo={`Excluir ${exclusao.conexao.nome}?`}
-          descricao={
-            exclusaoDaAtiva
-              ? 'Esta conexão está em uso: o Orynt fica sem banco conectado até você escolher outra. Nada é alterado no banco de dados.'
-              : 'A conexão sai da sua lista. Nada é alterado no banco de dados.'
-          }
-          textoConfirmar="Excluir"
-          destrutivo
-          carregando={excluindo}
+          emUso={exclusao.conexao.id === conexaoAtiva?.id}
+          excluindo={excluindo}
           aoConfirmar={excluir}
           aoCancelar={() => setExclusao({ ...exclusao, aberta: false })}
         />

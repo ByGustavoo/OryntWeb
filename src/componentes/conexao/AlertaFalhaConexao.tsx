@@ -6,7 +6,7 @@ import estilos from './AlertaFalhaConexao.module.css';
 
 interface AlertaFalhaConexaoProps {
   falha: FalhaConexao;
-  origem: 'CONECTAR' | 'TESTAR';
+  origem: 'CONECTAR' | 'TESTAR' | 'SALVAR';
   aoTentarNovamente: () => void;
 }
 
@@ -21,7 +21,7 @@ export const AlertaFalhaConexao = forwardRef<HTMLDivElement, AlertaFalhaConexaoP
       </span>
       <div className={estilos.textos}>
         <p className={estilos.titulo}>
-          <span className="visualmente-oculto">{origem === 'TESTAR' ? 'O teste falhou: ' : 'A conexão falhou: '}</span>
+          <span className="visualmente-oculto">{origem === 'TESTAR' ? 'O teste falhou: ' : origem === 'SALVAR' ? 'A conexão não foi salva: ' : 'A conexão falhou: '}</span>
           {falha.titulo}
         </p>
         <p className={estilos.descricao}>

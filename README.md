@@ -28,7 +28,7 @@
 
 * 🧭 React Router 6
 
-* 🔤 Geist e Geist Mono
+* 🔤 Geist e Geist Mono, com Archivo e Instrument Sans na marca
 
 <br>
 
@@ -53,6 +53,8 @@ consulta que explica.
 * **Usuários e permissões (concluído):** as telas Papéis, Sessões, Alterações e Permissões estão prontas, com dados demonstrativos. Papéis e Permissões criam, alteram e excluem papéis e concedem e revogam acesso, sempre depois de uma revisão.
 
 * **Administração (concluído):** as telas Usuários e Auditoria estão prontas: contas do Orynt com perfil e permissões, convite, bloqueio de login e o registro do que cada conta acessou e fez.
+
+* **Backup (concluído, só no front):** as telas Resumo, Histórico e Agendamentos estão prontas e interativas, com dados demonstrativos. O destino é sempre o computador da pessoa, com um cartão de progresso que acompanha em todas as telas. Nenhum backup real é executado.
 
 * **Pendente:** a API (OryntAPI). O contrato que ela precisa cumprir está em [`docs/api-contrato.md`](docs/api-contrato.md).
 
@@ -82,7 +84,7 @@ consulta que explica.
 
 * Conexões salvas: a usada por último carrega sozinha ao entrar, e a troca é feita pelo menu da conta
 
-* Gerenciamento em Configurações: conectar, renomear e excluir
+* Gerenciamento em Configurações: conectar, editar e excluir
 
 * Teste de conexão separado da conexão
 
@@ -394,6 +396,34 @@ consulta que explica.
 
 * Nada é inventado nem pode ser apagado pela interface, e senhas, códigos e tokens nunca são registrados
 
+🔹 **Backup › Resumo**
+
+* Total de backups, último, próximo lembrete, destino, concluídos e com falha, além dos próximos lembretes e das últimas execuções
+
+* Pontos de atenção quando o último backup falha ou um agendamento atrasa, com "Fazer agora", também no Dashboard
+
+🔹 **Novo backup e agendamento**
+
+* Formulário em etapas: conexão e tipo, objetos em árvore com seleção parcial, destino (baixar pelo navegador ou escolher uma pasta, quando o navegador permite) e quando executar
+
+* Backup na hora com progresso, ou lembrete diário, semanal, mensal ou personalizado, com prévia das próximas datas
+
+🔹 **Cartão de progresso persistente**
+
+* Um cartão no canto da tela acompanha cada backup em todas as telas e pode ser recolhido: percentual quando dá para medir, etapa, tempo decorrido, detalhes e cancelar
+
+* Avisa o resultado com o tamanho e onde foi salvo, com "Baixar backup" e "Tentar de novo". Recarregar ou fechar a aba interrompe o backup, e o navegador pede confirmação antes
+
+🔹 **Backup › Histórico**
+
+* Tabela com nome, banco, data, horário, duração, tamanho, tipo e status, filtros por período, banco e status, detalhe e exclusão
+
+🔹 **Backup › Agendamentos**
+
+* São lembretes: com o Orynt aberto, avisam na hora prevista e a pessoa confirma. Com o site fechado, nada roda
+
+* Fazer agora, ver, editar, duplicar, excluir, ativar e desativar, com a situação calculada: ativo, inativo, atrasado ou sem conexão
+
 <br>
 
 ## ⚙️ Pré-requisitos
@@ -494,6 +524,12 @@ oryntSimulacao.falhar('/auditoria')
 
 // Volta as contas do Orynt e a auditoria ao início, só com a conta de demonstração, e sai
 oryntSimulacao.restaurarAdministracao()
+
+// Os próximos backups falham no meio (falharBackups(false) desliga)
+oryntSimulacao.falharBackups()
+
+// Volta os agendamentos e o histórico de backup ao início
+oryntSimulacao.restaurarBackup()
 
 // Desfaz todas as alterações de papéis e permissões feitas pelo Orynt no simulador
 oryntSimulacao.restaurarPapeis()
@@ -599,7 +635,7 @@ src
 ├── api             # Cliente HTTP, rotas da API, erros e transporte fetch
 ├── componentes
 │   ├── administracao # Lista, detalhe, editor de permissões e perfis das contas; linha do tempo e detalhe da auditoria
-│   ├── comum         # Marca, SQL com cópia, linha do tempo por dia, terminal psql, páginas 404, 403 e de erro e tela de verificação
+│   ├── comum         # Marca, SQL com cópia, linha do tempo por dia, terminal psql, páginas 404, 403 e de erro e esqueleto do shell
 │   ├── conexao       # Modal e formulário, URL de conexão, conexões salvas e alerta
 │   ├── configuracoes # Seções de conexão em uso, de conexões salvas, de aparência e de versões
 │   ├── consultas     # Lista de consultas, histórico de uma consulta e planos de execução
@@ -644,6 +680,8 @@ src
 * Nenhum banco real é acessado: a conexão é simulada e os números de todas as telas são fictícios. As alterações de papéis e permissões ficam só no simulador, no `localStorage` deste navegador.
 
 * As contas, as senhas (só o hash) e a auditoria ficam no simulador, no `localStorage` deste navegador. A autorização é verificada pelo simulador em cada requisição, como a API vai fazer, mas sem um servidor qualquer pessoa com acesso ao navegador consegue editar esses dados pelas ferramentas de desenvolvedor. O contrato das rotas está em [`docs/api-contrato.md`](docs/api-contrato.md), seções 13 e 14.
+
+* O módulo Backup só simula: nenhum `pg_dump` roda e nenhum agendador existe. O arquivo salvo no computador é real, mas é de demonstração: marcado no nome e no conteúdo, e não serve para restaurar. Quando a API existir, os dados vão passar por ela a caminho do navegador, sem cópia no servidor.
 
 * Não há modo SSL no formulário de conexão.
 

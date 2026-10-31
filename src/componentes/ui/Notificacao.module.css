@@ -1,7 +1,7 @@
 .area {
   position: fixed;
   right: var(--espaco-5);
-  bottom: calc(var(--espaco-5) - var(--espaco-3));
+  bottom: calc(var(--espaco-5) - var(--espaco-3) + var(--altura-acompanhamento-backup, 0px));
   z-index: var(--camada-notificacao);
   width: min(400px, calc(100vw - var(--espaco-8)));
   pointer-events: none;

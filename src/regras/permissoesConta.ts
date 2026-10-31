@@ -101,6 +101,18 @@ export const gruposDePermissoes: GrupoDePermissoes[] = [
     ],
   },
   {
+    chave: 'backup',
+    titulo: 'Backup',
+    permissoes: [
+      {
+        codigo: 'BACKUP_GERENCIAR',
+        rotulo: 'Gerenciar backups',
+        descricao: 'Fazer backups para o próprio computador, criar lembretes e ver o histórico.',
+        requer: ['CONEXOES_USAR'],
+      },
+    ],
+  },
+  {
     chave: 'administracao',
     titulo: 'Administração',
     permissoes: [
@@ -249,6 +261,9 @@ export const telasDoOrynt: TelaDoOrynt[] = [
   { caminho: caminhos.usuariosSessoes, rotulo: 'Usuários e permissões › Sessões', modulo: 'BANCO', permissao: 'BANCO_ACESSOS_VER' },
   { caminho: caminhos.usuariosAlteracoes, rotulo: 'Usuários e permissões › Alterações', modulo: 'BANCO', permissao: 'BANCO_ACESSOS_VER' },
   { caminho: caminhos.usuariosPermissoes, rotulo: 'Usuários e permissões › Permissões', modulo: 'BANCO', permissao: 'BANCO_ACESSOS_VER' },
+  { caminho: caminhos.backupResumo, rotulo: 'Backup › Resumo', modulo: 'BACKUP', permissao: 'BACKUP_GERENCIAR' },
+  { caminho: caminhos.backupHistorico, rotulo: 'Backup › Histórico', modulo: 'BACKUP', permissao: 'BACKUP_GERENCIAR' },
+  { caminho: caminhos.backupAgendamentos, rotulo: 'Backup › Agendamentos', modulo: 'BACKUP', permissao: 'BACKUP_GERENCIAR' },
   { caminho: caminhos.administracaoUsuarios, rotulo: 'Administração › Usuários', modulo: 'ADMINISTRACAO', permissao: 'ADMIN_USUARIOS' },
   { caminho: caminhos.administracaoAuditoria, rotulo: 'Administração › Auditoria', modulo: 'ADMINISTRACAO', permissao: 'ADMIN_AUDITORIA' },
   { caminho: caminhos.configuracoes, rotulo: 'Configurações', modulo: 'CONFIGURACOES', permissao: null },

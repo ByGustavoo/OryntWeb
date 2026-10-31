@@ -22,6 +22,9 @@ const rotuloDoAlvo: Record<TipoAlvoAuditoria, string> = {
   TELA: 'Tela',
   ROTA: 'Operação da API',
   ALTERACAO: 'Alteração no banco',
+  BACKUP: 'Backup',
+  AGENDAMENTO: 'Agendamento de backup',
+  ARMAZENAMENTO: 'Diretório dos backups',
 };
 
 interface DetalheEventoProps {

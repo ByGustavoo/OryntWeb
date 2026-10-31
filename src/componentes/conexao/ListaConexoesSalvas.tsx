@@ -1,7 +1,7 @@
 import { Check } from 'lucide-react';
 import { IndicadorGiratorio } from '@/componentes/ui';
 import type { ConexaoSalvaDTO } from '@/modelos/conexao';
-import { enderecoConexao } from '@/regras/conexoesSalvas';
+import { descreverUso, enderecoConexao } from '@/regras/conexoesSalvas';
 import { formatarTempoRelativo } from '@/utilitarios/formatacao';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
 import estilos from './ListaConexoesSalvas.module.css';
@@ -56,7 +56,7 @@ export function ListaConexoesSalvas({
                     Em uso
                   </>
                 ) : (
-                  formatarTempoRelativo(conexao.ultimoUsoEm)
+                  descreverUso(conexao.ultimoUsoEm, formatarTempoRelativo)
                 )}
               </span>
               <span className={`${estilos.endereco} codigo`}>{endereco}</span>

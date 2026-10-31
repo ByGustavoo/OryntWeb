@@ -5,7 +5,7 @@
   overflow: hidden;
   border-radius: var(--raio-xs);
   background-color: var(--esqueleto-base);
-  animation: surgirEsqueleto var(--duracao-base) var(--curva-saida) var(--espera-esqueleto, 300ms) backwards;
+  animation: surgirEsqueleto var(--surgimento-esqueleto, var(--duracao-base)) var(--curva-saida) var(--espera-esqueleto, 300ms) backwards;
 }
 
 .esqueleto::after {

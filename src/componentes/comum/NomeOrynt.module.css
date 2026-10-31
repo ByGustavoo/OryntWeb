@@ -1,4 +1,5 @@
 .nome {
+  font-family: var(--fonte-marca);
   font-weight: var(--peso-forte);
   letter-spacing: var(--letras-titulo);
   white-space: nowrap;

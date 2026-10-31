@@ -14,7 +14,7 @@ import {
 import type { CampoConexao, CamposConexao, ErrosConexao } from '@/regras/validacaoConexao';
 import { servicoConexao } from '@/servicos';
 
-export type OperacaoConexao = 'CONECTAR' | 'TESTAR';
+export type OperacaoConexao = 'CONECTAR' | 'TESTAR' | 'SALVAR';
 
 export type FaseConexao =
   | { tipo: 'INICIAL' }

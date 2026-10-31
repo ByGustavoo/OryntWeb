@@ -111,12 +111,13 @@ function lerConta(valor: unknown): ContaSimulada | null {
   const email = texto(bruto.email);
   const criadaEm = texto(bruto.criadaEm);
   if (!id || !nome || !email || !criadaEm || !ehPerfil(bruto.perfil)) return null;
+  const permissoes = Array.isArray(bruto.permissoes) ? bruto.permissoes : [];
   return {
     id,
     nome,
     email,
     perfil: bruto.perfil,
-    permissoes: normalizarPermissoes(Array.isArray(bruto.permissoes) ? bruto.permissoes : []),
+    permissoes: normalizarPermissoes(bruto.inicial === true ? [...permissoes, 'BACKUP_GERENCIAR'] : permissoes),
     ativa: bruto.ativa === true,
     inicial: bruto.inicial === true,
     criadaEm,

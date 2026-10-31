@@ -43,6 +43,7 @@ export const modulosAuditoria: ModuloAuditoria[] = [
   'OBJETOS',
   'BANCO',
   'CONEXOES',
+  'BACKUP',
   'ADMINISTRACAO',
   'CONFIGURACOES',
 ];
@@ -55,6 +56,7 @@ export const rotuloModuloAuditoria: Record<ModuloAuditoria, string> = {
   OBJETOS: 'Objetos do banco',
   BANCO: 'Usuários e permissões',
   CONEXOES: 'Conexões',
+  BACKUP: 'Backup',
   ADMINISTRACAO: 'Administração',
   CONFIGURACOES: 'Configurações',
 };
@@ -110,7 +112,18 @@ const classificacaoDoTipo: Record<Exclude<TipoEventoAuditoria, 'TELA_ACESSADA' |
   CONEXAO_ENCERRADA: { categoria: 'ATUALIZACAO', modulo: 'CONEXOES' },
   CONEXAO_RENOMEADA: { categoria: 'ATUALIZACAO', modulo: 'CONEXOES' },
   CONEXAO_EXCLUIDA: { categoria: 'EXCLUSAO', modulo: 'CONEXOES' },
+  CONEXAO_SALVA: { categoria: 'CRIACAO', modulo: 'CONEXOES' },
+  CONEXAO_EDITADA: { categoria: 'ATUALIZACAO', modulo: 'CONEXOES' },
   BANCO_ALTERADO: { categoria: 'PERMISSOES', modulo: 'BANCO' },
+  BACKUP_INICIADO: { categoria: 'CRIACAO', modulo: 'BACKUP' },
+  BACKUP_CANCELADO: { categoria: 'ATUALIZACAO', modulo: 'BACKUP' },
+  BACKUP_EXCLUIDO: { categoria: 'EXCLUSAO', modulo: 'BACKUP' },
+  AGENDAMENTO_CRIADO: { categoria: 'CRIACAO', modulo: 'BACKUP' },
+  AGENDAMENTO_EDITADO: { categoria: 'ATUALIZACAO', modulo: 'BACKUP' },
+  AGENDAMENTO_ATIVADO: { categoria: 'ATUALIZACAO', modulo: 'BACKUP' },
+  AGENDAMENTO_DESATIVADO: { categoria: 'ATUALIZACAO', modulo: 'BACKUP' },
+  AGENDAMENTO_EXCLUIDO: { categoria: 'EXCLUSAO', modulo: 'BACKUP' },
+  ARMAZENAMENTO_ALTERADO: { categoria: 'ATUALIZACAO', modulo: 'BACKUP' },
 };
 
 export function classificarTipo(tipo: Exclude<TipoEventoAuditoria, 'TELA_ACESSADA' | 'ACESSO_NEGADO'>): ClassificacaoDoTipo {
@@ -187,6 +200,28 @@ export function descreverEvento(evento: EventoAuditoriaDTO): string {
       return `Renomeou a conexão ${alvo}`;
     case 'CONEXAO_EXCLUIDA':
       return `Excluiu a conexão ${alvo}`;
+    case 'CONEXAO_SALVA':
+      return `Salvou a conexão ${alvo}`;
+    case 'CONEXAO_EDITADA':
+      return `Editou a conexão ${alvo}`;
+    case 'BACKUP_INICIADO':
+      return `Iniciou o backup ${alvo}`;
+    case 'BACKUP_CANCELADO':
+      return `Cancelou o backup ${alvo}`;
+    case 'BACKUP_EXCLUIDO':
+      return `Excluiu do histórico o registro do backup ${alvo}`;
+    case 'AGENDAMENTO_CRIADO':
+      return `Criou o agendamento ${alvo}`;
+    case 'AGENDAMENTO_EDITADO':
+      return `Editou o agendamento ${alvo}`;
+    case 'AGENDAMENTO_ATIVADO':
+      return `Ativou o agendamento ${alvo}`;
+    case 'AGENDAMENTO_DESATIVADO':
+      return `Desativou o agendamento ${alvo}`;
+    case 'AGENDAMENTO_EXCLUIDO':
+      return `Excluiu o agendamento ${alvo}`;
+    case 'ARMAZENAMENTO_ALTERADO':
+      return `Mudou o diretório dos backups para ${alvo}`;
     case 'BANCO_ALTERADO':
       return evento.resultado === 'SUCESSO' ? `${alvo} no banco` : `${alvo} no banco, recusado`;
   }

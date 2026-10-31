@@ -13,7 +13,7 @@ export function enderecoConexao(conexao: AlvoConexao): string {
 }
 
 export function ordenarPorUso(lista: ConexaoSalvaDTO[]): ConexaoSalvaDTO[] {
-  return [...lista].sort((a, b) => b.ultimoUsoEm.localeCompare(a.ultimoUsoEm));
+  return [...lista].sort((a, b) => (b.ultimoUsoEm ?? '').localeCompare(a.ultimoUsoEm ?? ''));
 }
 
 export function conexaoMaisRecente(lista: ConexaoSalvaDTO[]): ConexaoSalvaDTO | null {
@@ -46,6 +46,10 @@ export function removerConexaoSalva(lista: ConexaoSalvaDTO[], id: string): Conex
   return lista.filter((item) => item.id !== id);
 }
 
+export function descreverUso(ultimoUsoEm: string | null, descrever: (instante: string) => string): string {
+  return ultimoUsoEm ? descrever(ultimoUsoEm) : 'nunca usada';
+}
+
 export function validarNomeConexaoSalva(valor: string): string | undefined {
   const nome = valor.trim();
   if (!nome) return 'Informe um nome para a conexão.';
@@ -64,7 +68,7 @@ function temFormatoDeConexaoSalva(item: unknown): item is ConexaoSalvaDTO {
     typeof bruto.porta === 'number' &&
     typeof bruto.banco === 'string' &&
     typeof bruto.usuario === 'string' &&
-    typeof bruto.ultimoUsoEm === 'string'
+    (typeof bruto.ultimoUsoEm === 'string' || bruto.ultimoUsoEm === null)
   );
 }
 

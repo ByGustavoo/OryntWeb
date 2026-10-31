@@ -1,0 +1,303 @@
+.formulario {
+  min-width: 0;
+}
+
+.corpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-5);
+}
+
+.voltar {
+  margin-right: auto;
+}
+
+.etapas {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--espaco-2);
+  counter-reset: none;
+}
+
+.etapa {
+  min-width: 0;
+  border-top: 2px solid var(--borda);
+  transition: border-color var(--duracao-base) var(--curva-saida);
+}
+
+.etapaAtual,
+.etapaFeita {
+  border-top-color: var(--destaque);
+}
+
+.botaoEtapa {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  width: 100%;
+  min-height: var(--alvo-toque);
+  padding-top: var(--espaco-1);
+  border-radius: var(--raio-xs);
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-sm);
+  text-align: left;
+}
+
+.botaoEtapa:not(:disabled) {
+  cursor: pointer;
+}
+
+.botaoEtapa:focus-visible {
+  outline: none;
+  box-shadow: var(--anel-foco);
+}
+
+.etapaAtual .botaoEtapa {
+  color: var(--texto);
+  font-weight: var(--peso-medio);
+}
+
+.etapaFeita .botaoEtapa {
+  color: var(--texto-secundario);
+}
+
+.numeroEtapa {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--raio-pilula);
+  background-color: var(--superficie-suave);
+  font-size: var(--tamanho-xs);
+}
+
+.etapaAtual .numeroEtapa,
+.etapaFeita .numeroEtapa {
+  background-color: var(--destaque-suave);
+  color: var(--destaque);
+}
+
+.rotuloEtapa {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.secao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+}
+
+.linhaConexao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--espaco-2) var(--espaco-3);
+}
+
+.campoConexao {
+  flex: 1 1 18rem;
+  min-width: 0;
+}
+
+.novaConexao {
+  margin-top: calc(var(--tamanho-sm) * 1.5 + var(--espaco-2));
+}
+
+.tipos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.legenda {
+  padding: 0;
+  margin-bottom: var(--espaco-1);
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+}
+
+.tipo {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espaco-3);
+  padding: var(--espaco-3);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-md);
+  cursor: pointer;
+  transition:
+    background-color var(--duracao-rapida) var(--curva-saida),
+    border-color var(--duracao-rapida) var(--curva-saida);
+}
+
+.tipoEscolhido {
+  border-color: color-mix(in srgb, var(--destaque) 55%, transparent);
+  background-color: var(--destaque-suave);
+}
+
+.radio {
+  flex-shrink: 0;
+  width: 1.125rem;
+  height: 1.125rem;
+  margin: 2px 0 0;
+  accent-color: var(--acao);
+  cursor: inherit;
+}
+
+.radio:focus-visible {
+  outline: none;
+  box-shadow: var(--anel-foco);
+  border-radius: var(--raio-pilula);
+}
+
+.textosDoTipo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.nomeDoTipo {
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+}
+
+.descricaoDoTipo {
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-xs);
+  line-height: var(--altura-linha-normal);
+}
+
+.esperaDaArvore {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+}
+
+.grupoComRotulo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--espaco-1);
+  min-width: 0;
+}
+
+.quebravel {
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+
+.linhaFrequencia {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+  align-items: start;
+  gap: var(--espaco-3);
+}
+
+.previa {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+  padding: var(--espaco-3);
+  border-radius: var(--raio-md);
+  background-color: var(--superficie-suave);
+}
+
+.tituloPrevia {
+  max-width: none;
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+}
+
+.listaPrevia {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+  gap: var(--espaco-2);
+}
+
+.itemPrevia {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+}
+
+.diaPrevia {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+}
+
+.revisao {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  margin: 0;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-md);
+  background-color: var(--borda);
+}
+
+.itemRevisao {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: var(--espaco-2) var(--espaco-3);
+  background-color: var(--superficie-elevada);
+}
+
+.itemRevisao:last-child {
+  grid-column: 1 / -1;
+}
+
+.itemRevisao dt {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+}
+
+.itemRevisao dd {
+  margin: 0;
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  overflow-wrap: anywhere;
+}
+
+@media (hover: hover) {
+  .tipo:not(.tipoEscolhido):hover {
+    background-color: var(--superficie-suave);
+  }
+}
+
+@media (max-width: 599px) {
+  .rotuloEtapa {
+    display: none;
+  }
+
+  .etapaAtual .rotuloEtapa {
+    display: inline;
+  }
+
+  .etapas {
+    grid-template-columns: repeat(4, auto);
+  }
+
+  .novaConexao {
+    width: 100%;
+    margin-top: 0;
+  }
+
+  .revisao {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

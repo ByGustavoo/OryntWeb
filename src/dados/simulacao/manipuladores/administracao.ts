@@ -14,6 +14,7 @@ import {
 import { registrarEvento } from '../auditoriaSimulada';
 import type { ContextoSimulado } from '../autorizacaoSimulada';
 import { semAcessoAutenticado } from '../autorizacaoSimulada';
+import { removerBackupDaConta } from '../backup';
 import { lerConexoesSalvasSimuladas, removerConexoesDaConta } from '../conexoesSalvasSimuladas';
 import type { ContaSimulada, ConviteSimulado } from '../contasSimuladas';
 import {
@@ -285,6 +286,7 @@ export function excluirConta(
 
   const sessoes = encerrarSessoesDaConta(alvo.id);
   const conexoes = removerConexoesDaConta(alvo.id);
+  removerBackupDaConta(alvo.id);
   descartarConviteSimulado(alvo.id);
   removerContaSimulada(alvo.id);
   registrarEvento(

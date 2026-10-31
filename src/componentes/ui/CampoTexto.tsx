@@ -9,7 +9,7 @@ import estilos from './Campo.module.css';
 export interface CampoTextoProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, 'className' | 'type'>,
     PropriedadesMensagensCampo {
-  type?: 'text' | 'email' | 'password' | 'tel' | 'url' | 'date';
+  type?: 'text' | 'email' | 'password' | 'tel' | 'url' | 'date' | 'time';
   icone?: LucideIcon;
 }
 

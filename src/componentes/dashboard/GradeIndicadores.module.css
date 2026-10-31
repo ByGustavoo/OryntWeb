@@ -15,6 +15,10 @@
   box-shadow: var(--sombra-cartao);
 }
 
+.tresColunas {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .esqueleto {
   display: flex;
   flex-direction: column;

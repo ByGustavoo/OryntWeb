@@ -1,0 +1,145 @@
+.corpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+}
+
+.aEsquerda {
+  margin-right: auto;
+}
+
+.progresso {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+}
+
+.numeros {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0 var(--espaco-3);
+  max-width: none;
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+}
+
+.passos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espaco-2) var(--espaco-3);
+}
+
+.passo {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  min-width: 0;
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-sm);
+}
+
+.marca {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-pilula);
+}
+
+.FEITO {
+  color: var(--texto-secundario);
+}
+
+.FEITO .marca {
+  border-color: transparent;
+  background-color: var(--sucesso-suave);
+  color: var(--sucesso);
+}
+
+.ATUAL {
+  color: var(--texto);
+  font-weight: var(--peso-medio);
+}
+
+.ATUAL .marca {
+  border-color: transparent;
+  background-color: var(--destaque-suave);
+  color: var(--destaque);
+}
+
+.FALHOU {
+  color: var(--texto);
+}
+
+.FALHOU .marca {
+  border-color: transparent;
+  background-color: var(--erro-suave);
+  color: var(--erro);
+}
+
+.medidas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espaco-3);
+  margin: 0;
+}
+
+.objetoAtual {
+  max-width: none;
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  overflow-wrap: anywhere;
+}
+
+.destino {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espaco-3);
+  padding: var(--espaco-3);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-md);
+  background-color: var(--superficie-suave);
+}
+
+.destino > svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--destaque);
+}
+
+.arquivo {
+  max-width: none;
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  overflow-wrap: anywhere;
+}
+
+.ondeFica {
+  max-width: none;
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-xs);
+  line-height: var(--altura-linha-normal);
+}
+
+.segundoPlano {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-1);
+}
+
+.ajuda {
+  max-width: none;
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-xs);
+  line-height: var(--altura-linha-normal);
+}
+
+@media (max-width: 599px) {
+  .passos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

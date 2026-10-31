@@ -4,15 +4,18 @@ import { LogOut, Settings2 } from 'lucide-react';
 import { descreverFalha } from '@/api/tratamentoErros';
 import { ListaConexoesSalvas } from '@/componentes/conexao/ListaConexoesSalvas';
 import { ResumoConexao } from '@/componentes/conexao/ResumoConexao';
-import { Flutuante, IndicadorGiratorio, Selo } from '@/componentes/ui';
+import { DialogoConfirmacao, Flutuante, IndicadorGiratorio, Selo } from '@/componentes/ui';
 import { Dica } from '@/componentes/ui';
 import type { ConexaoSalvaDTO } from '@/modelos/conexao';
 import { useAutenticacao } from '@/provedores/ProvedorAutenticacao';
+import { useAcompanhamentoBackup } from '@/provedores/ProvedorBackupLocal';
 import { useConexao } from '@/provedores/ProvedorConexao';
 import type { SituacaoConexao } from '@/provedores/ProvedorConexao';
 import { useNotificacoes } from '@/provedores/ProvedorNotificacoes';
+import { emAndamento, pedeConfirmacaoAoSair } from '@/regras/acompanhamentoBackup';
 import { inicialDoUsuario } from '@/regras/inicialUsuario';
 import { caminhos } from '@/rotas/caminhos';
+import { servicoBackup } from '@/servicos';
 import estilos from './MenuConta.module.css';
 
 function descreverAusenciaDeConexao(situacao: SituacaoConexao, alvo: ConexaoSalvaDTO | null): string {
@@ -25,8 +28,10 @@ export function MenuConta() {
   const { usuario, sair } = useAutenticacao();
   const { situacao, conexao, salvas, alvo, ativarConexao } = useConexao();
   const notificacoes = useNotificacoes();
+  const { acompanhadas } = useAcompanhamentoBackup();
   const [aberto, setAberto] = useState(false);
   const [saindo, setSaindo] = useState(false);
+  const [confirmandoSaida, setConfirmandoSaida] = useState(false);
   const gatilhoRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -56,11 +61,25 @@ export function MenuConta() {
     if (saindo) return;
     setSaindo(true);
     try {
+      await Promise.allSettled(
+        acompanhadas.filter((item) => !item.daOutraAba && emAndamento(item.execucao)).map((item) => servicoBackup.cancelarExecucao(item.execucao.id)),
+      );
       await sair();
     } catch (erro) {
       setSaindo(false);
+      setConfirmandoSaida(false);
       notificacoes.erro('Não foi possível sair.', descreverFalha(erro));
     }
+  };
+
+  const pedirSaida = () => {
+    const perderia = acompanhadas.some((item) => !item.dispensada && pedeConfirmacaoAoSair(item.execucao, item.entrega, item.daOutraAba));
+    if (!perderia) {
+      void encerrar();
+      return;
+    }
+    fechar(false);
+    setConfirmandoSaida(true);
   };
 
   return (
@@ -134,7 +153,7 @@ export function MenuConta() {
               <Settings2 size={16} strokeWidth={2} aria-hidden="true" />
               Gerenciar conexões
             </Link>
-            <button type="button" className={estilos.acao} onClick={encerrar} aria-busy={saindo || undefined}>
+            <button type="button" className={estilos.acao} onClick={pedirSaida} aria-busy={saindo || undefined}>
               {saindo ? (
                 <IndicadorGiratorio tamanho={16} />
               ) : (
@@ -145,6 +164,17 @@ export function MenuConta() {
           </div>
         </div>
       </Flutuante>
+      <DialogoConfirmacao
+        aberto={confirmandoSaida}
+        titulo="Sair com backups pendentes?"
+        descricao="Os backups em andamento são cancelados, e os arquivos prontos que você ainda não baixou se perdem. Eles vêm para esta aba e não ficam guardados no servidor."
+        textoConfirmar="Sair mesmo assim"
+        textoCancelar="Continuar aqui"
+        destrutivo
+        carregando={saindo}
+        aoConfirmar={() => void encerrar()}
+        aoCancelar={() => setConfirmandoSaida(false)}
+      />
     </>
   );
 }
