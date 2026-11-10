@@ -19,3 +19,13 @@
     justify-content: flex-start;
   }
 }
+
+@container lista-objetos (max-width: 319px) {
+  td.celulaAcoes {
+    grid-column: 1 / -1;
+  }
+
+  td.celulaQuebravel {
+    white-space: normal;
+  }
+}

@@ -83,10 +83,16 @@ export function FormularioAcesso({
           autoCorrect="off"
           spellCheck={false}
           inputMode="email"
+          className={estilos.campoEmail}
         />
 
         <div className={estilos.senha}>
-          <CampoSenha {...propriedadesDoCampo('senha')} rotulo="Senha" preenchimentoAutomatico="current-password" />
+          <CampoSenha
+            {...propriedadesDoCampo('senha')}
+            rotulo="Senha"
+            preenchimentoAutomatico="current-password"
+            className={estilos.campoSenha}
+          />
           <Link
             className={juntarClasses(estilosLink.link, estilos.recuperar)}
             to={caminhos.recuperarSenha}

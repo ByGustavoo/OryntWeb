@@ -374,7 +374,7 @@ function esbocosIniciais(salvas: ConexaoSalvaDTO[]): EsbocoDoAgendamento[] {
   if (!primeira || !segunda || !terceira) return [];
   return [
     {
-      nome: `${primeira.banco} diário`,
+      nome: 'Banco inteiro todo dia',
       conexao: primeira,
       tipo: 'COMPLETO',
       selecao: { modo: 'BANCO_INTEIRO' },

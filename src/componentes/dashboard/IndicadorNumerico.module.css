@@ -235,4 +235,9 @@
   .contexto {
     grid-area: contexto;
   }
+
+  .indicador.textual {
+    display: flex;
+    align-items: stretch;
+  }
 }

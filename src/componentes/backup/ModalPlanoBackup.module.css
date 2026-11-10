@@ -279,6 +279,12 @@
   }
 }
 
+@media (min-width: 600px) {
+  .corpo {
+    min-height: min(31rem, calc(100dvh - 14rem));
+  }
+}
+
 @media (max-width: 599px) {
   .rotuloEtapa {
     display: none;

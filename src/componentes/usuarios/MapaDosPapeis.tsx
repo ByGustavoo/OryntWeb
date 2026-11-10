@@ -130,6 +130,7 @@ function Fichas({ membros, contexto, vazio, inteiras, aoAbrir }: FichasProps) {
   const lista = useRef<HTMLUListElement>(null);
   const [expandida, setExpandida] = useState(false);
   const [cabem, setCabem] = useState<number | null>(null);
+  const [primeiraCabe, setPrimeiraCabe] = useState(true);
   const recolhe = !inteiras && !expandida;
   const chaveDosMembros = membros.map((membro) => membro.papel.nome).join(' ');
 
@@ -146,6 +147,7 @@ function Fichas({ membros, contexto, vazio, inteiras, aoAbrir }: FichasProps) {
     const naPrimeiraLinha = itens.filter((item) => item.offsetTop === primeiro.offsetTop);
     const linhasOcupadas = new Set(itens.map((item) => item.offsetTop)).size;
     if (linhasOcupadas <= LINHAS_DE_FICHAS_SEM_RECOLHER) {
+      setPrimeiraCabe(true);
       setCabem(itens.length);
       return;
     }
@@ -153,6 +155,7 @@ function Fichas({ membros, contexto, vazio, inteiras, aoAbrir }: FichasProps) {
     const quantos = naPrimeiraLinha.filter(
       (item) => item.offsetLeft - inicio + item.offsetWidth + ESPACO_DO_ALTERNADOR_PX <= largura,
     ).length;
+    setPrimeiraCabe(quantos > 0);
     setCabem(Math.max(1, quantos));
   }, [recolhe, cabem]);
 
@@ -178,7 +181,7 @@ function Fichas({ membros, contexto, vazio, inteiras, aoAbrir }: FichasProps) {
   return (
     <ul
       ref={lista}
-      className={juntarClasses(estilos.fichas, medindo && estilos.medindo, recolhe && !medindo && ocultos > 0 && estilos.umaLinha)}
+      className={juntarClasses(estilos.fichas, medindo && estilos.medindo, recolhe && !medindo && ocultos > 0 && primeiraCabe && estilos.umaLinha)}
     >
       {visiveis.map((membro) => (
         <FichaDoMembro key={membro.papel.nome} membro={membro} contexto={contexto} aoAbrir={aoAbrir} />

@@ -1,5 +1,5 @@
 import { useId } from 'react';
-import { ArrowLeftRight, ChevronsRight } from 'lucide-react';
+import { ArrowLeftRight } from 'lucide-react';
 import { Botao, BotaoIcone, Dica, GrupoOpcoes } from '@/componentes/ui';
 import type { PeriodoRelatorio } from '@/modelos/relatorios';
 import { passoAnterior, passoSeguinte, rotuloGranularidade } from '@/modelos/rotulos';
@@ -116,20 +116,17 @@ export function SeletorComparacao({ par, hoje, aoMudar, acoes = [] }: SeletorCom
             />
             <RotuloDoPeriodo periodo={periodo} rotulo={rotulos.principal} />
           </div>
-          <div className={estilos.complemento}>
-            {noFim ? (
-              <p className={estilos.observacao}>É o período fechado mais recente.</p>
-            ) : (
-              <Botao
-                variante="terciario"
-                tamanho="sm"
-                iconeDireita={ChevronsRight}
-                className={estilos.recente}
-                onClick={() => mudarPeriodo(ultimoPeriodoFechado(granularidade, hoje))}
-              >
-                Mais recente
-              </Botao>
-            )}
+          <div className={estilos.complemento} role="group" aria-label="Atalhos do período">
+            <button
+              type="button"
+              className={estilos.atalho}
+              aria-pressed={noFim}
+              onClick={() => {
+                if (!noFim) mudarPeriodo(ultimoPeriodoFechado(granularidade, hoje));
+              }}
+            >
+              Mais recente
+            </button>
           </div>
         </div>
 
