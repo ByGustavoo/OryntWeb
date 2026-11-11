@@ -3,6 +3,7 @@
 }
 
 .secoes,
+.topo,
 .conexoes {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -16,6 +17,12 @@
 
   .conexoes > :only-child {
     grid-column: 1 / -1;
+  }
+}
+
+@container configuracoes (min-width: 1000px) {
+  .topo {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
   }
 }
 

@@ -15,6 +15,8 @@ import {
 } from '@/configuracoes/navegacao';
 import type { ItemNavegacao } from '@/configuracoes/navegacao';
 import { useAutenticacao } from '@/provedores/ProvedorAutenticacao';
+import { useTelas } from '@/provedores/ProvedorTelas';
+import { navegacaoVisivel } from '@/regras/telasOcultas';
 import { caminhos } from '@/rotas/caminhos';
 import { manterTabDentro } from '@/utilitarios/foco';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
@@ -30,7 +32,8 @@ interface MenuLateralProps {
 
 export function MenuLateral({ recolhido, emGaveta, abertoEmGaveta, aoAlternarRecolhido, aoFecharGaveta }: MenuLateralProps) {
   const { usuario } = useAutenticacao();
-  const navegacao = useMemo(() => navegacaoDaConta(usuario), [usuario]);
+  const { estaOculta } = useTelas();
+  const navegacao = useMemo(() => navegacaoVisivel(navegacaoDaConta(usuario), estaOculta), [usuario, estaOculta]);
   const menuRef = useRef<HTMLElement>(null);
   const botaoFecharRef = useRef<HTMLButtonElement>(null);
   const recolhidoVisivel = recolhido && !emGaveta;

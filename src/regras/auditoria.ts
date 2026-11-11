@@ -124,6 +124,7 @@ const classificacaoDoTipo: Record<Exclude<TipoEventoAuditoria, 'TELA_ACESSADA' |
   AGENDAMENTO_DESATIVADO: { categoria: 'ATUALIZACAO', modulo: 'BACKUP' },
   AGENDAMENTO_EXCLUIDO: { categoria: 'EXCLUSAO', modulo: 'BACKUP' },
   ARMAZENAMENTO_ALTERADO: { categoria: 'ATUALIZACAO', modulo: 'BACKUP' },
+  TELAS_ALTERADAS: { categoria: 'ATUALIZACAO', modulo: 'CONFIGURACOES' },
 };
 
 export function classificarTipo(tipo: Exclude<TipoEventoAuditoria, 'TELA_ACESSADA' | 'ACESSO_NEGADO'>): ClassificacaoDoTipo {
@@ -222,6 +223,8 @@ export function descreverEvento(evento: EventoAuditoriaDTO): string {
       return `Excluiu o agendamento ${alvo}`;
     case 'ARMAZENAMENTO_ALTERADO':
       return `Mudou o diretório dos backups para ${alvo}`;
+    case 'TELAS_ALTERADAS':
+      return 'Mudou as telas do menu';
     case 'BANCO_ALTERADO':
       return evento.resultado === 'SUCESSO' ? `${alvo} no banco` : `${alvo} no banco, recusado`;
   }

@@ -104,6 +104,7 @@ export function TabelaExecucoes({ execucoes, idAberta, aoAbrir, aoExcluir }: Tab
                   <span data-acao-da-linha>
                     <BotaoIcone
                       icone={Trash2}
+                      tom="perigo"
                       tamanho="sm"
                       rotulo={`Excluir ${execucao.nome}`}
                       aria-disabled={execucao.situacao === 'EM_ANDAMENTO' ? true : undefined}

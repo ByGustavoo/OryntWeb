@@ -62,7 +62,7 @@ Set-Cookie: orynt_sessao=<token opaco>; HttpOnly; Secure; SameSite=Strict; Path=
 | `CONEXOES_USAR` | `POST /conexoes`, `POST /conexoes/teste`, `POST /conexoes/{id}/ativacao`, `PATCH` e `DELETE /conexoes/{id}` |
 | `ADMIN_USUARIOS` | `/administracao/*` |
 | `ADMIN_AUDITORIA` | `GET /auditoria` |
-| só a sessão | `GET` e `DELETE /autenticacao/sessao`, `GET /conexoes`, `GET` e `DELETE /conexoes/atual`, `GET /sistema/versao`, `POST /auditoria/acessos` |
+| só a sessão | `GET` e `DELETE /autenticacao/sessao`, `GET /conexoes`, `GET` e `DELETE /conexoes/atual`, `GET /sistema/versao`, `GET` e `PUT /conta/telas-ocultas`, `POST /auditoria/acessos` |
 
 ---
 
@@ -149,6 +149,8 @@ ajustar `PROBLEMAS_CONEXAO` em `src/modelos/conexao.ts`.
 | `POST` | `/usuarios/alteracoes` | Executa, numa transação, as operações de papéis e de permissões revisadas na tela | sim |
 | `GET` | `/usuarios/alteracoes` | O histórico das alterações feitas pelo Orynt no servidor, aplicadas e recusadas | sim |
 | `GET` | `/sistema/versao` | Versão publicada da API e a data de lançamento | não |
+| `GET` | `/conta/telas-ocultas` | As telas que a conta tirou do menu | sim |
+| `PUT` | `/conta/telas-ocultas` | Troca a lista de telas que a conta tirou do menu | sim |
 | `POST` | `/autenticacao/convite/verificacao` | Confere o token de um convite e devolve o nome e o e-mail | não |
 | `POST` | `/autenticacao/convite` | Define a senha pelo convite | não |
 | `GET` | `/administracao/contas` | As contas do Orynt | sim |
@@ -179,6 +181,7 @@ ajustar `PROBLEMAS_CONEXAO` em `src/modelos/conexao.ts`.
 | `DirecaoOrdenacao` | `ASC`, `DESC` |
 | `TipoVisao` | `COMUM`, `MATERIALIZADA` |
 | `TipoObjetoBanco` | `TABELA`, `VISAO`, `VISAO_MATERIALIZADA` |
+| `CodigoTela` | `RELATORIOS_RESUMO`, `RELATORIOS_EXPORTACAO`, `RELATORIOS_COMPARACAO`, `CONSULTAS_TODAS`, `CONSULTAS_HISTORICO`, `CONSULTAS_PLANOS`, `BACKUP_RESUMO`, `BACKUP_HISTORICO`, `BACKUP_AGENDAMENTOS`, `OBJETOS_VIEWS`, `OBJETOS_INDICES`, `OBJETOS_TABELAS`, `OBJETOS_FUNCOES`, `USUARIOS_PAPEIS`, `USUARIOS_SESSOES`, `USUARIOS_ALTERACOES`, `USUARIOS_PERMISSOES`, `ADMINISTRACAO_USUARIOS`, `ADMINISTRACAO_AUDITORIA` |
 
 ### 4.2 Autenticação
 
@@ -346,6 +349,10 @@ interface ConsultaResumoDTO {
 interface VersaoSistemaDTO {
   versao: string;
   dataLancamento: string | null;
+}
+
+interface TelasOcultasDTO {
+  telas: CodigoTela[];
 }
 ```
 
@@ -1182,7 +1189,7 @@ O fuso que a API vai usar é **A DEFINIR NO BACKEND**.
 
 ---
 
-## 8. Sistema
+## 8. Sistema e preferências da conta
 
 ### 8.1 `GET /sistema/versao`
 
@@ -1202,6 +1209,22 @@ rota do OrbitAPI. Não exige sessão e não acessa o banco, então também serve
 
 O simulador responde `{ "versao": "Simulada", "dataLancamento": null }`, e a tela diz que nenhuma API
 está em uso.
+
+### 8.2 `GET` e `PUT /conta/telas-ocultas`
+
+As telas que a conta tirou do menu em Configurações › Telas. É uma preferência da conta, não do navegador: vale
+em qualquer lugar em que a pessoa entrar. Exige só a sessão; a lista é sempre a da conta da sessão.
+
+* **`GET` → `200`:** `TelasOcultasDTO`. Uma conta que nunca escolheu nada recebe `{ "telas": [] }`.
+* **`PUT`:** recebe `TelasOcultasDTO` com a lista inteira (não uma tela por vez) e responde `200` com a lista
+  gravada, sem repetições e na ordem do enum.
+* **`400`:** `telas` ausente, fora de uma lista ou com um valor fora de `CodigoTela`. Dashboard e Configurações não
+  estão no enum, porque nunca saem do menu. Nada é gravado.
+* **Permissões:** a API aceita qualquer tela do enum, mesmo uma que a conta não pode abrir; ocultar não dá nem tira
+  acesso. O front só oferece as que a conta pode abrir.
+* **Auditoria:** uma gravação que muda a lista registra `TELAS_ALTERADAS` (14.3), com uma linha em `mudancas` por
+  tela, `antes` e `depois` entre `No menu` e `Oculta`. Gravar a mesma lista não registra nada.
+* **Exclusão da conta:** a lista vai junto.
 
 ---
 
@@ -1899,6 +1922,7 @@ volta `400`. É um evento por tela aberta: trocar filtros ou páginas não gera 
 | `PERMISSOES_ALTERADAS` | Seção 13.5, com `concedidas`, `revogadas` e a troca de perfil em `mudancas` |
 | `CONEXAO_CRIADA`, `CONEXAO_ATIVADA`, `CONEXAO_ENCERRADA`, `CONEXAO_RENOMEADA`, `CONEXAO_EXCLUIDA` | Seção 6, também as tentativas recusadas pelo banco (`FALHA`) |
 | `BANCO_ALTERADO` | `POST /usuarios/alteracoes`, aplicada ou recusada, com o id da alteração em `alvo` |
+| `TELAS_ALTERADAS` | `PUT /conta/telas-ocultas` que muda a lista (8.2), módulo `CONFIGURACOES` |
 
 * **Nunca entram no registro:** senhas, códigos de recuperação, tokens de convite ou de redefinição,
   verificadores SCRAM e o corpo das requisições.

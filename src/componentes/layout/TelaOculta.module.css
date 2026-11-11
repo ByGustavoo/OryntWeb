@@ -1,0 +1,14 @@
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--espaco-2);
+}
+
+@media (max-width: 479px) {
+  .acoes {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+}

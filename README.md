@@ -108,6 +108,8 @@ consulta que explica.
 
 * Versão e data de lançamento do Orynt Web e da Orynt API em Configurações
 
+* Painel Telas em Configurações: um interruptor por tela tira a tela do menu da conta, sem apagar nada; o endereço de uma tela oculta explica o que houve e oferece "Mostrar de novo"
+
 🔹 **Dashboard**
 
 * Consultas executadas, tempo médio, consultas lentas e conexões ativas
@@ -510,8 +512,11 @@ oryntSimulacao.falhar('/relatorios')
 // Com '/consultas', as telas Todas, Histórico e Planos de execução mostram o estado de erro
 oryntSimulacao.falhar('/consultas')
 
-// Com '/sistema', o cartão da versão da API em Configurações mostra o estado de erro
+// Com '/sistema', a linha da versão da API em Configurações mostra o estado de erro
 oryntSimulacao.falhar('/sistema')
+
+// Com '/conta', o painel Telas de Configurações mostra o estado de erro, e o menu mostra todas as telas
+oryntSimulacao.falhar('/conta')
 
 // Com '/objetos' ou '/usuarios', as telas de Objetos do banco ou as de Papéis, Sessões, Permissões e Alterações mostram o estado de erro
 oryntSimulacao.falhar('/usuarios')
@@ -637,7 +642,7 @@ src
 │   ├── administracao # Lista, detalhe, editor de permissões e perfis das contas; linha do tempo e detalhe da auditoria
 │   ├── comum         # Marca, SQL com cópia, linha do tempo por dia, terminal psql, páginas 404, 403 e de erro e esqueleto do shell
 │   ├── conexao       # Modal e formulário, URL de conexão, conexões salvas e alerta
-│   ├── configuracoes # Seções de conexão em uso, de conexões salvas, de aparência e de versões
+│   ├── configuracoes # Seções de aparência, versões, conexão em uso, conexões salvas e telas do menu
 │   ├── consultas     # Lista de consultas, histórico de uma consulta e planos de execução
 │   ├── dashboard     # Indicadores, gráfico de atividade e tabela de consultas
 │   ├── layout        # Menu lateral, cabeçalho, menu da conta, erro dentro da tela e a página "Sem acesso"

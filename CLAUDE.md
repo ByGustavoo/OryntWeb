@@ -5,8 +5,8 @@ Frontend de uma aplicação para monitorar, analisar e administrar bancos Postgr
 origem."), toda sobre dados simulados: login, recuperação de senha, o modal de conexão com as conexões salvas, o
 shell e o Dashboard, Relatórios (Resumo, Exportação, Comparação), Consultas SQL (Todas, Histórico, Planos de
 execução), Objetos do banco (Views, Índices, Tabelas, Funções), Usuários e permissões (Papéis, Sessões,
-Permissões, Alterações), Backup (Resumo, Histórico, Agendamentos; o arquivo vai para o computador da pessoa, com um cartão de progresso persistente; só simulado, sem execução real) e Administração (Usuários e Auditoria: as contas do Orynt, suas permissões e a auditoria do
-que cada uma fez). Papéis e Permissões também alteram o banco (papéis, participações, GRANT, REVOKE, privilégios
+Permissões, Alterações), Backup (Resumo, Histórico, Agendamentos; o arquivo vai para o computador da pessoa, com um cartão de progresso persistente; só simulado, sem execução real), Administração (Usuários e Auditoria: as contas do Orynt, suas permissões e a auditoria do
+que cada uma fez) e Configurações (aparência, versões, conexões e Telas, que tira telas do menu da conta). Papéis e Permissões também alteram o banco (papéis, participações, GRANT, REVOKE, privilégios
 padrão), sempre depois de uma revisão; Alterações é o histórico dessas mudanças. O backend (OryntAPI) ainda não
 existe. As decisões de produto ficam no `REQUISITOS.md` e são requisitos: não as altere sem a aprovação do
 usuário. O contrato que a futura API precisa cumprir está em `docs/api-contrato.md`.
@@ -76,7 +76,7 @@ Não há linter nem formatador configurados. Antes de dar uma tarefa por conclu�
 ## Convenções
 * Todos os identificadores, tipos, campos, arquivos e pastas em português (`ConexaoDTO`, `tempoMedioMs`, `aoConectar`); valores de enum em MAIÚSCULAS (`'ULTIMAS_24_HORAS'`). O texto da interface é em pt-BR acentuado, com só a primeira letra maiúscula.
 * Nenhum comentário no código-fonte, no CSS, na configuração ou no HTML. As únicas exceções são o `.env.example` e `/// <reference>`.
-* Nenhuma cor hexadecimal nos componentes: as cores vêm dos tokens de `temas.css` (`[data-tema='escuro']`, `[data-tema='claro']`). O único hex fora dele é a miniatura de prévia do tema em `SecaoAparencia.module.css`.
+* Nenhuma cor hexadecimal nos componentes: as cores vêm dos tokens de `temas.css` (`[data-tema='escuro']`, `[data-tema='claro']`). Nenhum hex fica fora dele (a miniatura de prévia do tema, que era a exceção, saiu em 10 de novembro de 2026).
 * Páginas e componentes nunca chamam `fetch` nem `clienteHttp`; chamam serviços. Os caminhos da API ficam só em `src/api/rotasApi.ts`.
 * `import.meta.env` e `window.__ORYNT_CONFIG__` são lidos só em `src/configuracoes/ambiente.ts`.
 * Rotas só a partir de `src/rotas/caminhos.ts`. Imports entre pastas usam o alias `@/`.
@@ -92,7 +92,7 @@ Não há linter nem formatador configurados. Antes de dar uma tarefa por conclu�
 Texto completo em `docs/notas/seguranca.md`.
 * A senha do banco nunca é gravada no `localStorage`, no `sessionStorage`, em cookie, na URL ou no console; `useFluxoConexao` a tira do estado assim que a conexão é aceita. A senha do login segue a mesma regra.
 * Os arquivos de backup nunca ficam no servidor nem ligados à conta: vão para o computador da pessoa, e a API só os repassa. A pasta escolhida vive só na memória da aba.
-* O app guarda só `orynt:tema` e `orynt:menu-recolhido`. As conexões salvas pertencem à conta e vêm da API; o simulador as guarda em `orynt:simulacao:conexoes-salvas`, e `lerConexoesSalvas` descarta qualquer campo além de id, tipo, nome, servidor, porta, banco, usuário e último uso.
+* O app guarda só `orynt:tema` e `orynt:menu-recolhido`. As conexões salvas pertencem à conta e vêm da API; o simulador as guarda em `orynt:simulacao:conexoes-salvas`, e `lerConexoesSalvas` descarta qualquer campo além de id, tipo, nome, servidor, porta, banco, usuário e último uso. As telas ocultas (Configurações › Telas) também são da conta (`/conta/telas-ocultas`); o simulador as guarda em `orynt:simulacao:telas-ocultas`.
 * A senha de um papel (Papéis) vive só no estado do `FormularioPapel` e morre com o modal; só o verificador SCRAM-SHA-256 chega à API, e o histórico e o simulador nunca o guardam (`ocultarSenhas`).
 * A sessão real é um cookie `HttpOnly` que o app nunca lê; `acessoSimulado.ts` e `sessaoSimulada.ts` são o simulador fazendo o papel do servidor.
 * A recuperação de senha nunca revela se um e-mail tem conta: nenhum caminho no front pode depender de a conta existir. E-mail, código, token de redefinição e nova senha vivem só no estado do React.

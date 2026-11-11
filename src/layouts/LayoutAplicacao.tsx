@@ -8,6 +8,7 @@ import { FalhaNaTela } from '@/componentes/layout/FalhaNaTela';
 import { GuardaDaTela, deveDesviarDaTela, telaNegada } from '@/componentes/layout/GuardaDaTela';
 import { MenuLateral } from '@/componentes/layout/MenuLateral';
 import { SemAcessoNaTela } from '@/componentes/layout/SemAcessoNaTela';
+import { TelaOculta } from '@/componentes/layout/TelaOculta';
 import { CHAVE_MENU_RECOLHIDO, ID_CONTEUDO_PRINCIPAL } from '@/configuracoes/aplicacao';
 import { useArmazenamentoLocal } from '@/ganchos/useArmazenamentoLocal';
 import { useMenuEmGaveta } from '@/ganchos/useConsultaMidia';
@@ -17,15 +18,29 @@ import { ProvedorAlteracoes } from '@/provedores/ProvedorAlteracoes';
 import { useAutenticacao } from '@/provedores/ProvedorAutenticacao';
 import { ProvedorBackupLocal } from '@/provedores/ProvedorBackupLocal';
 import { ProvedorNovaConexao } from '@/provedores/ProvedorNovaConexao';
+import { ProvedorTelas, useTelas } from '@/provedores/ProvedorTelas';
+import { telaDoDestino } from '@/regras/telasOcultas';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
 import estilos from './LayoutAplicacao.module.css';
 
 export function LayoutAplicacao() {
   return (
     <ProvedorBackupLocal>
-      <CascaDaAplicacao />
+      <ProvedorTelas>
+        <CascaDaAplicacao />
+      </ProvedorTelas>
     </ProvedorBackupLocal>
   );
+}
+
+function ConteudoDaTela() {
+  const { pathname } = useLocation();
+  const { carregado, telasOcultas } = useTelas();
+  const tela = telaDoDestino(pathname);
+
+  if (tela && !carregado) return <EsqueletoPagina rotulo="Carregando a página…" />;
+  if (tela && telasOcultas.includes(tela)) return <TelaOculta tela={tela} />;
+  return <Outlet />;
 }
 
 function CascaDaAplicacao() {
@@ -87,7 +102,7 @@ function CascaDaAplicacao() {
                 <LimiteDeErro alternativa={(erro) => <FalhaNaTela erro={erro} />}>
                   <Suspense fallback={<EsqueletoPagina rotulo="Carregando a página…" />}>
                     <GuardaDaTela>
-                      <Outlet />
+                      <ConteudoDaTela />
                     </GuardaDaTela>
                   </Suspense>
                 </LimiteDeErro>
