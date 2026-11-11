@@ -48,6 +48,7 @@ function Indicadores({ resumo }: { resumo: ResumoBackupDTO }) {
         rotulo="Último backup"
         valor={0}
         formatar={() => (ultima ? formatarTempoRelativo(ultima.iniciadaEm) : 'Nenhum')}
+        textual
         tom={ultima?.situacao === 'FALHOU' ? 'aviso' : 'destaque'}
         contexto={ultima ? `${ultima.nome}: ${rotuloSituacaoExecucao[ultima.situacao].toLowerCase()}` : 'Nenhum backup foi feito ainda'}
       />
@@ -56,6 +57,7 @@ function Indicadores({ resumo }: { resumo: ResumoBackupDTO }) {
         rotulo="Próximo lembrete"
         valor={0}
         formatar={() => (proximo ? formatarTempoAte(proximo.quando) : 'Nenhum')}
+        textual
         destino={{ para: caminhos.backupAgendamentos, descricao: 'ver os agendamentos' }}
         contexto={proximo ? proximo.nome : 'Nenhum agendamento ativo'}
       />
@@ -64,6 +66,7 @@ function Indicadores({ resumo }: { resumo: ResumoBackupDTO }) {
         rotulo="Destino"
         valor={0}
         formatar={() => 'Seu computador'}
+        textual
         contexto={descreverLocal(localDoDestino).replace(', no seu computador', '')}
       />
       <IndicadorNumerico

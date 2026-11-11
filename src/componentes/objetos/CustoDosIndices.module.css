@@ -112,7 +112,7 @@ button.ativo {
 
 .linhasDasTabelas > li,
 .linhasDasTabelas > li > * {
-  grid-template-columns: minmax(5rem, 9rem) minmax(0, 1fr) 4.5rem;
+  grid-template-columns: minmax(5rem, 10rem) minmax(0, 1fr) 4.5rem;
   gap: var(--espaco-3);
   min-height: 32px;
   padding: var(--espaco-1) var(--espaco-2);

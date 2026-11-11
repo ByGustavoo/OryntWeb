@@ -94,15 +94,6 @@
   min-height: var(--altura-controle-sm);
 }
 
-.observacao {
-  color: var(--texto-terciario);
-  font-size: var(--tamanho-sm);
-}
-
-.recente {
-  margin-left: calc(var(--espaco-3) * -1);
-}
-
 .troca {
   display: grid;
   place-items: center;

@@ -25,6 +25,7 @@ export interface IndicadorNumericoProps {
   contexto: ReactNode;
   tom?: TomIndicador;
   destino?: DestinoIndicador;
+  textual?: boolean;
 }
 
 const TAMANHO_ICONE = 18;
@@ -40,6 +41,7 @@ export function IndicadorNumerico({
   contexto,
   tom = 'destaque',
   destino,
+  textual = false,
 }: IndicadorNumericoProps) {
   const exibido = useContagem(valor, casasDecimais);
   const moldura = useRef<HTMLSpanElement>(null);
@@ -49,7 +51,7 @@ export function IndicadorNumerico({
   }, [Icone]);
 
   return (
-    <div className={juntarClasses(estilos.indicador, estilos[tom], destino && estilos.comDestino)}>
+    <div className={juntarClasses(estilos.indicador, estilos[tom], destino && estilos.comDestino, textual && estilos.textual)}>
       <dt className={estilos.rotulo}>
         <span className={estilos.icone} ref={moldura} aria-hidden="true">
           <Icone size={TAMANHO_ICONE} strokeWidth={2} />

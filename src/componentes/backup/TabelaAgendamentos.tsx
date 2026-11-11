@@ -81,7 +81,7 @@ export function TabelaAgendamentos({ agendamentos, idAberto, idAlternando, aoAbr
               <td className={juntarClasses(estilos.celulaTipo, 'codigo')} data-rotulo="Banco">
                 {agendamento.banco}
               </td>
-              <td className={juntarClasses(estilos.celulaTipo, 'numeros')} data-rotulo="Próximo lembrete">
+              <td className={juntarClasses(estilos.celulaTipo, locais.celulaQuebravel, 'numeros')} data-rotulo="Próximo lembrete">
                 {agendamento.proximaExecucaoEm ? formatarInstante(agendamento.proximaExecucaoEm) : <NaoSeAplica />}
               </td>
               <td className={estilos.celulaTipo} data-rotulo="Último backup">

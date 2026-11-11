@@ -5,9 +5,39 @@
 }
 
 .campos {
+  --altura-mensagem: calc(var(--tamanho-xs) * var(--altura-linha-compacta));
+
   display: flex;
   flex-direction: column;
-  gap: var(--espaco-4);
+  gap: var(--espaco-3);
+}
+
+@media (max-width: 359px) {
+  .campos {
+    --altura-mensagem: calc(var(--tamanho-xs) * var(--altura-linha-compacta) * 2);
+  }
+}
+
+.campoEmail > p:last-child {
+  min-height: var(--altura-mensagem);
+}
+
+.campoEmail:not(:has(> p:last-child))::after {
+  content: '';
+  height: var(--altura-mensagem);
+}
+
+.campoSenha {
+  position: relative;
+}
+
+.campoSenha > p:last-child {
+  position: absolute;
+  top: calc(100% + var(--espaco-2));
+  left: 0;
+  align-items: center;
+  max-width: calc(100% - 10rem);
+  min-height: 24px;
 }
 
 .campos > *,

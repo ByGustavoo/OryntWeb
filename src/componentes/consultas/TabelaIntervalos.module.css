@@ -280,3 +280,14 @@
     background-color: transparent;
   }
 }
+
+@container intervalos-historico (max-width: 319px) {
+  .tabela tbody tr {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: var(--espaco-3);
+  }
+
+  .tabela td[data-rotulo]::before {
+    white-space: normal;
+  }
+}
