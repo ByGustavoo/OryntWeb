@@ -7,4 +7,5 @@ export { servicoDashboard } from './servicoDashboard';
 export { servicoObjetos } from './servicoObjetos';
 export { servicoRelatorios } from './servicoRelatorios';
 export { servicoSistema } from './servicoSistema';
+export { servicoTelas } from './servicoTelas';
 export { servicoUsuarios } from './servicoUsuarios';

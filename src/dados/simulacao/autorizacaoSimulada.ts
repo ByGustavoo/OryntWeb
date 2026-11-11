@@ -29,6 +29,7 @@ const MODULOS_POR_PREFIXO: [string, ModuloAuditoria][] = [
   ['/administracao', 'ADMINISTRACAO'],
   ['/auditoria', 'ADMINISTRACAO'],
   ['/sistema', 'CONFIGURACOES'],
+  ['/conta', 'CONFIGURACOES'],
 ];
 
 export function moduloDoCaminho(caminho: string): ModuloAuditoria {

@@ -120,7 +120,7 @@ export function TabelaAgendamentos({ agendamentos, idAberto, idAlternando, aoAbr
                   />
                   <BotaoIcone icone={Pencil} tamanho="sm" rotulo={`Editar ${agendamento.nome}`} onClick={() => aoEditar(agendamento)} />
                   <BotaoIcone icone={Copy} tamanho="sm" rotulo={`Duplicar ${agendamento.nome}`} onClick={() => aoDuplicar(agendamento)} />
-                  <BotaoIcone icone={Trash2} tamanho="sm" rotulo={`Excluir ${agendamento.nome}`} onClick={() => aoExcluir(agendamento)} />
+                  <BotaoIcone icone={Trash2} tom="perigo" tamanho="sm" rotulo={`Excluir ${agendamento.nome}`} onClick={() => aoExcluir(agendamento)} />
                 </span>
               </td>
             </tr>

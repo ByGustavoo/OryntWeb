@@ -45,7 +45,7 @@ silenciosa no resto.
 * **Dashboard:** períodos de 1 h, 24 h, 7 dias e 30 dias; a tabela vira cartões em telas estreitas.
 * **Carregamento do Dashboard:** ao trocar o período, os indicadores, o gráfico e a tabela dão lugar na hora a um esqueleto no formato deles, com as molduras, os títulos e o cabeçalho da tabela no lugar, até a resposta chegar (pedido pelo usuário em 12 de outubro de 2026; antes os dados do período anterior ficavam na tela, esmaecidos). Os três blocos voltam em sequência, de cima para baixo, e a ordenação escolhida na tabela é mantida. Na primeira carga o esqueleto só aparece se a resposta demorar.
 * **Consulta inteira e cópia:** pedido do usuário em 12 de outubro de 2026. Na tabela das consultas que mais pesam, do Dashboard e do Resumo, a consulta que não cabe em duas linhas (três nos cartões) é cortada com reticências e ganha um botão que a mostra inteira na própria linha; clicar no texto cortado também a abre. Toda linha tem um botão que copia o SQL completo, que aparece ao passar o mouse ou focar a linha e fica sempre visível em telas de toque. O texto copiado é só o SQL, sem aviso de demonstração, para poder ser colado e executado. A tabela de Comparação ainda não tem os dois botões.
-* **Versões:** seção em Configurações, abaixo de "Aparência", com um cartão para o Orynt Web e outro para a Orynt API, cada um com a versão e a data de lançamento (pedido do usuário em 11 de outubro de 2026). A versão do front vem de `window.__ORYNT_CONFIG__.versao` e, na falta dela, do `version` do `package.json`; a data de lançamento vem só de `window.__ORYNT_CONFIG__.dataLancamento`. A da API vem de `GET /sistema/versao`. Com dados simulados, o cartão da API mostra "Simulada" e diz que nenhuma API está em uso.
+* **Versões:** seção em Configurações, com a versão e a data de lançamento da Orynt API e do Orynt Web (pedido do usuário em 11 de outubro de 2026). Desde 10 de novembro de 2026 fica ao lado de "Aparência", em duas linhas, "API" e "Web", no formato do PrismaWeb (ver "Configurações e telas ocultas"). A versão do front vem de `window.__ORYNT_CONFIG__.versao` e, na falta dela, do `version` do `package.json`; a data de lançamento vem só de `window.__ORYNT_CONFIG__.dataLancamento`. A da API vem de `GET /sistema/versao`. Com dados simulados, a linha da API mostra "Simulada".
 
 ## Acesso (login)
 
@@ -1059,6 +1059,40 @@ Regras:
 * **Resultado:** o cartão mostra concluído, falhou ou cancelado. Falha e arquivo por baixar ficam até serem dispensados; arquivo já salvo sai depois de um tempo. Um resultado não remove o acompanhamento dos outros backups.
 * **Senha:** as regras de sempre. Ao editar uma conexão, deixar a senha em branco mantém a guardada pela API; ela nunca volta para o navegador.
 * **Auditoria:** salvar e editar conexão, iniciar, cancelar e excluir backup e criar, editar, ativar, desativar e excluir agendamento geram eventos no módulo Backup.
+
+## Configurações e telas ocultas (10 de novembro de 2026)
+
+Pedido pelo usuário: a tela de Configurações igual à do PrismaWeb, com o painel Telas. O tema passou a ter ícones
+no lugar das miniaturas da interface.
+
+* **Arranjo:** Aparência e Versões dividem a primeira linha (2 para 1), depois Conexão em uso e Conexões salvas, e
+  por fim Telas. Abaixo de 1000px de conteúdo, a primeira linha empilha.
+* **Aparência:** Claro, Escuro e Automático, cada um com ícone, descrição curta e um check no canto quando escolhido.
+  O nome "Automático" continua no lugar do "Sistema" do PrismaWeb.
+* **Versões:** sem descrição, em duas linhas, "API" e "Web", cada uma com "versão — Lançada em …".
+
+| # | Tema | Decisão |
+|---|---|---|
+| Q1 | Onde a escolha fica | Na conta do Orynt, pela API (`GET` e `PUT /conta/telas-ocultas`). Vale em qualquer navegador. O simulador guarda a lista por conta em `orynt:simulacao:telas-ocultas`. |
+| Q2 | Quais telas | As 17 telas de Relatórios, Consultas SQL, Backup, Objetos do banco e Usuários e permissões, mais Usuários e Auditoria da Administração. Dashboard e Configurações nunca saem do menu. |
+| Q3 | Telas sem permissão | Não aparecem no painel, que mostra só o que o menu poderia mostrar. |
+| Q4 | Endereço de uma tela oculta | Abre, dentro do shell, "Esta tela está oculta", com "Mostrar de novo" e "Ir para o Dashboard" ("Abrir Configurações" para quem não vê o Dashboard). Não redireciona. |
+| Q5 | Atalhos para uma tela oculta | Continuam: os links do Dashboard, "Ver histórico", "Ver plano", os detalhes dos objetos, as sugestões da 404 e o cartão do backup levam à mensagem da Q4. |
+| Q6 | Auditoria | Cada mudança gera o evento "Mudou as telas do menu" (`TELAS_ALTERADAS`, módulo Configurações), com cada tela que saiu ou voltou em "O que mudou". Gravar a mesma lista de novo não gera evento. |
+| Q7 | Ordem dos painéis | Aparência e Versões, as conexões, e Telas por último. |
+
+Regras:
+
+* **Interruptor ligado é tela no menu.** Os grupos do painel seguem o menu (Relatórios, Consultas SQL, Backup,
+  Objetos do banco, Usuários e permissões e Administração), em três colunas no desktop, duas no tablet e uma no
+  celular.
+* **O menu:** um grupo some quando todas as telas dele estão ocultas, uma seção some quando fica sem item, e um
+  grupo cuja primeira tela está oculta abre na primeira que sobrou.
+* **Gravação:** cada interruptor grava na hora, em fila. O cabeçalho do painel diz "Salvando" e depois "Alterações
+  salvas"; se falhar, a escolha volta e uma notificação explica. "Mostrar todas" devolve tudo ao menu.
+* **Resumo:** "Todas as telas no menu" ou "N telas ocultas", com os nomes completos ("Backup › Histórico") e "Nada
+  foi apagado". Ocultar uma tela não apaga nem esconde dado nenhum.
+* **Falha ao carregar:** o menu mostra tudo, e o painel mostra o erro com "Tentar novamente".
 
 ## Fora desta fase
 

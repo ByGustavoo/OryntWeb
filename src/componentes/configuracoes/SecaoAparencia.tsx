@@ -1,4 +1,6 @@
 import { useId } from 'react';
+import type { LucideIcon } from 'lucide-react';
+import { Check, Monitor, Moon, Sun } from 'lucide-react';
 import { CabecalhoPainel, Painel } from '@/componentes/ui';
 import type { ModoTema, TemaAplicado } from '@/provedores/ProvedorTema';
 import { useTema } from '@/provedores/ProvedorTema';
@@ -9,53 +11,20 @@ import estilosAparencia from './SecaoAparencia.module.css';
 interface OpcaoTema {
   modo: ModoTema;
   rotulo: string;
+  icone: LucideIcon;
   descricao: (temaDoSistema: TemaAplicado) => string;
 }
 
 const opcoesTema: OpcaoTema[] = [
-  { modo: 'claro', rotulo: 'Claro', descricao: () => 'Fundo claro o tempo todo.' },
-  { modo: 'escuro', rotulo: 'Escuro', descricao: () => 'Fundo escuro o tempo todo.' },
+  { modo: 'claro', rotulo: 'Claro', icone: Sun, descricao: () => 'Ideal para ambientes bem iluminados.' },
+  { modo: 'escuro', rotulo: 'Escuro', icone: Moon, descricao: () => 'Menos brilho para uso noturno.' },
   {
     modo: 'sistema',
     rotulo: 'Automático',
-    descricao: (temaDoSistema) => `Acompanha o seu aparelho. Agora está ${temaDoSistema === 'escuro' ? 'escuro' : 'claro'}.`,
+    icone: Monitor,
+    descricao: (temaDoSistema) => `Acompanha o seu aparelho, agora no ${temaDoSistema === 'escuro' ? 'escuro' : 'claro'}.`,
   },
 ];
-
-function Miniatura({ tema }: { tema: TemaAplicado }) {
-  return (
-    <span
-      className={juntarClasses(
-        estilosAparencia.miniatura,
-        tema === 'escuro' ? estilosAparencia.miniaturaEscura : estilosAparencia.miniaturaClara,
-      )}
-    >
-      <span className={estilosAparencia.miniMenu}>
-        <span className={estilosAparencia.miniMarca} />
-        <span className={estilosAparencia.miniItemAtivo} />
-        <span className={estilosAparencia.miniItem} />
-        <span className={estilosAparencia.miniItem} />
-      </span>
-      <span className={estilosAparencia.miniConteudo}>
-        <span className={estilosAparencia.miniTitulo} />
-        <span className={estilosAparencia.miniCartoes}>
-          <span className={estilosAparencia.miniCartao}>
-            <span className={estilosAparencia.miniNumero} />
-            <span className={estilosAparencia.miniLinha} />
-          </span>
-          <span className={estilosAparencia.miniCartao}>
-            <span className={estilosAparencia.miniNumero} />
-            <span className={estilosAparencia.miniLinha} />
-          </span>
-        </span>
-        <span className={juntarClasses(estilosAparencia.miniCartao, estilosAparencia.miniCartaoLargo)}>
-          <span className={estilosAparencia.miniLinha} />
-          <span className={estilosAparencia.miniLinhaCurta} />
-        </span>
-      </span>
-    </span>
-  );
-}
 
 export interface SecaoConfiguracaoProps {
   id: string;
@@ -80,6 +49,7 @@ export function SecaoAparencia({ id, idTitulo }: SecaoConfiguracaoProps) {
       <fieldset className={estilosAparencia.grupo}>
         <legend className="visualmente-oculto">Tema</legend>
         {opcoesTema.map((opcao) => {
+          const Icone = opcao.icone;
           const selecionada = modo === opcao.modo;
           return (
             <label key={opcao.modo} className={juntarClasses(estilosAparencia.opcao, selecionada && estilosAparencia.selecionada)}>
@@ -91,23 +61,14 @@ export function SecaoAparencia({ id, idTitulo }: SecaoConfiguracaoProps) {
                 onChange={() => definirModo(opcao.modo)}
                 className={estilosAparencia.entrada}
               />
-              <span className={estilosAparencia.previa} aria-hidden="true">
-                {opcao.modo === 'sistema' ? (
-                  <span className={estilosAparencia.previaDividida}>
-                    <Miniatura tema="claro" />
-                    <span className={estilosAparencia.metadeEscura}>
-                      <Miniatura tema="escuro" />
-                    </span>
-                  </span>
-                ) : (
-                  <Miniatura tema={opcao.modo} />
-                )}
+              <span className={estilosAparencia.icone} aria-hidden="true">
+                <Icone size={18} strokeWidth={1.75} />
               </span>
               <span className={estilosAparencia.textos}>
-                <span className={estilosAparencia.marcador} aria-hidden="true" />
                 <span className={estilosAparencia.rotulo}>{opcao.rotulo}</span>
                 <span className={estilosAparencia.descricao}>{opcao.descricao(temaDoSistema)}</span>
               </span>
+              {selecionada ? <Check className={estilosAparencia.marca} size={16} strokeWidth={2.5} aria-hidden="true" /> : null}
             </label>
           );
         })}

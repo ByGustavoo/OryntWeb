@@ -111,6 +111,7 @@ export function SecaoConexoesSalvas() {
                   <BotaoIcone icone={Pencil} rotulo={`Editar ${salva.nome}`} onClick={() => setEdicao(iniciar(salva))} />
                   <BotaoIcone
                     icone={Trash2}
+                    tom="perigo"
                     rotulo={`Excluir ${salva.nome}`}
                     disabled={conectando}
                     onClick={() => setExclusao(iniciar(salva))}

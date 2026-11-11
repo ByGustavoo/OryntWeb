@@ -1,0 +1,123 @@
+.secao {
+  container: telas-menu / inline-size;
+}
+
+.gravacao {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-1);
+  min-height: 1.5rem;
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+}
+
+.grupos {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: var(--espaco-5) var(--espaco-6);
+}
+
+.grupo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+  min-width: 0;
+}
+
+.tituloGrupo {
+  padding-bottom: var(--espaco-2);
+  border-bottom: 1px solid var(--borda);
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-forte);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.itens {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  padding-block: var(--espaco-1);
+}
+
+.esqueletoItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  min-height: var(--altura-controle-sm);
+  padding-inline-start: 2px;
+}
+
+.resumo {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: center;
+  gap: var(--espaco-3);
+  padding: var(--espaco-4);
+  border-radius: var(--raio-md);
+  background-color: var(--superficie-suave);
+}
+
+.iconeResumo {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--raio-sm);
+  background-color: var(--superficie);
+  color: var(--texto-secundario);
+}
+
+.textosResumo {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.tituloResumo {
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+}
+
+.descricaoResumo {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  line-height: var(--altura-linha-compacta);
+}
+
+@container telas-menu (min-width: 520px) {
+  .grupos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container telas-menu (min-width: 900px) {
+  .grupos {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 599px) {
+  .item {
+    padding-block: var(--espaco-2);
+  }
+
+  .resumo {
+    flex-wrap: wrap;
+  }
+
+  .resumo > :last-child {
+    width: 100%;
+  }
+}

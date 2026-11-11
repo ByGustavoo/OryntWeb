@@ -69,4 +69,7 @@ export const rotasApi = {
   sistema: {
     versao: '/sistema/versao',
   },
+  conta: {
+    telasOcultas: '/conta/telas-ocultas',
+  },
 } as const;

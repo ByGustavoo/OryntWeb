@@ -70,6 +70,7 @@ import { listarFuncoes, listarIndices, listarTabelas, listarVisoes } from './man
 import { redefinirSenha, solicitarRecuperacao, verificarCodigoRecuperacao } from './manipuladores/recuperacaoSenha';
 import { buscarResumoRelatorio } from './manipuladores/relatorios';
 import { buscarVersao } from './manipuladores/sistema';
+import { atualizarTelasOcultas, buscarTelasOcultas } from './manipuladores/telas';
 import { aplicarAlteracao, listarAlteracoes } from './manipuladores/alteracoes';
 import { listarPapeis, listarPermissoes, listarSessoes } from './manipuladores/usuarios';
 import { definirRecusaDeAlteracoes, restaurarPapeisSimulados } from './alteracoesSimuladas';
@@ -318,6 +319,8 @@ const rotas: Rota[] = [
     descricao: 'ler um relatório',
   },
   { metodo: 'GET', caminho: rotasApi.sistema.versao, manipulador: buscarVersao, acesso: 'AUTENTICADA' },
+  { metodo: 'GET', caminho: rotasApi.conta.telasOcultas, manipulador: buscarTelasOcultas, acesso: 'AUTENTICADA' },
+  { metodo: 'PUT', caminho: rotasApi.conta.telasOcultas, manipulador: atualizarTelasOcultas, acesso: 'AUTENTICADA', espera: () => 250 + Math.random() * 250 },
   {
     metodo: 'GET',
     caminho: rotasApi.administracao.contas,
