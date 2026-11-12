@@ -211,6 +211,7 @@ export function GraficoComparacao({ pontos, granularidade, rotulos, titulos }: G
                     allowDecimals={false}
                     tickFormatter={medida.formatarEixo}
                     ticks={marcas}
+                    interval={0}
                     domain={[0, marcas[marcas.length - 1] ?? 'auto']}
                     width={LARGURA_EIXO_PX}
                     tickMargin={6}

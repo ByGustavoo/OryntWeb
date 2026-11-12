@@ -434,7 +434,7 @@
     position: fixed;
     inset-block: 0;
     left: 0;
-    width: min(var(--largura-menu), 86vw);
+    width: min(var(--largura-gaveta), 86vw);
     padding-bottom: calc(var(--espaco-3) + env(safe-area-inset-bottom, 0px));
     transform: translateX(-100%);
     visibility: hidden;
@@ -454,6 +454,7 @@
 
   .fecharGaveta {
     display: grid;
+    margin-right: calc(var(--espaco-2) * -1);
   }
 
   .descricaoMarca {

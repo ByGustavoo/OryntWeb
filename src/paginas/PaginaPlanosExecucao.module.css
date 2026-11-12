@@ -49,7 +49,7 @@
 .fixo {
   position: sticky;
   top: calc(var(--altura-cabecalho) + var(--espaco-4));
-  max-height: calc(100dvh - var(--altura-cabecalho) - var(--espaco-8));
+  max-height: calc(100dvh - var(--altura-cabecalho) - var(--espaco-4) - var(--espaco-16) - env(safe-area-inset-bottom, 0px) - var(--altura-acompanhamento-backup, 0px));
   overflow-y: auto;
   overscroll-behavior: contain;
   border: 1px solid var(--borda);

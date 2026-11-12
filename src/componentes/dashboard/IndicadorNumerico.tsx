@@ -7,7 +7,7 @@ import { useContagem } from '@/ganchos/useContagem';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
 import estilos from './IndicadorNumerico.module.css';
 
-export type TomIndicador = 'destaque' | 'aviso' | 'sucesso';
+export type TomIndicador = 'destaque' | 'aviso' | 'erro' | 'sucesso';
 
 export interface DestinoIndicador {
   para: string;
