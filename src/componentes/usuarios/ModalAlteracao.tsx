@@ -1,7 +1,8 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import type { MouseEvent } from 'react';
 import { ArrowLeft, ArrowRight, Lock } from 'lucide-react';
 import { ehErroApi } from '@/api/tratamentoErros';
-import { Botao, EsqueletoLista, EstadoErro, Modal, Nota } from '@/componentes/ui';
+import { Botao, DialogoConfirmacao, EsqueletoLista, EstadoErro, Modal, Nota } from '@/componentes/ui';
 import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
 import type { AlteracaoDTO, OperacaoDTO, OrigemDaAlteracao } from '@/modelos/alteracoes';
 import { useAutenticacao } from '@/provedores/ProvedorAutenticacao';
@@ -74,6 +75,12 @@ function rotuloDeExecutar(operacoes: OperacaoDTO[], origem: OrigemDaAlteracao): 
   return 'Executar';
 }
 
+const SELETOR_QUE_EDITA = '[role="option"], [role="switch"], button:not([role="combobox"]):not([aria-pressed]):not([type="submit"])';
+
+function cliqueQueEdita(evento: MouseEvent<HTMLElement>): boolean {
+  return evento.target instanceof Element && evento.target.closest(SELETOR_QUE_EDITA) !== null;
+}
+
 function destrutiva(operacoes: OperacaoDTO[], confirmar: string | null): boolean {
   return (
     confirmar !== null ||
@@ -96,8 +103,19 @@ export default function ModalAlteracao({ pedido, aberto, aoFechar, aoAplicar }: 
   const [enviando, setEnviando] = useState(false);
   const [falha, setFalha] = useState<FalhaAlteracao | null>(null);
   const [confirmacao, setConfirmacao] = useState('');
+  const [preenchido, setPreenchido] = useState(false);
+  const [descartando, setDescartando] = useState(false);
   const corpo = useRef<HTMLDivElement>(null);
   const comFormulario = pedido.tipo !== 'OPERACOES';
+
+  const pedirParaFechar = () => {
+    if (enviando) return;
+    if (comFormulario && (preenchido || revisao !== null)) {
+      setDescartando(true);
+      return;
+    }
+    aoFechar();
+  };
 
   const carga = useDadosAssincronos(async (signal) => {
     const [papeis, permissoes] = await Promise.all([servicoUsuarios.listarPapeis(signal), servicoUsuarios.listarPermissoes(signal)]);
@@ -179,7 +197,7 @@ export default function ModalAlteracao({ pedido, aberto, aoFechar, aoAplicar }: 
     </>
   ) : (
     <>
-      <Botao variante="secundario" onClick={aoFechar}>
+      <Botao variante="secundario" onClick={pedirParaFechar}>
         Cancelar
       </Botao>
       <Botao type="submit" form={idFormulario} iconeDireita={ArrowRight} carregando={ocupado} disabled={!estado}>
@@ -215,48 +233,73 @@ export default function ModalAlteracao({ pedido, aberto, aoFechar, aoAplicar }: 
   };
 
   return (
-    <Modal
-      aberto={aberto}
-      aoFechar={enviando ? () => undefined : aoFechar}
-      titulo={revisao ? 'Revisar a alteração' : tituloDoFormulario(pedido)}
-      descricao={revisao ? 'Confira os comandos e o que muda antes de executar.' : descricaoDoFormulario(pedido)}
-      tamanho="lg"
-      papel={revisao && confirmar ? 'alertdialog' : 'dialog'}
-      focarPrimeiroCampo={pedido.tipo === 'NOVO_PAPEL'}
-      rodape={rodape}
-    >
-      <div ref={corpo} className={estilos.corpo}>
-        {carga.erro ? (
-          <EstadoErro
-            titulo="Não foi possível carregar os papéis e as permissões"
-            descricao="A revisão precisa do estado atual do banco para mostrar o que muda."
-            aoTentarNovamente={carga.recarregar}
-          />
-        ) : !estado ? (
-          <EsqueletoLista linhas={4} rotulo="Carregando os papéis e as permissões…" />
-        ) : (
-          <>
-            {comFormulario ? <div hidden={revisao !== null}>{formulario(estado)}</div> : null}
-            {revisao && faltando.length > 0 ? (
-              <Nota tom="erro" icone={Lock} titulo="A sua conta do Orynt não pode executar isto.">
-                Falta {faltando.map((codigo) => `“${rotuloDaPermissao(codigo)}”`).join(' e ')}. Copie os comandos para rodar por outro
-                caminho ou peça a permissão a quem administra o Orynt na sua equipe.
-              </Nota>
-            ) : null}
-            {revisao ? (
-              <RevisaoAlteracao
-                revisao={revisao}
-                estado={estado}
-                falha={falha}
-                confirmar={confirmar}
-                confirmacao={confirmacao}
-                aoConfirmar={setConfirmacao}
-                desfazendo={revisao.origem === 'DESFAZER'}
-              />
-            ) : null}
-          </>
-        )}
-      </div>
-    </Modal>
+    <>
+      <Modal
+        aberto={aberto}
+        aoFechar={pedirParaFechar}
+        titulo={revisao ? 'Revisar a alteração' : tituloDoFormulario(pedido)}
+        descricao={revisao ? 'Confira os comandos e o que muda antes de executar.' : descricaoDoFormulario(pedido)}
+        tamanho="lg"
+        papel={revisao && confirmar ? 'alertdialog' : 'dialog'}
+        focarPrimeiroCampo={pedido.tipo === 'NOVO_PAPEL'}
+        rodape={rodape}
+      >
+        <div ref={corpo} className={estilos.corpo}>
+          {carga.erro ? (
+            <EstadoErro
+              titulo="Não foi possível carregar os papéis e as permissões"
+              descricao="A revisão precisa do estado atual do banco para mostrar o que muda."
+              aoTentarNovamente={carga.recarregar}
+            />
+          ) : !estado ? (
+            <EsqueletoLista linhas={4} rotulo="Carregando os papéis e as permissões…" />
+          ) : (
+            <>
+              {comFormulario ? (
+                <div
+                  hidden={revisao !== null}
+                  onChange={() => setPreenchido(true)}
+                  onClickCapture={(evento) => {
+                    if (cliqueQueEdita(evento)) setPreenchido(true);
+                  }}
+                >
+                  {formulario(estado)}
+                </div>
+              ) : null}
+              {revisao && faltando.length > 0 ? (
+                <Nota tom="erro" icone={Lock} titulo="A sua conta do Orynt não pode executar isto.">
+                  Falta {faltando.map((codigo) => `“${rotuloDaPermissao(codigo)}”`).join(' e ')}. Copie os comandos para rodar por outro
+                  caminho ou peça a permissão a quem administra o Orynt na sua equipe.
+                </Nota>
+              ) : null}
+              {revisao ? (
+                <RevisaoAlteracao
+                  revisao={revisao}
+                  estado={estado}
+                  falha={falha}
+                  confirmar={confirmar}
+                  confirmacao={confirmacao}
+                  aoConfirmar={setConfirmacao}
+                  desfazendo={revisao.origem === 'DESFAZER'}
+                />
+              ) : null}
+            </>
+          )}
+        </div>
+      </Modal>
+      <DialogoConfirmacao
+        aberto={aberto && descartando}
+        titulo="Descartar o que foi preenchido?"
+        descricao={`${tituloDoFormulario(pedido)}: nada foi executado no banco, e o que você preencheu vai se perder.`}
+        textoConfirmar="Descartar"
+        textoCancelar="Continuar editando"
+        destrutivo
+        aoConfirmar={() => {
+          setDescartando(false);
+          aoFechar();
+        }}
+        aoCancelar={() => setDescartando(false)}
+      />
+    </>
   );
 }

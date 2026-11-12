@@ -12,6 +12,19 @@ const DURACAO_SAIDA_MS = 200;
 
 const pilhaModais: symbol[] = [];
 
+const origensDosPaineis = new WeakMap<Element, HTMLElement | null>();
+const paineisSaindo = new WeakSet<Element>();
+
+function podeReceberFoco(elemento: HTMLElement | null | undefined): elemento is HTMLElement {
+  if (!elemento?.isConnected) return false;
+  const painel = elemento.closest('[aria-modal="true"]');
+  return !painel || !paineisSaindo.has(painel);
+}
+
+function destinoDoFoco(...candidatos: (HTMLElement | null | undefined)[]): HTMLElement | null {
+  return candidatos.find(podeReceberFoco) ?? null;
+}
+
 function estaNoTopo(identificador: symbol): boolean {
   return pilhaModais[pilhaModais.length - 1] === identificador;
 }
@@ -45,6 +58,7 @@ export function Modal({
   const [saindo, setSaindo] = useState(false);
   const painelRef = useRef<HTMLDivElement>(null);
   const origemRef = useRef<HTMLElement | null>(null);
+  const origemDoModalDeBaixoRef = useRef<HTMLElement | null>(null);
   const focoAoFecharRef = useRef(focoAoFechar);
   focoAoFecharRef.current = focoAoFechar;
   const identificador = useRef(Symbol('modal')).current;
@@ -55,22 +69,39 @@ export function Modal({
   useEffect(() => {
     if (aberto) {
       const focado = document.activeElement;
-      if (!painelRef.current?.contains(focado)) origemRef.current = focado instanceof HTMLElement ? focado : null;
+      if (!painelRef.current?.contains(focado)) {
+        origemRef.current = focado instanceof HTMLElement ? focado : null;
+        const painelDeBaixo = focado?.closest('[aria-modal="true"]');
+        origemDoModalDeBaixoRef.current = painelDeBaixo ? (origensDosPaineis.get(painelDeBaixo) ?? null) : null;
+      }
+      if (painelRef.current) paineisSaindo.delete(painelRef.current);
       setMontado(true);
       setSaindo(false);
       return;
     }
     if (!montado) return;
+    if (painelRef.current) paineisSaindo.add(painelRef.current);
     setSaindo(true);
     const temporizador = window.setTimeout(() => {
+      const focado = document.activeElement;
+      const focoPerdido = !focado || focado === document.body || painelRef.current?.contains(focado) === true;
       setMontado(false);
       setSaindo(false);
-      devolverFoco(focoAoFecharRef.current?.() ?? origemRef.current);
+      if (focoPerdido) devolverFoco(destinoDoFoco(focoAoFecharRef.current?.(), origemRef.current, origemDoModalDeBaixoRef.current));
     }, DURACAO_SAIDA_MS);
     return () => window.clearTimeout(temporizador);
   }, [aberto, montado]);
 
   useTravarRolagem(montado);
+
+  useEffect(() => {
+    const painel = painelRef.current;
+    if (!montado || !painel) return;
+    origensDosPaineis.set(painel, origemRef.current);
+    return () => {
+      origensDosPaineis.delete(painel);
+    };
+  }, [montado]);
 
   useEffect(() => {
     if (!montado) return;

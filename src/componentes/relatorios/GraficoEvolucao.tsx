@@ -167,6 +167,7 @@ export function GraficoEvolucao({ pontos, granularidade }: GraficoEvolucaoProps)
                 allowDecimals={false}
                 tickFormatter={formatarNumeroCompacto}
                 ticks={marcasVolume}
+                interval={0}
                 domain={[0, marcasVolume[marcasVolume.length - 1] ?? 'auto']}
                 width={LARGURA_EIXO_PX}
                 tickMargin={6}

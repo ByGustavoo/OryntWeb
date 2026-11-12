@@ -83,7 +83,7 @@ function Indicadores({ resumo }: { resumo: ResumoBackupDTO }) {
         rotulo="Com falha"
         valor={falhas}
         formatar={formatarNumero}
-        tom={falhas > 0 ? 'aviso' : 'sucesso'}
+        tom={falhas > 0 ? 'erro' : 'sucesso'}
         destino={falhas > 0 ? { para: caminhos.backupHistorico, estado: { historico: { situacao: 'FALHOU' } }, descricao: 'ver os que falharam' } : undefined}
         contexto={falhas > 0 ? `De ${formatarNumero(totalExecucoes)} backups no histórico` : 'Nenhuma falha registrada'}
       />

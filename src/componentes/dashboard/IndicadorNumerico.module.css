@@ -46,6 +46,11 @@
   --tom-fundo: var(--aviso-suave);
 }
 
+.erro {
+  --tom-texto: var(--erro);
+  --tom-fundo: var(--erro-suave);
+}
+
 .sucesso {
   --tom-texto: var(--sucesso);
   --tom-fundo: var(--sucesso-suave);
